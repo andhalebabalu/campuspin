@@ -26,7 +26,18 @@
     "test": "npm run build:packages && npm run test --workspaces --if-present",
     "test:e2e": "npm run build:packages && npm run test:e2e -w @platform/api",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:db": "npm run build:packages && npm run test:db -w @platform/api",
+    "db:create": "npm run db:create -w @platform/api",
+    "db:validate": "npm run db:validate -w @platform/api",
+    "db:generate": "npm run db:generate -w @platform/api",
+    "db:migrate": "npm run db:migrate -w @platform/api",
+    "db:migrate:deploy": "npm run db:migrate:deploy -w @platform/api",
+    "db:migrate:status": "npm run db:migrate:status -w @platform/api",
+    "db:seed": "npm run db:seed -w @platform/api",
+    "db:seed:reference": "npm run db:seed:reference -w @platform/api",
+    "db:purge-demo": "npm run db:purge-demo -w @platform/api",
+    "db:studio": "npm run db:studio -w @platform/api"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

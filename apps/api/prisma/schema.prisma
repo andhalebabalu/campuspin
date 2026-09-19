@@ -1,8 +1,18 @@
-// Prisma schema for the LINK platform. Provider: MySQL protocol (XAMPP's MariaDB is compatible).
+// Prisma schema for the LINK student ecosystem platform.
 //
-// Phase 1 only wires up the generator and datasource. The full relational model
-// (users, roles, colleges, categories, places, ...) is added in Phase 2 / Phase 4.
-// The connection string is NOT stored here: it comes from DATABASE_URL via prisma.config.ts.
+// Provider: MySQL protocol. Local development runs on XAMPP (MariaDB 10.4); the schema uses only
+// features that behave the same on MariaDB 10.4 and MySQL 8.
+//
+// The connection string is NOT in this file: Prisma 7 rejects `url` inside the schema, so it is
+// read from DATABASE_URL by prisma.config.ts (for migrations) and by PrismaService (at runtime).
+//
+// Conventions
+//   - Tables are snake_case plural (@@map); columns keep Prisma's camelCase.
+//   - Ids are UUIDv7 stored as CHAR(36): time-ordered, safe to expose, index-friendly.
+//   - Every mutable table has createdAt/updatedAt. Foreign keys default to RESTRICT so history is
+//     never lost by accident; only owned child rows and pure join rows CASCADE.
+//   - ONE central Place table serves every kind of place. Categories (data, not tables) decide
+//     what a place is; CategoryAttribute + PlaceAttributeValue hold category-specific details.
 
 generator client {
   provider = "prisma-client"
@@ -11,4 +21,939 @@ generator client {
 
 datasource db {
   provider = "mysql"
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Enums (controlled states only; open-ended sets such as roles and categories are tables)
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ActiveStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum CollegeStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+enum PlaceStatus {
+  DRAFT
+  PENDING
+  ACTIVE
+  INACTIVE
+  REJECTED
+}
+
+enum BusinessStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum BusinessMemberRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+enum SubmissionStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  DUPLICATE
+}
+
+enum ContributionType {
+  INFO_UPDATE
+  PRICE_UPDATE
+  HOURS_UPDATE
+  PHOTO_ADD
+  AMENITY_UPDATE
+  CONFIRMATION
+}
+
+enum ContributionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ReviewStatus {
+  PUBLISHED
+  HIDDEN
+  REPORTED
+  REMOVED
+}
+
+enum ReportReason {
+  WRONG_INFO
+  BUSINESS_CLOSED
+  WRONG_LOCATION
+  FAKE_LISTING
+  WRONG_PRICE
+  SPAM
+  INAPPROPRIATE
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum ReportTargetType {
+  PLACE
+  REVIEW
+  USER
+  MARKETPLACE_LISTING
+  COMMUNITY_POST
+}
+
+enum AttributeDataType {
+  BOOLEAN
+  INTEGER
+  DECIMAL
+  TEXT
+  ENUM
+  MULTI_ENUM
+  DATE
+}
+
+enum PriceUnit {
+  ONE_TIME
+  HOUR
+  DAY
+  WEEK
+  MONTH
+  SEMESTER
+  YEAR
+  MEAL
+  PAGE
+  KG
+  TRIP
+}
+
+enum CollegePlaceMode {
+  AUTO
+  PINNED
+  EXCLUDED
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Identity and access
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+model User {
+  id              String     @id @default(uuid(7)) @db.Char(36)
+  name            String     @db.VarChar(120)
+  // Stored lowercase by the application; the column collation is case-insensitive as well.
+  email           String     @unique @db.VarChar(254)
+  // Argon2id hash. Plain-text passwords are never stored.
+  passwordHash    String     @db.VarChar(255)
+  // Null = not verified. The timestamp records when it happened.
+  emailVerifiedAt DateTime?
+  // Reserved for phone OTP login later (no schema change needed then).
+  phone           String?    @unique @db.VarChar(20)
+  phoneVerifiedAt DateTime?
+  status          UserStatus @default(ACTIVE)
+  // Student profile: the college they study at (null for business owners and staff).
+  collegeId       String?    @db.Char(36)
+  course          String?    @db.VarChar(120)
+  year            Int?       @db.TinyInt
+  lastLoginAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  college College? @relation("StudentCollege", fields: [collegeId], references: [id], onDelete: SetNull)
+
+  userRoles             UserRole[]          @relation("UserRoleUser")
+  assignedRoles         UserRole[]          @relation("UserRoleAssignedBy")
+  createdColleges       College[]           @relation("CollegeCreatedBy")
+  createdPlaces         Place[]             @relation("PlaceCreatedBy")
+  verifiedPlaces        Place[]             @relation("PlaceVerifiedBy")
+  ownedBusinesses       BusinessProfile[]   @relation("BusinessOwner")
+  businessMemberships   BusinessMember[]
+  requestedClaims       PlaceClaim[]        @relation("ClaimRequestedBy")
+  reviewedClaims        PlaceClaim[]        @relation("ClaimReviewedBy")
+  submissions           PlaceSubmission[]   @relation("SubmissionSubmittedBy")
+  reviewedSubmissions   PlaceSubmission[]   @relation("SubmissionReviewedBy")
+  contributions         PlaceContribution[] @relation("ContributionContributedBy")
+  reviewedContributions PlaceContribution[] @relation("ContributionReviewedBy")
+  reviews               Review[]            @relation("ReviewAuthor")
+  moderatedReviews      Review[]            @relation("ReviewModeratedBy")
+  reviewReports         ReviewReport[]      @relation("ReviewReportReportedBy")
+  handledReviewReports  ReviewReport[]      @relation("ReviewReportReviewedBy")
+  savedPlaces           SavedPlace[]
+  reports               Report[]            @relation("ReportReporter")
+  resolvedReports       Report[]            @relation("ReportResolvedBy")
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+
+  @@index([status])
+  @@index([collegeId])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid(7)) @db.Char(36)
+  // Stable machine key (SUPER_ADMIN, ...). Code refers to the key, never to a display name.
+  key         String   @unique @db.VarChar(50)
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  // System roles are seeded and cannot be deleted from the admin UI.
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid(7)) @db.Char(36)
+  // `<resource>.<action>`, e.g. places.manage
+  key         String   @unique @db.VarChar(100)
+  resource    String   @db.VarChar(50)
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles RolePermission[]
+
+  @@index([resource])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String   @db.Char(36)
+  permissionId String   @db.Char(36)
+  createdAt    DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  userId       String   @db.Char(36)
+  roleId       String   @db.Char(36)
+  assignedById String?  @db.Char(36)
+  createdAt    DateTime @default(now())
+
+  user       User  @relation("UserRoleUser", fields: [userId], references: [id], onDelete: Cascade)
+  role       Role  @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  assignedBy User? @relation("UserRoleAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Colleges
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+model College {
+  id                  String             @id @default(uuid(7)) @db.Char(36)
+  name                String             @db.VarChar(200)
+  slug                String             @unique @db.VarChar(200)
+  shortName           String?            @db.VarChar(50)
+  description         String?            @db.Text
+  address             String             @db.VarChar(500)
+  city                String             @db.VarChar(100)
+  state               String             @db.VarChar(100)
+  country             String             @default("India") @db.VarChar(100)
+  // Decimal degrees (DOUBLE). Distances to places are calculated from these, never typed in.
+  latitude            Float
+  longitude           Float
+  website             String?            @db.VarChar(500)
+  logoUrl             String?            @db.VarChar(1000)
+  coverImageUrl       String?            @db.VarChar(1000)
+  status              CollegeStatus      @default(DRAFT)
+  verificationStatus  VerificationStatus @default(PENDING)
+  // Places within this radius are linked to the college automatically (see CollegePlace).
+  serviceRadiusMeters Int                @default(5000)
+  // Demo/sample rows are flagged so they can never be mistaken for real data or shipped to production.
+  isDemo              Boolean            @default(false)
+  createdById         String?            @db.Char(36)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  createdBy   User?             @relation("CollegeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  students    User[]            @relation("StudentCollege")
+  images      CollegeImage[]
+  places      CollegePlace[]
+  submissions PlaceSubmission[]
+
+  @@index([status])
+  @@index([city, status])
+  @@index([latitude, longitude])
+  @@map("colleges")
+}
+
+model CollegeImage {
+  id        String   @id @default(uuid(7)) @db.Char(36)
+  collegeId String   @db.Char(36)
+  // Only the URL is stored; image bytes never go into MySQL.
+  imageUrl  String   @db.VarChar(1000)
+  altText   String?  @db.VarChar(200)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  college College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  @@index([collegeId, sortOrder])
+  @@map("college_images")
+}
+
+// A place can serve several colleges (College A -> ABC Mess, College B -> ABC Mess).
+// `distanceMeters` is DERIVED from both coordinates (Haversine) by the application and is
+// recomputed whenever either side moves. It is a cache that makes "nearest first" an indexed
+// read; it is never the source of truth and is never hand-entered.
+model CollegePlace {
+  collegeId      String           @db.Char(36)
+  placeId        String           @db.Char(36)
+  distanceMeters Int
+  // AUTO = within the college radius; PINNED = staff force-included; EXCLUDED = staff hid it.
+  mode           CollegePlaceMode @default(AUTO)
+  computedAt     DateTime         @default(now())
+
+  college College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  place   Place   @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@id([collegeId, placeId])
+  @@index([collegeId, distanceMeters])
+  @@index([placeId])
+  @@map("college_places")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Catalogue: categories, category-specific attributes, amenities
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+// Two-level tree (group -> category), fully data-driven: Accommodation -> Room / PG / Hostel.
+model Category {
+  id               String       @id @default(uuid(7)) @db.Char(36)
+  parentId         String?      @db.Char(36)
+  name             String       @db.VarChar(100)
+  slug             String       @unique @db.VarChar(100)
+  description      String?      @db.VarChar(500)
+  // A key from the UI icon set, not a URL.
+  icon             String?      @db.VarChar(50)
+  status           ActiveStatus @default(ACTIVE)
+  sortOrder        Int          @default(0)
+  // The unit prices are compared in within this category (e.g. MONTH for messes).
+  defaultPriceUnit PriceUnit?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  parent           Category?                 @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children         Category[]                @relation("CategoryTree")
+  attributes       CategoryAttribute[]
+  ratingDimensions CategoryRatingDimension[]
+  places           PlaceCategory[]
+  submissions      PlaceSubmission[]
+
+  @@index([parentId, sortOrder])
+  @@index([status])
+  @@map("categories")
+}
+
+// Defines an extra field for a category (e.g. MESS -> veg_nonveg). Adding an attribute is a row,
+// not a schema change. The values live in PlaceAttributeValue.
+model CategoryAttribute {
+  id         String            @id @default(uuid(7)) @db.Char(36)
+  categoryId String            @db.Char(36)
+  name       String            @db.VarChar(100)
+  // Machine key, unique within the category.
+  key        String            @db.VarChar(60)
+  dataType   AttributeDataType
+  required   Boolean           @default(false)
+  filterable Boolean           @default(false)
+  searchable Boolean           @default(false)
+  // Display unit, e.g. "seats".
+  unit       String?           @db.VarChar(20)
+  // For ENUM / MULTI_ENUM: [{ "value": "veg", "label": "Veg" }, ...]
+  options    Json?
+  helpText   String?           @db.VarChar(255)
+  sortOrder  Int               @default(0)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  category Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  values   PlaceAttributeValue[]
+
+  @@unique([categoryId, key])
+  @@index([categoryId, sortOrder])
+  @@map("category_attributes")
+}
+
+// Optional rating dimensions per category (Mess: food / price / hygiene). Flexible replacement for
+// hard-coded foodRating/priceRating columns on Review.
+model CategoryRatingDimension {
+  id         String   @id @default(uuid(7)) @db.Char(36)
+  categoryId String   @db.Char(36)
+  key        String   @db.VarChar(60)
+  label      String   @db.VarChar(100)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  category Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  ratings  ReviewRating[]
+
+  @@unique([categoryId, key])
+  @@map("category_rating_dimensions")
+}
+
+// Master list of facilities (WiFi, AC, Parking, ...). Normalised: places link to rows here.
+model Amenity {
+  id        String       @id @default(uuid(7)) @db.Char(36)
+  key       String       @unique @db.VarChar(60)
+  name      String       @db.VarChar(100)
+  icon      String?      @db.VarChar(50)
+  status    ActiveStatus @default(ACTIVE)
+  sortOrder Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  places PlaceAmenity[]
+
+  @@index([status])
+  @@map("amenities")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Places (ONE central table for messes, PGs, libraries, gyms, ...)
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+model Place {
+  id                 String             @id @default(uuid(7)) @db.Char(36)
+  name               String             @db.VarChar(200)
+  slug               String             @unique @db.VarChar(200)
+  description        String?            @db.Text
+  address            String             @db.VarChar(500)
+  city               String             @db.VarChar(100)
+  state              String             @db.VarChar(100)
+  country            String             @default("India") @db.VarChar(100)
+  latitude           Float
+  longitude          Float
+  phone              String?            @db.VarChar(20)
+  email              String?            @db.VarChar(254)
+  website            String?            @db.VarChar(500)
+  // Used only to open navigation in Google Maps. We never copy Google Maps business data.
+  googleMapsUrl      String?            @db.VarChar(1000)
+  // Comparable summary of PlacePriceOption (whole rupees), kept in sync by the application so
+  // "cheapest first" is a plain indexed sort.
+  priceMin           Int?
+  priceMax           Int?
+  priceUnit          PriceUnit?
+  // Summary of published Reviews, maintained in the same transaction as the review write.
+  ratingAverage      Float              @default(0)
+  ratingCount        Int                @default(0)
+  status             PlaceStatus        @default(DRAFT)
+  verificationStatus VerificationStatus @default(PENDING)
+  lastVerifiedAt     DateTime?
+  verifiedById       String?            @db.Char(36)
+  createdById        String             @db.Char(36)
+  // Set when a business owns the listing (created it, or an approved PlaceClaim).
+  businessProfileId  String?            @db.Char(36)
+  isDemo             Boolean            @default(false)
+  // Optimistic-concurrency counter for concurrent edits and contribution patches.
+  version            Int                @default(1)
+  publishedAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  createdBy       User             @relation("PlaceCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  verifiedBy      User?            @relation("PlaceVerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
+  businessProfile BusinessProfile? @relation(fields: [businessProfileId], references: [id], onDelete: SetNull)
+
+  categories      PlaceCategory[]
+  images          PlaceImage[]
+  amenities       PlaceAmenity[]
+  hours           PlaceHour[]
+  attributeValues PlaceAttributeValue[]
+  priceOptions    PlacePriceOption[]
+  colleges        CollegePlace[]
+  savedBy         SavedPlace[]
+  claims          PlaceClaim[]
+  contributions   PlaceContribution[]
+  reviews         Review[]
+  createdFrom     PlaceSubmission[]     @relation("SubmissionResultingPlace")
+  duplicatesOf    PlaceSubmission[]     @relation("SubmissionDuplicateOfPlace")
+
+  @@index([status, city])
+  @@index([status, createdAt])
+  @@index([verificationStatus])
+  @@index([businessProfileId])
+  @@index([createdById])
+  @@index([latitude, longitude])
+  @@map("places")
+}
+
+// A place can be in several categories (Study Point -> Library + Reading Room).
+// Exactly one row per place should have isPrimary = true; enforced by the application because
+// MySQL has no partial unique indexes.
+model PlaceCategory {
+  placeId    String   @db.Char(36)
+  categoryId String   @db.Char(36)
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  place    Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@id([placeId, categoryId])
+  @@index([categoryId])
+  @@map("place_categories")
+}
+
+model PlaceImage {
+  id        String   @id @default(uuid(7)) @db.Char(36)
+  placeId   String   @db.Char(36)
+  // URL only (Cloudinary or local uploads); image bytes never go into MySQL.
+  imageUrl  String   @db.VarChar(1000)
+  altText   String?  @db.VarChar(200)
+  isCover   Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([placeId, sortOrder])
+  @@map("place_images")
+}
+
+model PlaceAmenity {
+  placeId   String   @db.Char(36)
+  amenityId String   @db.Char(36)
+  createdAt DateTime @default(now())
+
+  place   Place   @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  amenity Amenity @relation(fields: [amenityId], references: [id], onDelete: Restrict)
+
+  @@id([placeId, amenityId])
+  @@index([amenityId])
+  @@map("place_amenities")
+}
+
+// Opening hours. A day may have several slots (a mess: lunch + dinner), distinguished by sortOrder.
+// Times are "HH:mm" strings (24 h, place-local time). closeTime earlier than openTime means the
+// slot runs past midnight. `is24Hours` and `isClosed` need no times.
+// Special/holiday hours can be added later as a separate table without touching this one.
+model PlaceHour {
+  id        String  @id @default(uuid(7)) @db.Char(36)
+  placeId   String  @db.Char(36)
+  // ISO weekday: 1 = Monday ... 7 = Sunday.
+  dayOfWeek Int     @db.TinyInt
+  openTime  String? @db.VarChar(5)
+  closeTime String? @db.VarChar(5)
+  isClosed  Boolean @default(false)
+  is24Hours Boolean @default(false)
+  slotLabel String? @db.VarChar(50)
+  sortOrder Int     @default(0)
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([placeId, dayOfWeek, sortOrder])
+  @@index([placeId])
+  @@map("place_hours")
+}
+
+// The value of one CategoryAttribute for one place. Exactly one value column is used, chosen by
+// the attribute's dataType.
+model PlaceAttributeValue {
+  id           String    @id @default(uuid(7)) @db.Char(36)
+  placeId      String    @db.Char(36)
+  attributeId  String    @db.Char(36)
+  valueBoolean Boolean?
+  valueNumber  Float?
+  valueText    String?   @db.VarChar(255)
+  valueDate    DateTime? @db.Date
+  // MULTI_ENUM: ["single", "double"]
+  valueJson    Json?
+
+  place     Place             @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  attribute CategoryAttribute @relation(fields: [attributeId], references: [id], onDelete: Restrict)
+
+  @@unique([placeId, attributeId])
+  @@index([attributeId, valueBoolean])
+  @@index([attributeId, valueNumber])
+  @@index([attributeId, valueText])
+  @@map("place_attribute_values")
+}
+
+// One price point of a place: PG single/double/triple, mess veg/non-veg, library daily/monthly.
+model PlacePriceOption {
+  id        String    @id @default(uuid(7)) @db.Char(36)
+  placeId   String    @db.Char(36)
+  label     String    @db.VarChar(100)
+  // Whole rupees.
+  amount    Int
+  unit      PriceUnit
+  note      String?   @db.VarChar(255)
+  sortOrder Int       @default(0)
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([placeId])
+  @@map("place_price_options")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Business owners
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+model BusinessProfile {
+  id                 String             @id @default(uuid(7)) @db.Char(36)
+  ownerId            String             @db.Char(36)
+  businessName       String             @db.VarChar(200)
+  slug               String             @unique @db.VarChar(200)
+  description        String?            @db.Text
+  phone              String?            @db.VarChar(20)
+  email              String?            @db.VarChar(254)
+  website            String?            @db.VarChar(500)
+  logoUrl            String?            @db.VarChar(1000)
+  status             BusinessStatus     @default(ACTIVE)
+  verificationStatus VerificationStatus @default(PENDING)
+  isDemo             Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  owner   User             @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  members BusinessMember[]
+  places  Place[]
+  claims  PlaceClaim[]
+
+  @@index([ownerId])
+  @@index([status, verificationStatus])
+  @@map("business_profiles")
+}
+
+// Lets several people manage one business. A user can appear at most once per business.
+model BusinessMember {
+  businessProfileId String             @db.Char(36)
+  userId            String             @db.Char(36)
+  role              BusinessMemberRole @default(STAFF)
+  createdAt         DateTime           @default(now())
+
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([businessProfileId, userId])
+  @@index([userId])
+  @@map("business_members")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Ownership claims and community contributions (all moderated; history is kept)
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+// "Is this your business? Claim this listing." Approval links Place.businessProfileId.
+model PlaceClaim {
+  id                String      @id @default(uuid(7)) @db.Char(36)
+  placeId           String      @db.Char(36)
+  businessProfileId String      @db.Char(36)
+  requestedById     String      @db.Char(36)
+  status            ClaimStatus @default(PENDING)
+  message           String?     @db.Text
+  verificationNote  String?     @db.Text
+  reviewedById      String?     @db.Char(36)
+  reviewedAt        DateTime?
+  // "<placeId>:<businessProfileId>" while the claim is open (PENDING), NULL once decided.
+  // UNIQUE, so the same business cannot have two open claims on one place. MySQL allows many NULLs.
+  activeKey         String?     @unique @db.VarChar(80)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  place           Place           @relation(fields: [placeId], references: [id], onDelete: Restrict)
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Restrict)
+  requestedBy     User            @relation("ClaimRequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+  reviewedBy      User?           @relation("ClaimReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([placeId, status])
+  @@index([businessProfileId])
+  @@index([status, createdAt])
+  @@index([requestedById])
+  @@map("place_claims")
+}
+
+// A student proposes a NEW place. It is never published directly: staff approve it (creating a
+// Place, see resultingPlaceId) or mark it as a duplicate of an existing Place.
+model PlaceSubmission {
+  id                  String           @id @default(uuid(7)) @db.Char(36)
+  name                String           @db.VarChar(200)
+  categoryId          String           @db.Char(36)
+  // The college page the student was browsing (context only).
+  collegeId           String?          @db.Char(36)
+  address             String           @db.VarChar(500)
+  city                String?          @db.VarChar(100)
+  latitude            Float
+  longitude           Float
+  phone               String?          @db.VarChar(20)
+  priceAmount         Int?
+  priceUnit           PriceUnit?
+  description         String?          @db.Text
+  status              SubmissionStatus @default(PENDING)
+  submittedById       String           @db.Char(36)
+  reviewedById        String?          @db.Char(36)
+  reviewedAt          DateTime?
+  reviewNote          String?          @db.Text
+  // Set when approved.
+  resultingPlaceId    String?          @db.Char(36)
+  // Set when staff conclude it already exists.
+  duplicateOfPlaceId  String?          @db.Char(36)
+  // Output of duplicate detection at submit time: [{ placeId, score, reasons[] }].
+  duplicateCandidates Json?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  category         Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  college          College? @relation(fields: [collegeId], references: [id], onDelete: SetNull)
+  submittedBy      User     @relation("SubmissionSubmittedBy", fields: [submittedById], references: [id], onDelete: Restrict)
+  reviewedBy       User?    @relation("SubmissionReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  resultingPlace   Place?   @relation("SubmissionResultingPlace", fields: [resultingPlaceId], references: [id], onDelete: SetNull)
+  duplicateOfPlace Place?   @relation("SubmissionDuplicateOfPlace", fields: [duplicateOfPlaceId], references: [id], onDelete: SetNull)
+
+  images PlaceSubmissionImage[]
+
+  @@index([status, createdAt])
+  @@index([submittedById])
+  @@index([categoryId])
+  @@map("place_submissions")
+}
+
+model PlaceSubmissionImage {
+  id           String   @id @default(uuid(7)) @db.Char(36)
+  submissionId String   @db.Char(36)
+  imageUrl     String   @db.VarChar(1000)
+  altText      String?  @db.VarChar(200)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  submission PlaceSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId, sortOrder])
+  @@map("place_submission_images")
+}
+
+// A suggested change to an EXISTING place (new phone, new price, new photo, corrected timing, ...)
+// so that students improve data instead of creating duplicate places. Moderated before it is applied.
+model PlaceContribution {
+  id              String             @id @default(uuid(7)) @db.Char(36)
+  placeId         String             @db.Char(36)
+  contributedById String             @db.Char(36)
+  type            ContributionType
+  // The proposed change, validated by the application per type, e.g. { "phone": "..." }.
+  payload         Json
+  note            String?            @db.Text
+  status          ContributionStatus @default(PENDING)
+  // Place.version when the change was proposed, so stale patches can be detected.
+  baseVersion     Int?
+  reviewedById    String?            @db.Char(36)
+  reviewedAt      DateTime?
+  reviewNote      String?            @db.Text
+  appliedAt       DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  place         Place @relation(fields: [placeId], references: [id], onDelete: Restrict)
+  contributedBy User  @relation("ContributionContributedBy", fields: [contributedById], references: [id], onDelete: Restrict)
+  reviewedBy    User? @relation("ContributionReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([placeId, status])
+  @@index([status, createdAt])
+  @@index([contributedById])
+  @@map("place_contributions")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Reviews and saved places
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+model Review {
+  id             String       @id @default(uuid(7)) @db.Char(36)
+  placeId        String       @db.Char(36)
+  userId         String       @db.Char(36)
+  // Overall rating, 1..5 (CHECK constraint in the migration).
+  rating         Int          @db.TinyInt
+  comment        String?      @db.Text
+  status         ReviewStatus @default(PUBLISHED)
+  moderationNote String?      @db.VarChar(500)
+  moderatedById  String?      @db.Char(36)
+  moderatedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  place       Place @relation(fields: [placeId], references: [id], onDelete: Restrict)
+  user        User  @relation("ReviewAuthor", fields: [userId], references: [id], onDelete: Restrict)
+  moderatedBy User? @relation("ReviewModeratedBy", fields: [moderatedById], references: [id], onDelete: SetNull)
+
+  ratings ReviewRating[]
+  reports ReviewReport[]
+
+  // One review per user per place: prevents rating spam.
+  @@unique([placeId, userId])
+  @@index([placeId, status, createdAt])
+  @@index([userId])
+  @@index([status])
+  @@map("reviews")
+}
+
+// Optional per-dimension rating (Food 5, Price 4, ...) chosen from the place's category dimensions.
+model ReviewRating {
+  reviewId    String @db.Char(36)
+  dimensionId String @db.Char(36)
+  // 1..5 (CHECK constraint in the migration).
+  rating      Int    @db.TinyInt
+
+  review    Review                  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  dimension CategoryRatingDimension @relation(fields: [dimensionId], references: [id], onDelete: Restrict)
+
+  @@id([reviewId, dimensionId])
+  @@index([dimensionId])
+  @@map("review_ratings")
+}
+
+// A user reporting a review. One report per user per review.
+model ReviewReport {
+  id             String       @id @default(uuid(7)) @db.Char(36)
+  reviewId       String       @db.Char(36)
+  reportedById   String       @db.Char(36)
+  reason         ReportReason
+  description    String?      @db.Text
+  status         ReportStatus @default(PENDING)
+  reviewedById   String?      @db.Char(36)
+  reviewedAt     DateTime?
+  resolutionNote String?      @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  review     Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reportedBy User   @relation("ReviewReportReportedBy", fields: [reportedById], references: [id], onDelete: Restrict)
+  reviewedBy User?  @relation("ReviewReportReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@unique([reviewId, reportedById])
+  @@index([status, createdAt])
+  @@index([reviewId])
+  @@map("review_reports")
+}
+
+model SavedPlace {
+  userId    String   @db.Char(36)
+  placeId   String   @db.Char(36)
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  // The composite primary key makes a duplicate save impossible.
+  @@id([userId, placeId])
+  @@index([placeId])
+  @@map("saved_places")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Moderation, notifications, audit
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+// Generic moderation report. Its target is (targetType, targetId), so a new reportable entity
+// (marketplace listing, community post, ...) only needs a new ReportTargetType value: no new
+// table. There is deliberately no database foreign key on the target; ReportsService checks it.
+// (Reviews additionally have the FK-enforced ReviewReport above.)
+model Report {
+  id           String           @id @default(uuid(7)) @db.Char(36)
+  reporterId   String           @db.Char(36)
+  targetType   ReportTargetType
+  targetId     String           @db.Char(36)
+  reason       ReportReason
+  description  String?          @db.Text
+  status       ReportStatus     @default(PENDING)
+  resolution   String?          @db.Text
+  resolvedById String?          @db.Char(36)
+  resolvedAt   DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  reporter   User  @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Restrict)
+  resolvedBy User? @relation("ReportResolvedBy", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@index([reporterId])
+  @@map("reports")
+}
+
+// In-app notifications. Email/push delivery is added later on top of this (a delivery table),
+// without changing this one.
+model Notification {
+  id        String    @id @default(uuid(7)) @db.Char(36)
+  userId    String    @db.Char(36)
+  // Free-form key such as "place.approved"; new kinds need no schema change.
+  type      String    @db.VarChar(64)
+  title     String    @db.VarChar(200)
+  message   String    @db.Text
+  // Deep-link payload, e.g. { "placeId": "..." }.
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+// Append-only record of who did what. The actor is kept as NULL if the user is ever removed.
+model AuditLog {
+  id         String   @id @default(uuid(7)) @db.Char(36)
+  actorId    String?  @db.Char(36)
+  // e.g. "place.approve", "user.suspend"
+  action     String   @db.VarChar(100)
+  entityType String   @db.VarChar(50)
+  entityId   String?  @db.VarChar(36)
+  metadata   Json?
+  ipAddress  String?  @db.VarChar(45)
+  userAgent  String?  @db.VarChar(255)
+  requestId  String?  @db.VarChar(64)
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([entityType, entityId])
+  @@index([action, createdAt])
+  @@index([createdAt])
+  @@map("audit_logs")
 }

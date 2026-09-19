@@ -8,6 +8,8 @@ export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
     path: 'prisma/migrations',
+    // `npm run db:seed` (prisma db seed). Prisma 7 never seeds automatically.
+    seed: 'tsx prisma/seed.ts',
   },
   datasource: {
     // Optional so that `prisma generate` works before .env exists; migrate/db commands need it.
