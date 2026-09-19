@@ -33,7 +33,7 @@ function clientWith(
 describe('createApiClient', () => {
   it('returns the unwrapped envelope and validates data with the schema', async () => {
     const fetchStub = stubFetch(() =>
-      Promise.resolve(okResponse({ status: 'ok' }, 'API is running')),
+      Promise.resolve(okResponse({ status: 'ok', database: 'connected' }, 'API is running')),
     );
 
     const result = await clientWith(fetchStub).get('/health', { schema: healthSchema });

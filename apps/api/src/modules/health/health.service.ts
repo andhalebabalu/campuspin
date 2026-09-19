@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { DatabaseHealth } from '@platform/contracts';
+import type { DatabaseHealth, Health } from '@platform/contracts';
 import { AppException } from '../../common/http/app-exception.js';
 import { withTimeout } from '../../common/utils/with-timeout.js';
 import { AppConfig } from '../../infra/config/app-config.js';
@@ -14,6 +14,12 @@ import { PrismaService } from '../../infra/database/prisma.service.js';
 /** A health check must answer quickly even when the database is down (clients time out at 15 s). */
 const DATABASE_CHECK_TIMEOUT_MS = 2_500;
 
+/** `/health` is polled often: remember the database state briefly instead of querying every time. */
+const DATABASE_STATE_TTL_MS = 5_000;
+const DATABASE_STATE_TIMEOUT_MS = 1_500;
+
+type DatabaseState = Health['database'];
+
 const HINTS: Readonly<Record<DatabaseFailureReason, string>> = {
   SERVER_UNREACHABLE:
     'MySQL is not reachable. Start MySQL in the XAMPP Control Panel and check the host and port in DATABASE_URL.',
@@ -27,6 +33,7 @@ const HINTS: Readonly<Record<DatabaseFailureReason, string>> = {
 @Injectable()
 export class HealthService {
   private readonly logger = new Logger(HealthService.name);
+  private cachedState: { checkedAt: number; state: Promise<DatabaseState> } | undefined;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -34,8 +41,43 @@ export class HealthService {
   ) {}
 
   /**
-   * Two steps: a direct connection explains *why* the database is unusable (missing database,
-   * refused, ...), then a query through Prisma proves the path the application really uses.
+   * Liveness plus a database indicator. A stopped database does not make the API "down": the
+   * process is running, so the status stays `ok` and the database is reported separately.
+   */
+  async getStatus(): Promise<Health> {
+    return { status: 'ok', database: await this.databaseState() };
+  }
+
+  /** One query through Prisma (the path the application really uses), shared by concurrent callers. */
+  private databaseState(): Promise<DatabaseState> {
+    const now = Date.now();
+    if (this.cachedState && now - this.cachedState.checkedAt < DATABASE_STATE_TTL_MS) {
+      return this.cachedState.state;
+    }
+    const state = this.queryDatabaseState();
+    this.cachedState = { checkedAt: now, state };
+    return state;
+  }
+
+  private async queryDatabaseState(): Promise<DatabaseState> {
+    try {
+      await withTimeout(
+        this.prisma.$queryRaw`SELECT 1`,
+        DATABASE_STATE_TIMEOUT_MS,
+        `no answer within ${DATABASE_STATE_TIMEOUT_MS} ms`,
+      );
+      return 'connected';
+    } catch (error) {
+      this.logger.debug(
+        `Database state check failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return 'unavailable';
+    }
+  }
+
+  /**
+   * Detailed readiness. A direct connection explains *why* the database is unusable (missing
+   * database, refused, ...), then a query through Prisma proves the path the application uses.
    */
   async checkDatabase(): Promise<DatabaseHealth> {
     try {

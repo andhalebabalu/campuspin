@@ -14,12 +14,13 @@ describe('Health (e2e)', () => {
     await app.close();
   });
 
-  it('GET /api/v1/health returns exactly the documented envelope', async () => {
+  it('GET /api/v1/health stays 200 and reports the database as unavailable when MySQL is down', async () => {
     const response = await request(app.getHttpServer()).get('/api/v1/health').expect(200);
 
+    // The API process is fine; only the database indicator changes.
     expect(response.body).toEqual({
       success: true,
-      data: { status: 'ok' },
+      data: { status: 'ok', database: 'unavailable' },
       message: 'API is running',
     });
   });

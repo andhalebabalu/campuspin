@@ -54,7 +54,10 @@ function useHealthCheck(
 
 const checkApi = async (signal: AbortSignal) => {
   const result = await healthService.check(signal);
-  return { message: result.message, detail: `status: ${result.data.status}` };
+  return {
+    message: result.message,
+    detail: `status: ${result.data.status} · database: ${result.data.database}`,
+  };
 };
 
 const checkDatabase = async (signal: AbortSignal) => {
@@ -70,14 +73,11 @@ function Row({
   endpoint,
   state,
   onRetry,
-  pendingHint,
 }: {
   label: string;
   endpoint: string;
   state: CheckState;
   onRetry: () => void;
-  /** Shown for the "expected until a later phase" failure so it does not read as a bug. */
-  pendingHint?: string;
 }) {
   const tone =
     state.phase === 'ok'
@@ -117,7 +117,6 @@ function Row({
               Code: {state.code}
               {state.requestId ? ` · Request: ${state.requestId.slice(0, 8)}` : ''}
             </span>
-            {pendingHint && <span className="text-sm text-accent-700">{pendingHint}</span>}
             <button
               type="button"
               onClick={onRetry}
@@ -159,7 +158,6 @@ export function ApiStatus() {
           endpoint="/health/database"
           state={database.state}
           onRetry={database.retry}
-          pendingHint="Expected until the database is created in the next phase."
         />
       </ul>
     </section>

@@ -14,14 +14,18 @@ describe('apiSuccessSchema', () => {
   it('accepts the documented health response', () => {
     const parsed = schema.parse({
       success: true,
-      data: { status: 'ok' },
+      data: { status: 'ok', database: 'connected' },
       message: 'API is running',
     });
     expect(parsed.data.status).toBe('ok');
   });
 
   it('accepts pagination meta and rejects invalid meta', () => {
-    const body = { success: true, message: 'Success', data: { status: 'ok' } };
+    const body = {
+      success: true,
+      message: 'Success',
+      data: { status: 'ok', database: 'connected' },
+    };
     expect(
       schema.safeParse({ ...body, meta: { page: 1, limit: 20, total: 0, totalPages: 0 } }).success,
     ).toBe(true);
@@ -31,9 +35,13 @@ describe('apiSuccessSchema', () => {
   });
 
   it('rejects a body flagged as a failure', () => {
-    expect(schema.safeParse({ success: false, data: { status: 'ok' }, message: 'x' }).success).toBe(
-      false,
-    );
+    expect(
+      schema.safeParse({
+        success: false,
+        data: { status: 'ok', database: 'connected' },
+        message: 'x',
+      }).success,
+    ).toBe(false);
   });
 });
 
@@ -73,7 +81,9 @@ describe('validationDetailsSchema', () => {
 
 describe('databaseHealthSchema', () => {
   it('requires database name and server version', () => {
-    expect(databaseHealthSchema.safeParse({ status: 'ok' }).success).toBe(false);
+    expect(databaseHealthSchema.safeParse({ status: 'ok', database: 'connected' }).success).toBe(
+      false,
+    );
     expect(
       databaseHealthSchema.safeParse({
         status: 'ok',
