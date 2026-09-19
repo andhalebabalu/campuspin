@@ -1,0 +1,40 @@
+{
+  "name": "student-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Student ecosystem platform (working brand: LINK). Monorepo: NestJS API + Next.js web + shared packages.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.15.0",
+    "npm": ">=10"
+  },
+  "workspaces": [
+    "packages/contracts",
+    "packages/api-client",
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "build:packages": "npm run build -w @platform/contracts && npm run build -w @platform/api-client",
+    "build": "npm run build:packages && npm run build -w @platform/api && npm run build -w @platform/web",
+    "dev": "npm run build:packages && concurrently -k -n pkgs,api,web -c gray,cyan,magenta \"npm:dev:packages\" \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:packages": "concurrently -k -n contracts,client \"npm run dev -w @platform/contracts\" \"npm run dev -w @platform/api-client\"",
+    "dev:api": "npm run dev -w @platform/api",
+    "dev:web": "npm run dev -w @platform/web",
+    "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run build:packages && npm run test --workspaces --if-present",
+    "test:e2e": "npm run build:packages && npm run test:e2e -w @platform/api",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^24.0.0",
+    "concurrently": "^10.0.5",
+    "eslint": "^9.39.0",
+    "prettier": "^3.9.8",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.0"
+  }
+}
