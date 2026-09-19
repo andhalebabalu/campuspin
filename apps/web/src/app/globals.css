@@ -1,0 +1,126 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens (see docs/06-design-system.md).
+ * The default Tailwind palette is removed on purpose: only these colours exist, so pages cannot
+ * drift into one-off colours. Contrast ratios for the documented pairs were computed against WCAG.
+ */
+@theme {
+  --color-*: initial;
+
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Primary: cobalt */
+  --color-primary-50: #eef3ff;
+  --color-primary-100: #dde7ff;
+  --color-primary-200: #c0d0ff;
+  --color-primary-300: #96b0ff;
+  --color-primary-400: #6486ff;
+  --color-primary-500: #3d63f5;
+  --color-primary-600: #2b4bde;
+  --color-primary-700: #2238b0;
+  --color-primary-800: #1f318c;
+  --color-primary-900: #1e2d6e;
+
+  /* Secondary: ink */
+  --color-ink-900: #0b1220;
+  --color-ink-800: #111b30;
+  --color-ink-700: #1b2842;
+
+  /* Accent: amber (offers, featured) */
+  --color-accent-50: #fff7e6;
+  --color-accent-400: #ffb020;
+  --color-accent-700: #92400e;
+
+  /* Neutral: cool slate */
+  --color-neutral-25: #fafbfc;
+  --color-neutral-50: #f4f6f9;
+  --color-neutral-100: #ebeef3;
+  --color-neutral-200: #dde2ea;
+  --color-neutral-300: #c4cbd8;
+  --color-neutral-400: #9aa3b5;
+  --color-neutral-500: #6b7589;
+  --color-neutral-600: #4f586b;
+  --color-neutral-700: #3a4255;
+  --color-neutral-800: #232a3b;
+  --color-control: #7c8598;
+
+  /* Status */
+  --color-success-50: #e8f7f0;
+  --color-success-600: #12805c;
+  --color-success-700: #0f6b4b;
+  --color-danger-50: #fef1f0;
+  --color-danger-600: #d92d20;
+  --color-danger-700: #b42318;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-xs: 0 1px 2px rgb(11 18 32 / 0.06);
+  --shadow-sm: 0 1px 3px rgb(11 18 32 / 0.08), 0 1px 2px rgb(11 18 32 / 0.04);
+  --shadow-md: 0 6px 16px -4px rgb(11 18 32 / 0.1), 0 2px 6px -2px rgb(11 18 32 / 0.06);
+  --shadow-lg: 0 16px 40px -12px rgb(11 18 32 / 0.18);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * Semantic tokens: components use THESE, not raw palette values. That makes a re-brand or a
+ * future dark theme a token swap instead of a rewrite.
+ */
+@theme inline {
+  --color-canvas: var(--color-neutral-25);
+  --color-surface: var(--color-white);
+  --color-subtle: var(--color-neutral-50);
+  --color-inverse: var(--color-ink-900);
+  --color-ink: var(--color-ink-900);
+  --color-body: var(--color-neutral-600);
+  --color-muted: var(--color-neutral-500);
+  --color-line: var(--color-neutral-200);
+  --color-action: var(--color-primary-600);
+  --color-action-hover: var(--color-primary-700);
+  --color-ring: var(--color-primary-500);
+}
+
+@layer base {
+  html {
+    background: var(--color-canvas);
+  }
+
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
