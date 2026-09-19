@@ -22,8 +22,8 @@ Answers spec §62 item **5** (API module structure) in detail. Every endpoint he
 ```json
 {
   "success": true,
-  "message": "Success",
   "data": {},
+  "message": "Success",
   "meta": { "page": 1, "limit": 20, "total": 134, "totalPages": 7 }
 }
 ```

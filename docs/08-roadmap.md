@@ -8,7 +8,7 @@ The order below is the one specified for implementation: **backend first, then U
 
 | # | Phase | Scope | Exit criteria | Size | Status |
 |---|---|---|---|---|---|
-| 1 | Project setup | npm-workspaces monorepo, Next.js + NestJS scaffolds, TypeScript, Tailwind, env files, API foundation (envelope, errors, zod validation, CORS, `/api/v1` versioning, Swagger, throttling, logging, security headers), Prisma wiring, `GET /api/v1/health`, web ↔ API check | Web and API start; Swagger opens; the web app calls `/api/v1/health` through the API client; unit + e2e tests green | M | **In progress** |
+| 1 | Project setup | npm-workspaces monorepo, Next.js + NestJS scaffolds, TypeScript, Tailwind, env files, API foundation (envelope, errors, zod validation, CORS, `/api/v1` versioning, Swagger, throttling, logging, security headers), Prisma wiring, `GET /api/v1/health`, web ↔ API check | Web and API start; Swagger opens; the web app calls `/api/v1/health` through the API client; unit + e2e tests green | M | **Done** |
 | 2 | XAMPP MySQL + Prisma | Create `link_platform`, full Prisma schema, validate, generate, initial migration, apply to XAMPP, verify tables | Tables exist in XAMPP; `prisma migrate status` clean; `/health/database` OK; **MariaDB 10.4 compatibility verified** (risk T13) | M | Next |
 | 3 | NestJS foundation (rest) | Cache port, domain events, audit service, module skeletons (Auth … Admin) | Modules load; audit rows written; tests | S | |
 | 4 | Migrations + seed | Roles, permissions, category tree + attributes + amenities, labelled demo colleges/places | Idempotent seed; demo data flagged and excluded from production | M | |
