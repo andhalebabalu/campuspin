@@ -2,6 +2,8 @@
 
 Answers spec §62 item **9**. Authorisation is two-layered ([02 §5.2](02-architecture.md#52-rbac-and-policy-two-layers)): **coarse** role→permission from the database, then a **fine** resource policy in the service. Both are always verified server-side; the client only hides controls for UX.
 
+> **Phase 2 status:** the database seed creates the 5 roles and **17 permission keys** defined in `packages/contracts/src/rbac.ts` (`users.read`, `users.manage`, `colleges.read`, `colleges.manage`, `categories.read`, `categories.manage`, `places.read`, `places.create`, `places.update`, `places.manage`, `submissions.review`, `claims.review`, `reviews.moderate`, `reports.manage`, `businesses.manage`, `analytics.view`, `settings.manage`) and their role grants. That set is authoritative until authorization is implemented in Phase 6, when the finer-grained catalogue below is reconciled with it.
+
 ## 1. Roles
 
 | Role | Who | Notes |

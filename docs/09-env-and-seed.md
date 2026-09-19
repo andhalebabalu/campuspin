@@ -46,7 +46,7 @@ Rules: **never commit real values**; only the `.env.example` files are tracked. 
 | `REVALIDATE_SECRET` | ✔ | | shared with web | HMAC for revalidate |
 | `SEED_SUPER_ADMIN_EMAIL` | | bootstrap | | first SUPER_ADMIN (CLI only) |
 | `SEED_SUPER_ADMIN_PASSWORD` | ✔ | bootstrap | | **remove from env after first run** |
-| `SEED_DEMO` | | | `false` | enables demo seed; **refused when `NODE_ENV=production`** |
+| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | ✔ | | `admin@localhost.test` / `ChangeMe123!` | the **demo** admin created by `npm run db:seed` (development only; the seed refuses to run demo data when `NODE_ENV=production`; there is no `SEED_DEMO` variable, use `db:seed:reference` instead) |
 | `SENTRY_DSN` | ✔ | optional | | error tracking |
 | `REDIS_URL` | ✔ | future | | when > 1 instance |
 | `STAFF_TOTP_ENCRYPTION_KEY` | ✔ | Phase 1b | | encrypts TOTP secrets |
@@ -76,6 +76,8 @@ MySQL comes from XAMPP (Control Panel → start **MySQL**; Apache is only needed
 `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_SITE_URL`, `EXPO_PUBLIC_MAP_STYLE_URL`. No secrets in the app bundle.
 
 ## 2. Seed strategy
+
+> **Implemented in Phase 2.** `npm run db:create` creates the database; `npm run db:seed` runs layers 0 and 2 (reference data + demo data + a demo admin, all idempotent); `npm run db:seed:reference` runs layer 0 only; `npm run db:purge-demo` removes all demo rows and demo accounts. The first run creates 516 records (5 roles, 17 permissions, 49 grants, 24 categories, 48 attributes, 62 rating dimensions, 18 amenities, 1 demo admin, 3 demo colleges, 14 demo places and their child rows, 41 college↔place links). The real-data CSV import (layer 3) and the production admin bootstrap (layer 1) come in later phases.
 
 Principle: **reference data is code, demo data is disposable, real data is imported with provenance.** Nothing is scraped. Nothing fake can be mistaken for a real business.
 

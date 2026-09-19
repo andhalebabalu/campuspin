@@ -2,7 +2,7 @@
 
 Everything a student needs around their college: rooms, PGs, hostels, messes, libraries, gyms, laundry, transport and more, discoverable by college, verified by staff, contributed to by students and maintained by business owners.
 
-> **Status: Phase 1 of 23 (project setup) complete.** The API foundation, the web app shell and the web ↔ API connection work. The database schema, authentication and the product features arrive in the following phases (see [Roadmap](#roadmap)).
+> **Status: Phases 1–2 of 23 complete** (project setup, then the XAMPP MySQL + Prisma database: schema, migration, seed and health check). Authentication and the product features arrive in the following phases (see [Roadmap](#roadmap)).
 
 Launch market: Ahilyanagar, Maharashtra. The working brand name `LINK` lives in one config value and can change without touching the architecture.
 
@@ -54,7 +54,8 @@ Detailed design lives in [docs/](docs/README.md): architecture, database/ERD, AP
 .
 ├─ apps/
 │  ├─ api/                  NestJS API (@platform/api)
-│  │  ├─ prisma/            schema.prisma (+ migrations/ and seed/ from Phase 2/4)
+│  │  ├─ prisma/            schema.prisma, migrations/, seed.ts + seed/ (roles, categories, demo data)
+│  │  ├─ scripts/           db:create and db:purge-demo
 │  │  ├─ src/
 │  │  │  ├─ common/         response envelope, error filter, zod validation, Swagger helpers
 │  │  │  ├─ infra/          config, database (Prisma), logging
@@ -94,7 +95,15 @@ Apache is optional: you only need it to open phpMyAdmin (`http://localhost/phpmy
 
 ### Step 2: Create the database `link_platform`
 
-Prisma creates the *tables* (Phase 2), but the empty *database* must exist first. Use either option once:
+Prisma creates the *tables*, but the empty *database* must exist first. The easiest way (needs only MySQL running):
+
+```bash
+npm run db:create
+```
+
+It reads `DATABASE_URL` from `apps/api/.env`, creates `link_platform` (`utf8mb4` / `utf8mb4_unicode_ci`) if it is missing, and does nothing if it already exists. If MySQL is stopped or the password is wrong it tells you so plainly.
+
+Or create it by hand, once:
 
 **Option A: phpMyAdmin** (needs Apache running)
 1. Open `http://localhost/phpmyadmin`
@@ -112,7 +121,7 @@ C:\xampp\mysql\bin\mysql.exe -u root -p -e "CREATE DATABASE IF NOT EXISTS link_p
 
 Verify: `C:\xampp\mysql\bin\mysql.exe -u root -e "SHOW DATABASES LIKE 'link_platform';"`
 
-> **Note:** XAMPP's "MySQL" module is actually **MariaDB**. Prisma's `mysql` provider works with it. The compatibility details are verified in Phase 2 (see `docs/01-analysis-and-risks.md`, risk T13).
+> **Note:** XAMPP's "MySQL" module is actually **MariaDB** (10.4 on the reference machine). Prisma's `mysql` provider works with it; the schema is written to behave identically on MariaDB 10.4 and MySQL 8. One tool does not: see [Prisma Studio](#viewing-the-data-phpmyadmin-and-prisma-studio).
 
 ### Step 3: Configure environment files
 
@@ -149,9 +158,32 @@ If it fails with `ECONNRESET` or `EPERM` (common on Windows with antivirus scann
 npm install --fetch-retries=6 --fetch-retry-mintimeout=3000 --fetch-timeout=180000
 ```
 
-### Step 5: Run database migrations *(Phase 2, not available yet)*
+### Step 5: Run the database migration
 
-### Step 6: Seed the database *(Phase 4, not available yet)*
+```bash
+npm run db:migrate
+```
+
+This runs `prisma migrate dev` and applies every migration in `apps/api/prisma/migrations/` to `link_platform`. Phase 2 ships one, `initial_schema`, which creates the 32 tables (see [Database](#database)). Check it:
+
+```bash
+npm run db:migrate:status      # -> "Database schema is up to date!"
+```
+
+To create a *new* migration after editing `schema.prisma`: `cd apps/api` then `npx prisma migrate dev --name describe_the_change`. (`prisma migrate dev` briefly creates and then drops a temporary "shadow" database while it works; that is normal.)
+
+### Step 6: Seed the database
+
+```bash
+npm run db:seed                # reference data + DEMO data + a DEMO admin (development only)
+npm run db:seed:reference      # reference data only: roles, permissions, categories, amenities
+```
+
+The seed is **idempotent**: run it as often as you like, it never duplicates anything. The first run creates 516 records (see [Seed data](#seed-data)).
+
+> **⚠ Development admin account.** `npm run db:seed` creates a DEMO super admin:
+> **`admin@localhost.test` / `ChangeMe123!`**.
+> This exists only so a fresh development database is usable. **Change it or remove it before any real deployment.** The password is stored only as an Argon2id hash, the seed **refuses** to create it when `NODE_ENV=production`, and `npm run db:purge-demo` removes it together with all demo data. Override it with `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` in `apps/api/.env`.
 
 ### Step 7: Start the API
 
@@ -161,7 +193,7 @@ npm run dev:api
 ```
 
 - API: `http://localhost:3001/api/v1`
-- Health check: `http://localhost:3001/api/v1/health`
+- Health check: `http://localhost:3001/api/v1/health` returns `{"success":true,"data":{"status":"ok","database":"connected"},"message":"API is running"}` (`"database":"unavailable"` if MySQL is stopped)
 - **Swagger UI: `http://localhost:3001/api/docs`** (OpenAPI JSON at `/api/docs-json`)
 
 ### Step 8: Start the web app
@@ -194,6 +226,7 @@ Open `http://localhost:3000`. The **System status** card calls the API health en
 | `SWAGGER_ENABLED` | `true` (dev), `false` (production) | Serve Swagger UI at `/api/docs` |
 | `DATABASE_URL` | none, **required** | `mysql://USER:PASSWORD@HOST:PORT/DATABASE` |
 | `THROTTLE_LIMIT` / `THROTTLE_TTL_SECONDS` | `120` / `60` | Requests allowed per client IP per window |
+| `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | `admin@localhost.test` / `ChangeMe123!` | Optional. The **demo** admin created by `npm run db:seed`. Development only; the seed refuses to create it in production |
 
 The API validates these at startup and stops with a readable message if something is missing or malformed.
 
@@ -219,32 +252,91 @@ Run from the repository root.
 | `npm run typecheck` | TypeScript check for every workspace |
 | `npm run lint` | ESLint for every workspace |
 | `npm test` | Unit tests for every workspace |
-| `npm run test:e2e` | API end-to-end tests (boot the real app, call it over HTTP) |
+| `npm run test:e2e` | API end-to-end tests (boot the real app, call it over HTTP; no database needed) |
+| `npm run test:db` | **Database tests** against the real XAMPP database (needs MySQL running and the migration applied) |
 | `npm run format` / `format:check` | Prettier |
 
-API-only (inside `apps/api`, or `npm run <script> -w @platform/api`): `prisma:generate`, `start` (run the production build).
+Database commands (they run inside `apps/api`; from there you can also use `npx prisma <command>` directly):
 
-## Prisma
+| Command | What it does |
+|---|---|
+| `npm run db:create` | Create the `link_platform` database if it does not exist |
+| `npm run db:validate` | `prisma validate`: check `schema.prisma` |
+| `npm run db:generate` | `prisma generate`: build the typed Prisma Client |
+| `npm run db:migrate` | `prisma migrate dev`: apply pending migrations (and create new ones) |
+| `npm run db:migrate:deploy` | `prisma migrate deploy`: apply migrations only (used for production) |
+| `npm run db:migrate:status` | `prisma migrate status` |
+| `npm run db:seed` | Seed reference + demo data (idempotent) |
+| `npm run db:seed:reference` | Seed reference data only (the only mode allowed in production) |
+| `npm run db:purge-demo` | Delete all demo data and demo accounts (reference data is kept) |
+| `npm run db:studio` | Prisma Studio (see the limitation below) |
 
-Phase 1 wires Prisma to MySQL/XAMPP (`apps/api/prisma/schema.prisma`, `apps/api/prisma.config.ts`). The relational model and migrations arrive in Phase 2, so today only client generation applies:
+## Database
 
-```bash
-npm run prisma:generate -w @platform/api      # generates apps/api/src/generated/prisma (git-ignored)
+The API talks to MySQL **only** through Prisma, in one place (`PrismaService`). The web app never touches the database.
+
+```
+NestJS  ->  PrismaService  ->  Prisma Client  ->  @prisma/adapter-mariadb  ->  XAMPP MySQL (link_platform)
 ```
 
-Prisma 7 needs a driver adapter; the API uses `@prisma/adapter-mariadb`, which also serves XAMPP's MariaDB. `GET /api/v1/health/database` runs `SELECT VERSION()` so you can confirm the API can reach MySQL at any time.
+**Configuration.** `apps/api/prisma/schema.prisma` declares `provider = "mysql"`. Prisma 7 no longer allows `url = env("DATABASE_URL")` inside the schema file (it fails validation with error P1012), so the connection string is read from `DATABASE_URL` in `apps/api/.env` by `apps/api/prisma.config.ts` (migrations, seed) and by `PrismaService` (runtime). Nothing is hard-coded.
 
-Coming in Phase 2: `prisma validate`, `prisma migrate dev`, `prisma migrate status`, `prisma studio`. Coming in Phase 4: `prisma db seed`.
+**32 tables**, all created by the `initial_schema` migration:
+
+| Area | Tables |
+|---|---|
+| Users and access | `users`, `roles`, `permissions`, `role_permissions`, `user_roles` |
+| Colleges | `colleges`, `college_images`, `college_places` |
+| Catalogue | `categories`, `category_attributes`, `category_rating_dimensions`, `amenities` |
+| Places | `places`, `place_categories`, `place_images`, `place_amenities`, `place_hours`, `place_attribute_values`, `place_price_options` |
+| Business and claims | `business_profiles`, `business_members`, `place_claims` |
+| Community contributions | `place_submissions`, `place_submission_images`, `place_contributions` |
+| Reviews and saves | `reviews`, `review_ratings`, `review_reports`, `saved_places` |
+| Moderation, notifications, audit | `reports`, `notifications`, `audit_logs` |
+
+**Key design points**
+
+- **One central `places` table.** There are no mess/library/gym/PG tables. Categories are rows in `categories`, and a place can belong to several (`place_categories`): "Study Point" = Library + Reading Room.
+- **Category-specific data without schema changes.** `category_attributes` defines the extra fields of a category (Mess: `veg_nonveg`, Library: `seating_capacity`, PG: `gender`, `deposit`, ...); `place_attribute_values` stores the values. New attribute = a new row.
+- **A place can serve several colleges** (`college_places`). Distance is **calculated** from the two sets of coordinates (Haversine) and cached in that table; it is never typed in.
+- **Prices** are `place_price_options` rows (a PG has single/double/triple), summarised in `places.priceMin/priceMax/priceUnit` for sorting. **Opening hours** are `place_hours` rows (several slots per day, 24 h and closed days). **Amenities** are a normalised list (`amenities` + `place_amenities`).
+- **Moderation everywhere:** student suggestions (`place_submissions`, never published directly), corrections to existing places (`place_contributions`), ownership claims (`place_claims`, one open claim per place + business, history kept), reviews (`review_reports`), and a generic `reports` table for future targets.
+- **Integrity in the database itself:** foreign keys, unique constraints (`users.email`, all slugs, one saved place / review / member per user), and 23 CHECK constraints (ratings 1–5, valid coordinates, non-negative prices, valid `HH:mm` opening hours).
+- **No image bytes in MySQL:** only URLs are stored.
+
+### Seed data
+
+`npm run db:seed` creates (first run, 516 records):
+
+| Data | Rows |
+|---|---|
+| Roles: `SUPER_ADMIN`, `ADMIN`, `MODERATOR`, `STUDENT`, `BUSINESS_OWNER` | 5 |
+| Permissions (`users.read` ... `settings.manage`) and role grants | 17 + 49 |
+| Categories: 5 groups + 19 categories (Room, PG, Hostel, Mess, Tiffin, Restaurant, Cafe, Library, Reading Room, Xerox, Printing, Laundry, Gym, Grocery, Medical, Bike Rental, Car Rental, Auto, Bus) | 24 |
+| Category attributes and rating dimensions | 48 + 62 |
+| Amenities | 18 |
+| **Demo** super admin (dev only) | 1 |
+| **Demo** colleges (+ images) | 3 + 3 |
+| **Demo** places, with categories, images, amenities, hours, price options, attribute values | 14 (+ 17 / 14 / 51 / 91 / 21 / 36) |
+| **Demo** college ↔ place links (distance calculated) | 41 |
+
+Every demo row is clearly labelled `Sample ... (Demo)`, has no phone or e-mail, and is flagged `isDemo`, so it cannot be mistaken for a real business. The demo coordinates are made-up points, not real addresses.
+
+### Viewing the data: phpMyAdmin and Prisma Studio
+
+- **phpMyAdmin (recommended on XAMPP).** Start Apache and MySQL, open `http://localhost/phpmyadmin`, choose `link_platform`. It lists every table with its row count and lets you browse the data.
+- **Prisma Studio (`npm run db:studio`, opens `http://localhost:5555`) does not work with XAMPP's MariaDB 10.4.** It connects, but then fails to load the table list with `FUNCTION link_platform.json_arrayagg does not exist`: Studio's metadata query needs `JSON_ARRAYAGG` returning JSON, which MySQL ≥ 5.7.22 has and MariaDB only added in 10.5. It cannot be shimmed on the server side. To use Studio, run against MySQL 8 / MariaDB ≥ 10.5 (for example by upgrading XAMPP's MariaDB). Never expose Studio publicly in production.
 
 ## Testing
 
 ```bash
-npm test               # unit tests: contracts, api-client, API config/validation helpers
-npm run test:e2e       # API e2e: envelope, errors, validation, CORS, security headers, rate limit, Swagger
+npm test               # unit tests: contracts, api-client, API helpers (no database)
+npm run test:e2e       # API end-to-end over HTTP: envelope, errors, validation, CORS, headers, rate limit, Swagger
+npm run test:db        # REAL database: connection, migration, all tables, relations, constraints, seed, purge, health API
 npm run typecheck && npm run lint
 ```
 
-The API e2e tests boot the real NestJS app. In Phase 1 they deliberately point at an unreachable database port so they do not depend on XAMPP; from Phase 2 database-backed tests use a separate `link_platform_test` database in XAMPP.
+`npm test` and `npm run test:e2e` never need XAMPP (they point at an unreachable database on purpose). **`npm run test:db` needs XAMPP MySQL running, `link_platform` migrated (Step 5) and does not need it seeded.** Every database test runs inside a transaction that is **always rolled back**, so it leaves no data behind and needs no second database; your seeded demo data is never touched.
 
 ## Troubleshooting
 
@@ -258,6 +350,11 @@ The API e2e tests boot the real NestJS app. In Phase 1 they deliberately point a
 | Web page says "Could not reach the server" | The API is not running, or `NEXT_PUBLIC_API_URL` is wrong. Restart the web app after editing `.env.local` |
 | `Cannot find module '@platform/contracts'` | Run `npm run build:packages` |
 | Port 3306 busy when starting XAMPP MySQL | Another MySQL/MariaDB is running; stop it or change XAMPP's MySQL port (then update `DATABASE_URL`) |
+| `Can't reach database server` / `ECONNREFUSED` from a `db:*` command | MySQL is not running: start it in the XAMPP Control Panel |
+| `Unknown database 'link_platform'` | Run `npm run db:create`, then `npm run db:migrate` |
+| `npm run test:db` cannot connect, or a table is missing | Start XAMPP MySQL and run `npm run db:migrate` first |
+| Prisma Studio shows "Could not load schema metadata: `json_arrayagg` does not exist" | Known limitation with XAMPP's MariaDB 10.4; use phpMyAdmin (see [Viewing the data](#viewing-the-data-phpmyadmin-and-prisma-studio)) |
+| `npm run db:seed` says it refuses in production | By design: use `npm run db:seed:reference` |
 
 ## Git workflow
 
@@ -271,8 +368,9 @@ The API e2e tests boot the real NestJS app. In Phase 1 they deliberately point a
 | # | Phase | Status |
 |---|---|---|
 | 1 | Project setup, API foundation, health check | ✅ done |
-| 2 | XAMPP MySQL + Prisma schema and migration | next |
-| 3–4 | NestJS foundation (rest), migrations + seed | |
+| 2 | XAMPP MySQL + Prisma: schema, migration, seed, database health check | ✅ done |
+| 3 | NestJS foundation (rest): cache, events, audit, module skeletons | next |
+| 4 | Migrations + seed | ✅ delivered in Phase 2 |
 | 5–6 | Authentication, roles + authorization | |
 | 7–10 | Colleges, categories, places, search + filters + distance | |
 | 11–16 | Submissions + duplicate detection, business owner, claims, reviews, reports, saved places | |

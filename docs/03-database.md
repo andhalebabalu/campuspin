@@ -2,6 +2,45 @@
 
 Answers spec §62 item **4** (ERD / schema design).
 
+## 0. Implemented schema (Phase 2): read this first
+
+The database was built in **Phase 2**. **`apps/api/prisma/schema.prisma` and the migration `apps/api/prisma/migrations/20260919172259_initial_schema/` are the source of truth.** Where the design in sections 1–6 below differs, the implemented schema wins; those sections remain as the design reference for the tables that are still to come. The implementation has **32 tables**. Columns are camelCase (Prisma's default), tables are snake_case, ids are UUIDv7 `CHAR(36)`.
+
+### Where the implementation differs from the original design
+
+| Topic | Original design | Implemented in Phase 2 | Why |
+|---|---|---|---|
+| Student profile | `student_profiles` table | `collegeId`, `course`, `year` columns on `users` | The Phase 2 brief specifies them on User; simpler for the MVP |
+| Email verification and status | `email_verified_at` + status `PENDING_VERIFICATION` | `emailVerifiedAt` (null = not verified) and `UserStatus` = `ACTIVE`, `SUSPENDED`, `DEACTIVATED` | Verification and moderation state are independent |
+| Place lifecycle | `PENDING_REVIEW`, `LIVE`, `SUSPENDED`, `ARCHIVED`, `MERGED` and a 3-level `verification_level` | `PlaceStatus` = `DRAFT`, `PENDING`, `ACTIVE`, `INACTIVE`, `REJECTED` and `VerificationStatus` = `PENDING`, `VERIFIED`, `REJECTED` | Enums specified in the Phase 2 brief. "Owner claimed" is simply `places.businessProfileId IS NOT NULL` |
+| Student submissions | Data lives in `places` with `place_submissions` as a workflow record | **`place_submissions` holds the proposed data** (+ `place_submission_images`). Approval creates a `Place` (`resultingPlaceId`) or marks the submission `DUPLICATE` (`duplicateOfPlaceId`). Business-owned listings are `Place` rows in `DRAFT`/`PENDING` | The brief defines the submission fields; keeps `places` free of unreviewed student data |
+| Reporting | One unified `reports` table | `review_reports` (FK-enforced, one report per user per review) **and** the generic `reports` | The brief lists both. The overlap is to be resolved in the reports phase (15) |
+| Cities | `cities` table | Plain `city`, `state`, `country` columns on colleges and places | The brief specifies columns; add a `cities` table when the second city launches |
+| Review ratings | Dimension table | `category_rating_dimensions` + `review_ratings` (no fixed food/price columns) | Flexible per category, as the brief allows |
+| Ids | UUIDv7 for entities, BIGINT for append-only logs | UUIDv7 `CHAR(36)` everywhere, including `audit_logs` | One id style, no BigInt serialisation surprises |
+| Opening hours | Minutes since midnight | `HH:mm` strings + `is24Hours` + `isClosed`, validated by CHECK constraints | Human-readable; matches the brief's `openTime` / `closeTime` |
+| Xerox / printing | One merged category | Two categories, `xerox` and `printing` | The brief lists them separately |
+| Claim uniqueness | Generated-column unique index | Nullable unique `activeKey` (`placeId:businessProfileId` while open, `NULL` once decided) | Works on MariaDB 10.4 and MySQL 8 without engine-specific features |
+| Schema files | One file per domain | A single `schema.prisma` | The brief asks for `prisma/schema.prisma` |
+| Not created yet | | `auth_tokens`, `refresh_tokens`, `media_assets`, `outbound_messages`, `analytics_events`, `daily_stats`, `app_settings`, `leads`, `offers`, `device_tokens`, `slug_redirects`, `review_replies`, FULLTEXT indexes | Added by the phase that needs them (authentication, uploads, search, ...) |
+
+### Where the brief's example category fields live
+
+| Brief's field | Stored as |
+|---|---|
+| `monthly_price`, `daily_price`, `monthly_rent` | `place_price_options` rows (label + amount + unit), summarised in `places.priceMin/priceMax/priceUnit`; a PG can have single/double/triple prices |
+| `timing`, `open_24_hours` | `place_hours` rows (several slots per day, `is24Hours`, `isClosed`) |
+| `ac`, `wifi`, `charging`, `attached_bathroom`, `food` | The normalised amenity list (`amenities` + `place_amenities`) |
+| `veg_nonveg`, `breakfast`, `lunch`, `dinner`, `seating_capacity`, `gender`, `occupancy_type`, `deposit`, `furniture`, `available_from`, ... | `category_attributes` (definitions) + `place_attribute_values` (typed values) |
+
+### Verified on XAMPP (MariaDB 10.4.32)
+
+The migration applies cleanly and `migrate status` reports it up to date with no drift. All 32 tables, 56 foreign keys and 23 CHECK constraints exist. The 6 `JSON` columns round-trip as real JSON through Prisma. `utf8mb4` stores Devanagari. Everything is covered by `npm run test:db` (33 tests against the real database). **One limitation:** Prisma Studio cannot load its table list on MariaDB 10.4 (it needs `JSON_ARRAYAGG`, added in MariaDB 10.5); use phpMyAdmin.
+
+---
+
+*Sections 1–6 below are the original design reference.*
+
 ## 1. Conventions
 
 - Tables `snake_case` plural; Prisma models `PascalCase` with `@@map`. Prisma schema split by domain into multiple files (confirm the installed Prisma version supports this without a preview flag).

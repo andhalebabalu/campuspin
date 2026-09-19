@@ -45,6 +45,11 @@
 | Env files | Per-app: `apps/api/.env`, `apps/web/.env.local` (the web app never sees database credentials) | me |
 | Packages | `packages/contracts` (types + schemas) and `packages/api-client`. `design-tokens` and `config` packages are deferred until the mobile app or a second consumer exists. | me |
 | Commits | Meaningful commits after each phase; `.env` and secrets are never committed | you |
+| Database schema | 32 tables: your Phase 2 entity list plus the support tables the design needs. `User` carries `collegeId`/`course`/`year` and `emailVerifiedAt`; `UserStatus` is `ACTIVE`/`SUSPENDED`/`DEACTIVATED`; student suggestions live in `place_submissions`; both `review_reports` and the generic `reports` exist. Full list of differences from the first design: [03 §0](03-database.md#0-implemented-schema-phase-2-read-this-first) | you (brief) |
+| Prisma datasource | `url` cannot be set inside `schema.prisma` in Prisma 7 (validation error P1012); it is read from `DATABASE_URL` by `prisma.config.ts` | verified in Phase 2 |
+| Database tests | Run against the real `link_platform` inside transactions that are always rolled back, so no second database is needed | you (no second DB) |
+| Prisma Studio | Does not work on XAMPP's MariaDB 10.4 (`JSON_ARRAYAGG`); phpMyAdmin is the documented viewer | verified in Phase 2 |
+| Demo admin | `admin@localhost.test` / `ChangeMe123!`, development only, Argon2id-hashed, refused in production, removed by `db:purge-demo` | you (brief) |
 
 ## Decisions still open
 
