@@ -50,6 +50,11 @@
 | Database tests | Run against the real `link_platform` inside transactions that are always rolled back, so no second database is needed | you (no second DB) |
 | Prisma Studio | Does not work on XAMPP's MariaDB 10.4 (`JSON_ARRAYAGG`); phpMyAdmin is the documented viewer | verified in Phase 2 |
 | Demo admin | `admin@localhost.test` / `ChangeMe123!`, development only, Argon2id-hashed, refused in production, removed by `db:purge-demo` | you (brief) |
+| Auth tokens (Phase 3) | Access JWT (15 min) + refresh JWT (30 d, own secret) returned in the body; only SHA-256 hashes are stored, in three tables (`refresh_tokens`, `email_verification_tokens`, `password_reset_tokens`); rotation with family reuse detection. Details: [02 §5.1](02-architecture.md#51-auth--sessions) | you (brief) + me |
+| JWT library | `@nestjs/jwt` 12 (official, supports Nest 12) and a small custom guard instead of Passport: fewer moving parts, exact control of the 401 codes, and a strict `HS256` allow-list | me |
+| Secure by default | A global `JwtAuthGuard`: every route needs a token unless `@Public()`. A test sweeps every documented route unauthenticated against an explicit allow-list | you (brief) |
+| Failed logins for blocked accounts | Recorded as audit action `ACCOUNT_SUSPENDED` (correct password, suspended/deactivated account) instead of `LOGIN_FAILED`, which is kept for wrong credentials and unverified emails | me |
+| Auth end-to-end tests | Run against the real `link_platform` (no second database): every account uses the reserved domain `@auth-e2e.localhost.test`, every request an `e2eauth-` id, and only those rows are deleted before and after the suite | me (constraint: no second DB) |
 
 ## Decisions still open
 

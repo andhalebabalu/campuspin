@@ -145,6 +145,14 @@ DATABASE_URL="mysql://root:YourPassword@localhost:3306/link_platform"
 
 Special characters in the password must be URL-encoded (`@` → `%40`, `:` → `%3A`, `/` → `%2F`, `#` → `%23`).
 
+**JWT secrets.** `.env.example` ships placeholder secrets that work locally. Generate your own for `apps/api/.env` (never commit them):
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"   # run twice: access and refresh
+```
+
+If you leave them unset the API falls back to built-in **public** development secrets and warns at startup. In production both are required and the API refuses to start with placeholders.
+
 ### Step 4: Install dependencies
 
 ```bash
@@ -226,6 +234,12 @@ Open `http://localhost:3000`. The **System status** card calls the API health en
 | `SWAGGER_ENABLED` | `true` (dev), `false` (production) | Serve Swagger UI at `/api/docs` |
 | `DATABASE_URL` | none, **required** | `mysql://USER:PASSWORD@HOST:PORT/DATABASE` |
 | `THROTTLE_LIMIT` / `THROTTLE_TTL_SECONDS` | `120` / `60` | Requests allowed per client IP per window |
+| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | dev fallback (public!) | Two **different** random secrets, 32+ characters. **Required in production** |
+| `JWT_ACCESS_EXPIRES_IN` / `JWT_REFRESH_EXPIRES_IN` | `15m` / `30d` | Token lifetimes: a number plus `s`, `m`, `h` or `d` |
+| `EMAIL_VERIFICATION_EXPIRES_IN` / `PASSWORD_RESET_EXPIRES_IN` | `24h` / `1h` | Lifetime of the emailed links |
+| `AUTH_RATE_LIMIT` / `AUTH_RATE_LIMIT_TTL_SECONDS` | `20` / `60` | Stricter per-IP limit on the sensitive auth routes |
+| `EMAIL_PROVIDER` | `console` | `console` prints emails (with their links) in the API log: **development only**; `memory` is for automated tests |
+| `EMAIL_FROM` / `APP_NAME` | `LINK <no-reply@localhost.test>` / `LINK` | Sender and product name used in emails |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | `admin@localhost.test` / `ChangeMe123!` | Optional. The **demo** admin created by `npm run db:seed`. Development only; the seed refuses to create it in production |
 
 The API validates these at startup and stops with a readable message if something is missing or malformed.
@@ -254,6 +268,8 @@ Run from the repository root.
 | `npm test` | Unit tests for every workspace |
 | `npm run test:e2e` | API end-to-end tests (boot the real app, call it over HTTP; no database needed) |
 | `npm run test:db` | **Database tests** against the real XAMPP database (needs MySQL running and the migration applied) |
+| `npm run test:e2e:db` | **Authentication end-to-end tests**: boot the real app and call it over HTTP against the real database (needs MySQL, migrations and `db:seed:reference`) |
+| `npm run auth:purge-tokens` | Delete expired refresh / verification / reset tokens |
 | `npm run format` / `format:check` | Prettier |
 
 Database commands (they run inside `apps/api`; from there you can also use `npx prisma <command>` directly):
@@ -281,11 +297,12 @@ NestJS  ->  PrismaService  ->  Prisma Client  ->  @prisma/adapter-mariadb  ->  X
 
 **Configuration.** `apps/api/prisma/schema.prisma` declares `provider = "mysql"`. Prisma 7 no longer allows `url = env("DATABASE_URL")` inside the schema file (it fails validation with error P1012), so the connection string is read from `DATABASE_URL` in `apps/api/.env` by `apps/api/prisma.config.ts` (migrations, seed) and by `PrismaService` (runtime). Nothing is hard-coded.
 
-**32 tables**, all created by the `initial_schema` migration:
+**35 tables**: 32 created by the `initial_schema` migration and 3 authentication token tables added by `auth_tokens`:
 
 | Area | Tables |
 |---|---|
 | Users and access | `users`, `roles`, `permissions`, `role_permissions`, `user_roles` |
+| Authentication tokens | `refresh_tokens`, `email_verification_tokens`, `password_reset_tokens` (hashes only, never raw tokens) |
 | Colleges | `colleges`, `college_images`, `college_places` |
 | Catalogue | `categories`, `category_attributes`, `category_rating_dimensions`, `amenities` |
 | Places | `places`, `place_categories`, `place_images`, `place_amenities`, `place_hours`, `place_attribute_values`, `place_price_options` |
@@ -327,16 +344,69 @@ Every demo row is clearly labelled `Sample ... (Demo)`, has no phone or e-mail, 
 - **phpMyAdmin (recommended on XAMPP).** Start Apache and MySQL, open `http://localhost/phpmyadmin`, choose `link_platform`. It lists every table with its row count and lets you browse the data.
 - **Prisma Studio (`npm run db:studio`, opens `http://localhost:5555`) does not work with XAMPP's MariaDB 10.4.** It connects, but then fails to load the table list with `FUNCTION link_platform.json_arrayagg does not exist`: Studio's metadata query needs `JSON_ARRAYAGG` returning JSON, which MySQL ≥ 5.7.22 has and MariaDB only added in 10.5. It cannot be shimmed on the server side. To use Studio, run against MySQL 8 / MariaDB ≥ 10.5 (for example by upgrading XAMPP's MariaDB). Never expose Studio publicly in production.
 
+## Authentication and access control
+
+The API owns all authentication; the web and future mobile apps only call it. Everything lives under `/api/v1/auth`. Request bodies, responses and error examples are in Swagger (`/api/docs`).
+
+| Method | Path | Access | What it does |
+|---|---|---|---|
+| POST | `/auth/register` | public | Creates a `STUDENT` account (**201**) and emails a verification link |
+| POST | `/auth/verify-email` | public | `{ token }` from the email; marks the email verified (single use) |
+| POST | `/auth/resend-verification` | public | `{ email }`; the answer is identical for every address |
+| POST | `/auth/login` | public | Returns `accessToken`, `refreshToken` and the `user` |
+| POST | `/auth/refresh` | public | `{ refreshToken }` -> a new access **and** refresh token (rotation) |
+| POST | `/auth/logout` | Bearer | Ends this device's session |
+| POST | `/auth/logout-all` | Bearer | Ends every session of the user |
+| GET | `/auth/me` | Bearer | The current user with roles and permissions |
+| POST | `/auth/forgot-password` | public | `{ email }`; the answer is identical for every address |
+| POST | `/auth/reset-password` | public | `{ token, newPassword }`; also signs the user out everywhere |
+
+**Tokens.** The *access token* is a short-lived (15 min) JWT with only `sub`, `email`, `roles`, `sid` (session id) and `typ`; send it as `Authorization: Bearer <token>`. The *refresh token* is a 30-day JWT signed with a different secret; the database keeps **only its SHA-256 hash**. Every refresh replaces it with a new one and kills the old; presenting an already-replaced token revokes that whole session (possible theft). Each login is its own session, so a user can be signed in on several devices. Email-link tokens (verification, password reset) are random 256-bit values, single-use, expiring, and also stored hashed only.
+
+**Secure by default.** Every route needs a valid access token unless it is marked `@Public()`. Guards run in this order on every request: rate limit -> authenticate -> roles -> permissions. To protect a route, add decorators from `modules/auth`:
+
+```ts
+@Get('queue')
+@Roles('MODERATOR', 'ADMIN')            // needs at least ONE of these roles
+@Permissions('reviews.moderate')        // and the roles must grant ALL of these
+queue(@CurrentUser() user: AuthenticatedUser) { ... }
+```
+
+Permission keys are the 17 seeded ones (see [docs/07-rbac.md](docs/07-rbac.md)); grants come from the `role_permissions` table, cached in memory for 60 s.
+
+**Try it locally.** With `EMAIL_PROVIDER=console` (the default) no email is sent: the verification / reset link is **printed in the API terminal**. Copy the token from it:
+
+```bash
+curl -X POST http://localhost:3001/api/v1/auth/register -H "Content-Type: application/json" \
+  -d '{"name":"Asha Patil","email":"asha@example.com","password":"Correct-Horse-42"}'
+# ...look in the API terminal for "DEV EMAIL" and copy the token=... value...
+curl -X POST http://localhost:3001/api/v1/auth/verify-email -H "Content-Type: application/json" -d '{"token":"<token>"}'
+curl -X POST http://localhost:3001/api/v1/auth/login -H "Content-Type: application/json" \
+  -d '{"email":"asha@example.com","password":"Correct-Horse-42"}'
+```
+
+The seeded demo admin (`admin@localhost.test` / `ChangeMe123!`, development only) can sign in directly and holds every permission.
+
+**Also worth knowing**
+
+- **Password rules:** 10-128 characters with three of lowercase / uppercase / digit / symbol (or a 16+ character passphrase), not a common password (`Password123!`, `P@ssw0rd`, ...) and not containing the email name. Hashed with Argon2id.
+- **Rate limiting:** login, register, resend, forgot, reset and refresh allow `AUTH_RATE_LIMIT` requests per IP per minute per route (default 20), on top of the global `THROTTLE_LIMIT`. Over the limit: `429 RATE_LIMITED` with `Retry-After`.
+- **No account enumeration:** a wrong password and an unknown email give the same 401; resend and forgot answer the same for every address. `EMAIL_NOT_VERIFIED` / `ACCOUNT_SUSPENDED` (403) are only shown after the password is proven right.
+- **Audit:** `REGISTER`, `LOGIN_SUCCESS`, `LOGIN_FAILED`, `ACCOUNT_SUSPENDED`, `LOGOUT`, `LOGOUT_ALL`, `EMAIL_VERIFIED`, `VERIFICATION_EMAIL_RESENT`, `PASSWORD_RESET_REQUESTED`, `PASSWORD_RESET_COMPLETED`, `REFRESH_TOKEN_ROTATED`, `REFRESH_TOKEN_REUSE_DETECTED` go to `audit_logs` with IP, user agent and request id, and never contain a password, token or hash.
+- **Cleanup:** `npm run auth:purge-tokens` deletes expired tokens; schedule it daily.
+- **Limits of this phase:** an access token stays valid until it expires (max 15 min) even after logout, suspension or a role change; the refresh and `/auth/me` always read the database. The rate limiter is per process (in memory). Only the development (`console`) email provider exists; the API refuses to start in production until a real one is added.
+
 ## Testing
 
 ```bash
 npm test               # unit tests: contracts, api-client, API helpers (no database)
 npm run test:e2e       # API end-to-end over HTTP: envelope, errors, validation, CORS, headers, rate limit, Swagger
 npm run test:db        # REAL database: connection, migration, all tables, relations, constraints, seed, purge, health API
+npm run test:e2e:db    # REAL database, over HTTP: register -> verify -> login -> me -> refresh -> logout, reset, roles, permissions, rate limit
 npm run typecheck && npm run lint
 ```
 
-`npm test` and `npm run test:e2e` never need XAMPP (they point at an unreachable database on purpose). **`npm run test:db` needs XAMPP MySQL running, `link_platform` migrated (Step 5) and does not need it seeded.** Every database test runs inside a transaction that is **always rolled back**, so it leaves no data behind and needs no second database; your seeded demo data is never touched.
+`npm test` and `npm run test:e2e` never need XAMPP (they point at an unreachable database on purpose). `npm run test:e2e:db` does need it: authentication creates real rows, so those tests give every account an email under the reserved domain `@auth-e2e.localhost.test` and tag every request with an `e2eauth-` id, and they delete exactly those rows before and after the run (your seeded data is never touched). **`npm run test:db` needs XAMPP MySQL running, `link_platform` migrated (Step 5) and does not need it seeded.** Every database test runs inside a transaction that is **always rolled back**, so it leaves no data behind and needs no second database; your seeded demo data is never touched.
 
 ## Troubleshooting
 
@@ -355,6 +425,11 @@ npm run typecheck && npm run lint
 | `npm run test:db` cannot connect, or a table is missing | Start XAMPP MySQL and run `npm run db:migrate` first |
 | Prisma Studio shows "Could not load schema metadata: `json_arrayagg` does not exist" | Known limitation with XAMPP's MariaDB 10.4; use phpMyAdmin (see [Viewing the data](#viewing-the-data-phpmyadmin-and-prisma-studio)) |
 | `npm run db:seed` says it refuses in production | By design: use `npm run db:seed:reference` |
+| Registering answers `503 Registration is temporarily unavailable` | The `STUDENT` role is missing: run `npm run db:seed:reference` |
+| API refuses to start: `Unsafe production configuration` | In production set real `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET`; `EMAIL_PROVIDER=console` is development-only and no production provider exists yet |
+| No verification email arrives | Development sends nothing: open the API terminal and copy the link printed under `DEV EMAIL` |
+| `429 RATE_LIMITED` while testing locally | Raise `AUTH_RATE_LIMIT` in `apps/api/.env` and restart the API |
+| A token/expiry you edited by hand in phpMyAdmin behaves oddly | Timestamps are **UTC**. Use `UTC_TIMESTAMP(3)`, not `NOW()`, which is offset on a non-UTC machine (India: +5:30) |
 
 ## Git workflow
 
@@ -369,9 +444,9 @@ npm run typecheck && npm run lint
 |---|---|---|
 | 1 | Project setup, API foundation, health check | ✅ done |
 | 2 | XAMPP MySQL + Prisma: schema, migration, seed, database health check | ✅ done |
-| 3 | NestJS foundation (rest): cache, events, audit, module skeletons | next |
+| 3 | Authentication, JWT, email verification, RBAC guards, audit service | ✅ done |
 | 4 | Migrations + seed | ✅ delivered in Phase 2 |
-| 5–6 | Authentication, roles + authorization | |
+| 5–6 | (Authentication and authorization) | ✅ delivered in Phase 3 |
 | 7–10 | Colleges, categories, places, search + filters + distance | |
 | 11–16 | Submissions + duplicate detection, business owner, claims, reviews, reports, saved places | |
 | 17–21 | Next.js foundation, public website, student discovery, business + admin dashboards | |

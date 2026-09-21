@@ -20,16 +20,17 @@ Rules: **never commit real values**; only the `.env.example` files are tracked. 
 | `SWAGGER_ENABLED` | | | `true` dev, `false` prod | expose `/api/docs` |
 | `DATABASE_URL` | ✔ | ✔ | XAMPP default: `mysql://root:@localhost:3306/link_platform` (root, empty password) | Prisma. URL-encode special characters in the password |
 | `SHADOW_DATABASE_URL` | ✔ | optional | | only if the MySQL user cannot create databases (Prisma otherwise creates a temporary shadow database for `migrate dev`) |
-| `JWT_ACCESS_SECRET` | ✔ | ✔ | ≥ 32 random bytes | signs access tokens |
-| `JWT_ACCESS_TTL_SECONDS` | | | `900` | access lifetime |
-| `REFRESH_TOKEN_IDLE_DAYS` | | | `30` | idle expiry |
-| `REFRESH_TOKEN_ABSOLUTE_DAYS` | | | `60` | absolute expiry |
+| `JWT_ACCESS_SECRET` | ✔ | prod | ≥ 32 random characters (48+ recommended) | signs access tokens. **Implemented (Phase 3).** Unset outside production = a built-in **public** development secret with a startup warning; in production it is required, must not contain `dev-only` / `change-me`, and the API refuses to start otherwise |
+| `JWT_REFRESH_SECRET` | ✔ | prod | a **different** ≥ 32 character value | signs refresh tokens (same rules; must differ from the access secret) |
+| `JWT_ACCESS_EXPIRES_IN` | | | `15m` | access lifetime: number + `s` / `m` / `h` / `d` |
+| `JWT_REFRESH_EXPIRES_IN` | | | `30d` | refresh lifetime (rolling: each rotation extends it) |
+| `AUTH_RATE_LIMIT`, `AUTH_RATE_LIMIT_TTL_SECONDS` | | | `20`, `60` | per-IP, per-route limit on login / register / resend / forgot / reset / refresh |
 | `COOKIE_DOMAIN` | | prod | `.example.com` | refresh-cookie scope |
 | `COOKIE_SECURE` | | | `true` prod | `Secure` flag |
-| `EMAIL_VERIFICATION_TTL_HOURS` | | | `24` | |
-| `PASSWORD_RESET_TTL_MINUTES` | | | `30` | |
-| `EMAIL_PROVIDER` | | ✔ | `console` dev / `smtp` prod | provider selection |
-| `EMAIL_FROM_ADDRESS`, `EMAIL_FROM_NAME` | | ✔ | | sender identity (needs SPF/DKIM/DMARC) |
+| `EMAIL_VERIFICATION_EXPIRES_IN` | | | `24h` | **Implemented (Phase 3)** |
+| `PASSWORD_RESET_EXPIRES_IN` | | | `1h` | **Implemented (Phase 3)** |
+| `EMAIL_PROVIDER` | | ✔ | `console` (dev) / `memory` (tests); `smtp` later | provider selection. `console` prints emails **including their one-time links** to the API log, so the API refuses to start in production with it (no production provider exists yet) |
+| `EMAIL_FROM`, `APP_NAME` | | | `LINK <no-reply@localhost.test>`, `LINK` | sender and product name in emails (a real sender needs SPF/DKIM/DMARC) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` | | smtp | | transport (not needed in development: the console provider logs emails) |
 | `SMTP_USER`, `SMTP_PASSWORD` | ✔ | smtp | | credentials |
 | `STORAGE_PROVIDER` | | ✔ | `memory` test / `cloudinary` | provider selection |

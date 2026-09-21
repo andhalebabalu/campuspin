@@ -95,6 +95,12 @@ Used by list, search, home rails and (unchanged) by the mobile app. The detail r
 
 ### 2.1 Auth: `/auth`
 
+> **Implemented in Phase 3:** `register` (201), `verify-email`, `resend-verification`, `login`, `refresh`, `logout`, `logout-all`, `me` (`GET /auth/me`) and `forgot-password` / `reset-password`. Request and response schemas live in `@platform/contracts` (`auth.ts`) and are documented with examples in Swagger. Deviations from the original design below: register returns `201` / `409` and takes only `name`, `email`, `password`; `login` and `refresh` return the refresh token **in the body**; `logout` returns `200` with the standard envelope; `forgot-password` / `resend-verification` return `200` with a fixed generic message. Still planned: `change-password`, `sessions`, OTP.
+>
+> Error codes added: `INVALID_CREDENTIALS` (401), `EMAIL_NOT_VERIFIED`, `ACCOUNT_SUSPENDED`, `ACCOUNT_DEACTIVATED` (403), `EMAIL_ALREADY_REGISTERED` (409), `TOKEN_INVALID` (400 email link / 401 refresh token), `TOKEN_EXPIRED` (400 email link / 401 access token: refresh it).
+
+Original design:
+
 | Method | Path | Access | Notes |
 |---|---|---|---|
 | POST | `/auth/register` | Public | Body: `role` (`STUDENT` or `BUSINESS_OWNER`), name, email, password; student: `collegeId`, `course`, `yearOfStudy`. Always `202`. |

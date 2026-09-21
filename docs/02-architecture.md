@@ -117,6 +117,22 @@ Module internals (example `places/`): `places.module.ts`, `places.controller.ts`
 
 ### 5.1 Auth & sessions
 
+> **Implemented in Phase 3.** The design below is the target; this table records where the delivered code differs and why. Usage is in the [README](../README.md#authentication-and-access-control).
+>
+> | Topic | Design below | Implemented |
+> |---|---|---|
+> | Register | always `202`, email-enumeration safe | `201`, and `409 EMAIL_ALREADY_REGISTERED` for a duplicate (as specified for Phase 3). Accepts `name`, `email`, `password` only; college/course/year and the `BUSINESS_OWNER` choice come with the profile phases |
+> | Account state | `PENDING_VERIFICATION` status | `emailVerifiedAt IS NULL`; `UserStatus` stays `ACTIVE` / `SUSPENDED` / `DEACTIVATED` |
+> | Refresh token | opaque, cookie on web | a signed JWT (own secret `JWT_REFRESH_SECRET`, `typ=refresh`, random `jti`) returned **in the response body** for every client; only its SHA-256 is stored. The HttpOnly cookie arrives with the web auth UI |
+> | Rotation | single-use with family reuse detection | same: `refresh_tokens.familyId` is the session; rotation is an atomic compare-and-set on `revokedAt`; replaying a rotated token (or losing a race) revokes the family and writes `REFRESH_TOKEN_REUSE_DETECTED` |
+> | Lifetime | idle 30 d, absolute 60 d | rolling 30 d (each rotation extends it); no absolute cap yet |
+> | Access token | `sub`, `roles[]`, `sid` | adds `email` and `typ`; 15 min; HS256 only (algorithm allow-list) |
+> | Throttling | per IP **and** per account, progressive | per IP and per route (`AUTH_RATE_LIMIT`), in memory; no per-account limit yet |
+> | Suspension | 60 s cached status check per request | not checked per request (stateless access token, max 15 min); refresh and `/auth/me` read the database |
+> | Password policy | 10+ chars, no composition rules | 10-128 chars + three of four character classes (or a 16+ passphrase), common-password deny-list (leet-aware), no email name inside; Argon2id |
+> | Tokens table | one `auth_tokens` table with a `type` | three tables: `refresh_tokens`, `email_verification_tokens`, `password_reset_tokens` |
+> | Email | outbox table | `EmailProvider` abstraction (`console` for development, `memory` for tests); sent fire-and-forget so response time does not reveal whether an account exists. The outbox arrives with a real provider |
+
 ```mermaid
 sequenceDiagram
   participant C as Client (web or mobile)

@@ -4,7 +4,7 @@ Answers spec §62 item **4** (ERD / schema design).
 
 ## 0. Implemented schema (Phase 2): read this first
 
-The database was built in **Phase 2**. **`apps/api/prisma/schema.prisma` and the migration `apps/api/prisma/migrations/20260919172259_initial_schema/` are the source of truth.** Where the design in sections 1–6 below differs, the implemented schema wins; those sections remain as the design reference for the tables that are still to come. The implementation has **32 tables**. Columns are camelCase (Prisma's default), tables are snake_case, ids are UUIDv7 `CHAR(36)`.
+The database was built in **Phase 2**. **`apps/api/prisma/schema.prisma` and the migration `apps/api/prisma/migrations/20260919172259_initial_schema/` are the source of truth.** Where the design in sections 1–6 below differs, the implemented schema wins; those sections remain as the design reference for the tables that are still to come. The implementation has **35 tables** (32 from the Phase 2 `initial_schema` migration, plus the 3 authentication token tables added in Phase 3 by `auth_tokens`). Columns are camelCase (Prisma's default), tables are snake_case, ids are UUIDv7 `CHAR(36)`.
 
 ### Where the implementation differs from the original design
 
@@ -22,7 +22,8 @@ The database was built in **Phase 2**. **`apps/api/prisma/schema.prisma` and the
 | Xerox / printing | One merged category | Two categories, `xerox` and `printing` | The brief lists them separately |
 | Claim uniqueness | Generated-column unique index | Nullable unique `activeKey` (`placeId:businessProfileId` while open, `NULL` once decided) | Works on MariaDB 10.4 and MySQL 8 without engine-specific features |
 | Schema files | One file per domain | A single `schema.prisma` | The brief asks for `prisma/schema.prisma` |
-| Not created yet | | `auth_tokens`, `refresh_tokens`, `media_assets`, `outbound_messages`, `analytics_events`, `daily_stats`, `app_settings`, `leads`, `offers`, `device_tokens`, `slug_redirects`, `review_replies`, FULLTEXT indexes | Added by the phase that needs them (authentication, uploads, search, ...) |
+| Auth tokens | one `auth_tokens` table with a `type` column | Three tables from Phase 3 (below): `refresh_tokens`, `email_verification_tokens`, `password_reset_tokens` | Separate tables cannot be confused or replayed across purposes, and each has the columns it needs (`familyId`, `revokedReason` ...) |
+| Not created yet | | `media_assets`, `outbound_messages`, `analytics_events`, `daily_stats`, `app_settings`, `leads`, `offers`, `device_tokens`, `slug_redirects`, `review_replies`, FULLTEXT indexes | Added by the phase that needs them (authentication, uploads, search, ...) |
 
 ### Where the brief's example category fields live
 
@@ -32,6 +33,18 @@ The database was built in **Phase 2**. **`apps/api/prisma/schema.prisma` and the
 | `timing`, `open_24_hours` | `place_hours` rows (several slots per day, `is24Hours`, `isClosed`) |
 | `ac`, `wifi`, `charging`, `attached_bathroom`, `food` | The normalised amenity list (`amenities` + `place_amenities`) |
 | `veg_nonveg`, `breakfast`, `lunch`, `dinner`, `seating_capacity`, `gender`, `occupancy_type`, `deposit`, `furniture`, `available_from`, ... | `category_attributes` (definitions) + `place_attribute_values` (typed values) |
+
+### Authentication tables (Phase 3)
+
+Migration `20260920145420_auth_tokens` (purely additive: 3 `CREATE TABLE` and 3 foreign keys to `users`, `ON DELETE CASCADE`). **No raw token is ever stored**: each row keeps the SHA-256 (`CHAR(64)`, unique index) of the token, so a database leak cannot be replayed.
+
+| Table | Columns | Notes |
+|---|---|---|
+| `refresh_tokens` | `id`, `userId`, `familyId`, `tokenHash`, `expiresAt`, `revokedAt`, `revokedReason`, `lastUsedAt`, `userAgent`, `ipAddress`, `createdAt` | One row per issued refresh token. `familyId` = one login session (also the `sid` claim). `revokedReason`: `ROTATED`, `LOGOUT`, `LOGOUT_ALL`, `PASSWORD_RESET`, `REUSE_DETECTED`, `ADMIN`. A `ROTATED` token shown again is the theft signal |
+| `email_verification_tokens` | `id`, `userId`, `tokenHash`, `expiresAt`, `usedAt`, `createdAt` | At most one unused row per user (issuing a new link deletes the old ones) |
+| `password_reset_tokens` | same | Same shape, kept separate on purpose |
+
+Indexes: unique `tokenHash`, `(userId, revokedAt)` and `familyId` on sessions, `userId` on the link tables, and `expiresAt` on all three for the cleanup job. **Cleanup strategy:** a token past its expiry can never be used again, so `npm run auth:purge-tokens` deletes every expired row (schedule it daily); issuing a new email link also removes that user's stale rows. **Timestamps are UTC.** Prisma writes and reads every `DATETIME` as UTC, and MariaDB stores it without a time zone. If you edit these rows by hand (phpMyAdmin, SQL), use `UTC_TIMESTAMP(3)`, **not** `NOW()`: on a machine that is not on UTC (India is UTC+5:30) `NOW()` is off by the offset, so a token you meant to expire an hour ago would still look valid for 4.5 hours. Events go to the existing `audit_logs` table; no schema change was needed for them, and `users` gained no columns (`emailVerifiedAt` and `lastLoginAt` already existed).
 
 ### Verified on XAMPP (MariaDB 10.4.32)
 
