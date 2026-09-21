@@ -4,6 +4,7 @@ import { apiErrorSchema, validationDetailsSchema } from '@platform/contracts';
 import request from 'supertest';
 import { z } from 'zod';
 import { AppException } from '../src/common/http/app-exception.js';
+import { Public } from '../src/modules/auth/decorators/public.decorator.js';
 import { createTestApp } from './support/create-test-app.js';
 
 const echoBody = z.object({
@@ -12,7 +13,12 @@ const echoBody = z.object({
 });
 const listQuery = z.object({ page: z.coerce.number().int().min(1).default(1) });
 
-/** Test-only routes that exercise the shared HTTP behaviour (validation, error mapping). */
+/**
+ * Test-only routes that exercise the shared HTTP behaviour (validation, error mapping). They are
+ * @Public() because these tests are about that behaviour, not authentication (the API is secure by
+ * default, so a route must opt out explicitly).
+ */
+@Public()
 @Controller('test-support')
 class TestSupportController {
   @Post('echo')

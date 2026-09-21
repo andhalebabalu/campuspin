@@ -4,8 +4,14 @@ import request from 'supertest';
 import { createTestApp } from './support/create-test-app.js';
 import { createDb } from './support/db.js';
 
-/** Every table the initial migration must create (32). */
+/**
+ * Every table the migrations must create: the 32 of `initial_schema` plus the 3 authentication token
+ * tables of `auth_tokens` (Phase 3). Kept exact on purpose, so an unplanned table fails this test.
+ */
 const EXPECTED_TABLES = [
+  'refresh_tokens',
+  'email_verification_tokens',
+  'password_reset_tokens',
   'users',
   'roles',
   'permissions',
@@ -64,6 +70,22 @@ describe('Real MySQL database: connection and migration', () => {
     expect(initial).toBeDefined();
     expect(initial?.finished_at).not.toBeNull();
     expect(initial?.rolled_back_at).toBeNull();
+  });
+
+  it('has applied the auth_tokens migration successfully (Phase 3)', async () => {
+    const rows = await db.$queryRaw<
+      Array<{ migration_name: string; finished_at: Date | null; rolled_back_at: Date | null }>
+    >`SELECT migration_name, finished_at, rolled_back_at FROM _prisma_migrations`;
+
+    const auth = rows.find((row) => row.migration_name.endsWith('_auth_tokens'));
+    expect(auth).toBeDefined();
+    expect(auth?.finished_at).not.toBeNull();
+    expect(auth?.rolled_back_at).toBeNull();
+    // Applied after the initial schema, never before it.
+    const names = rows.map((row) => row.migration_name).sort();
+    expect(names.findIndex((name) => name.endsWith('_initial_schema'))).toBeLessThan(
+      names.findIndex((name) => name.endsWith('_auth_tokens')),
+    );
   });
 
   it('has every expected table (and nothing unexpected)', async () => {

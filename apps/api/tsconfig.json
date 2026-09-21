@@ -15,6 +15,7 @@
     "prisma.config.ts",
     "vitest.config.ts",
     "vitest.config.e2e.ts",
+    "vitest.config.e2e-db.ts",
     "vitest.config.db.ts"
   ]
 }

@@ -2,13 +2,18 @@ import { Controller, Get } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { apiErrorSchema } from '@platform/contracts';
 import request from 'supertest';
+import { Public } from '../src/modules/auth/decorators/public.decorator.js';
 import { createTestApp } from './support/create-test-app.js';
 
 // Configuration is read when the app boots, so lower the limit before creating it.
 process.env.THROTTLE_LIMIT = '3';
 process.env.THROTTLE_TTL_SECONDS = '60';
 
-/** A real, throttled route. (Global guards only run for matched routes, never for 404s.) */
+/**
+ * A real, throttled route. (Global guards only run for matched routes, never for 404s.)
+ * @Public() because this test is about throttling, not authentication.
+ */
+@Public()
 @Controller('ping')
 class PingController {
   @Get()
