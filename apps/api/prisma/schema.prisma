@@ -164,6 +164,17 @@ enum CollegePlaceMode {
   EXCLUDED
 }
 
+// Why a refresh token stopped being usable. ROTATED means "replaced by its successor during a normal
+// refresh"; presenting a ROTATED token again is the signal that it was stolen (reuse detection).
+enum TokenRevocationReason {
+  ROTATED
+  LOGOUT
+  LOGOUT_ALL
+  PASSWORD_RESET
+  REUSE_DETECTED
+  ADMIN
+}
+
 // ════════════════════════════════════════════════════════════════════════════════════════════
 // Identity and access
 // ════════════════════════════════════════════════════════════════════════════════════════════
@@ -213,6 +224,10 @@ model User {
   resolvedReports       Report[]            @relation("ReportResolvedBy")
   notifications         Notification[]
   auditLogs             AuditLog[]
+
+  refreshTokens           RefreshToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
 
   @@index([status])
   @@index([collegeId])
@@ -278,6 +293,68 @@ model UserRole {
   @@id([userId, roleId])
   @@index([roleId])
   @@map("user_roles")
+}
+
+// ── Authentication tokens (Phase 3) ─────────────────────────────────────────────────────────────
+// SECURITY RULE for all three tables below: the raw token is never stored. Only its SHA-256 hash
+// (64 hex chars) is, so a database leak cannot be replayed. Rows die with their user (CASCADE).
+// Expired rows are harmless but accumulate; `npm run auth:purge-tokens` removes them.
+
+// One row per issued refresh token (a signed JWT). A login starts a "family" (familyId, also the `sid`
+// claim of the access token); every rotation adds a row to the same family, so one family is one
+// device session. Logging out revokes a family; a password reset revokes all of a user's families.
+model RefreshToken {
+  id            String                 @id @default(uuid(7)) @db.Char(36)
+  userId        String                 @db.Char(36)
+  familyId      String                 @db.Char(36)
+  tokenHash     String                 @unique @db.Char(64)
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  revokedReason TokenRevocationReason?
+  lastUsedAt    DateTime?
+  userAgent     String?                @db.VarChar(255)
+  ipAddress     String?                @db.VarChar(45)
+  createdAt     DateTime               @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([familyId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// Single-use link token that proves ownership of the registered email. `usedAt` is set when consumed.
+model EmailVerificationToken {
+  id        String    @id @default(uuid(7)) @db.Char(36)
+  userId    String    @db.Char(36)
+  tokenHash String    @unique @db.Char(64)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("email_verification_tokens")
+}
+
+// Single-use, short-lived link token for "forgot password". Same shape as the verification token, kept
+// as its own table so the two purposes can never be confused or replayed against each other.
+model PasswordResetToken {
+  id        String    @id @default(uuid(7)) @db.Char(36)
+  userId    String    @db.Char(36)
+  tokenHash String    @unique @db.Char(64)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
 // ════════════════════════════════════════════════════════════════════════════════════════════
