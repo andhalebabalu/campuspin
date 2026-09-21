@@ -13,6 +13,12 @@ import { createTestApp } from './create-test-app.js';
 export const TEST_EMAIL_DOMAIN = 'auth-e2e.localhost.test';
 /** Every request carries an id starting with this, so cleanup can find the audit rows it caused. */
 const REQUEST_ID_PREFIX = 'e2eauth';
+/**
+ * Colleges and places the e2e tests create have slugs starting with these, so cleanup can find them.
+ * (A college slug comes from its name, and the tests name their colleges "E2E ...".)
+ */
+export const TEST_COLLEGE_SLUG_PREFIX = 'e2e-';
+export const TEST_PLACE_SLUG_PREFIX = 'e2e-place-';
 
 /** Passes the password policy, does not contain the email name, and is not a common word. */
 export const STRONG_PASSWORD = 'Blue!Lantern88Sky';
@@ -22,9 +28,11 @@ export const testEmail = (label = 'user'): string =>
   `${label}-${randomUUID().slice(0, 8)}@${TEST_EMAIL_DOMAIN}`;
 
 /**
- * Deletes what the auth e2e tests created, and only that: users under the reserved domain (their
- * tokens and role links cascade) and audit rows tagged with the test request-id prefix or
- * belonging to those users. Safe to run before AND after the suite.
+ * Deletes what the e2e tests created, and only that: users under the reserved domain (their tokens
+ * and role links cascade), audit rows tagged with the test request-id prefix or belonging to those
+ * users, and test colleges and places (identified by their reserved slug prefixes; their images and
+ * college-place links cascade). Places go first because a place must not outlive its creator's row.
+ * Safe to run before AND after the suite.
  */
 export async function removeAuthTestData(db: PrismaClient): Promise<void> {
   const users = await db.user.findMany({
@@ -40,6 +48,8 @@ export async function removeAuthTestData(db: PrismaClient): Promise<void> {
       ],
     },
   });
+  await db.place.deleteMany({ where: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } });
+  await db.college.deleteMany({ where: { slug: { startsWith: TEST_COLLEGE_SLUG_PREFIX } } });
   if (ids.length > 0) await db.user.deleteMany({ where: { id: { in: ids } } });
 }
 
@@ -49,6 +59,8 @@ export interface AuthTestContext {
   mail: MemoryEmailProvider;
   get: (url: string) => request.Test;
   post: (url: string) => request.Test;
+  patch: (url: string) => request.Test;
+  delete: (url: string) => request.Test;
   close: () => Promise<void>;
 }
 
@@ -67,8 +79,11 @@ export async function createAuthTestContext(
 
   const server = app.getHttpServer();
   let counter = 0;
+  // Real clients send a User-Agent; supertest does not, and the audit trail records it.
   const tag = (test: request.Test): request.Test =>
-    test.set('X-Request-Id', `${REQUEST_ID_PREFIX}-${randomUUID().slice(0, 8)}-${(counter += 1)}`);
+    test
+      .set('X-Request-Id', `${REQUEST_ID_PREFIX}-${randomUUID().slice(0, 8)}-${(counter += 1)}`)
+      .set('User-Agent', 'platform-e2e-tests');
 
   return {
     app,
@@ -76,6 +91,8 @@ export async function createAuthTestContext(
     mail,
     get: (url) => tag(request(server).get(url)),
     post: (url) => tag(request(server).post(url)),
+    patch: (url) => tag(request(server).patch(url)),
+    delete: (url) => tag(request(server).delete(url)),
     close: async () => {
       await app.close();
       await removeAuthTestData(db);

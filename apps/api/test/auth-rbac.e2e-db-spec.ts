@@ -163,6 +163,8 @@ describe('Access control (e2e, real database)', () => {
     // The ONLY routes allowed to answer without a token. Adding a @Public() route means adding it
     // here on purpose, which makes the decision visible in code review.
     const PUBLIC_ROUTES = [
+      'GET /api/v1/colleges',
+      'GET /api/v1/colleges/{idOrSlug}',
       'GET /api/v1/health',
       'GET /api/v1/health/database',
       'POST /api/v1/auth/forgot-password',
@@ -174,7 +176,18 @@ describe('Access control (e2e, real database)', () => {
       'POST /api/v1/auth/verify-email',
     ];
     const PROTECTED_ROUTES = [
+      'DELETE /api/v1/admin/colleges/{id}/images/{imageId}',
+      'GET /api/v1/admin/colleges',
+      'GET /api/v1/admin/colleges/{id}',
       'GET /api/v1/auth/me',
+      'PATCH /api/v1/admin/colleges/{id}',
+      'PATCH /api/v1/admin/colleges/{id}/images/{imageId}',
+      'POST /api/v1/admin/colleges',
+      'POST /api/v1/admin/colleges/{id}/activate',
+      'POST /api/v1/admin/colleges/{id}/deactivate',
+      'POST /api/v1/admin/colleges/{id}/images',
+      'POST /api/v1/admin/colleges/{id}/unverify',
+      'POST /api/v1/admin/colleges/{id}/verify',
       'POST /api/v1/auth/logout',
       'POST /api/v1/auth/logout-all',
     ];
@@ -193,9 +206,15 @@ describe('Access control (e2e, real database)', () => {
           for (const method of Object.keys(operations)) {
             const label = `${method.toUpperCase()} ${path}`;
             const url = path.replace(/\{[^}]+\}/g, 'x');
-            if (method !== 'get' && method !== 'post')
-              throw new Error(`Extend this sweep for ${label}`);
-            const response = await (method === 'get' ? plain.get(url) : plain.post(url));
+            const send = {
+              get: plain.get,
+              post: plain.post,
+              patch: plain.patch,
+              delete: plain.delete,
+            }[method];
+            if (!send) throw new Error(`Extend this sweep for ${label}`);
+            const response = await send(url);
+            // The label keeps the documented path (with its {placeholders}), so it reads like the route.
             (response.status === 401 ? requiresLogin : open).push(label);
           }
         }
