@@ -1,5 +1,5 @@
 /** Mean Earth radius in metres (IUGG). */
-const EARTH_RADIUS_METERS = 6_371_008.8;
+export const EARTH_RADIUS_METERS = 6_371_008.8;
 
 export interface Coordinates {
   latitude: number;

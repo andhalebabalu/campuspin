@@ -3,8 +3,15 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import type { NextFunction, Request, Response } from 'express';
+import { noStoreFor } from './common/http/no-store.middleware.js';
 import type { AppConfig } from './infra/config/app-config.js';
 import { SWAGGER_PATH, setupSwagger } from './swagger.js';
+
+/**
+ * Route groups whose responses are private to the caller and must never be cached: credentials and
+ * tokens (`auth`) and staff views (`admin`). Public, user-agnostic routes set their own caching.
+ */
+const PRIVATE_ROUTE_PREFIXES = ['/api/v1/auth', '/api/v1/admin'] as const;
 
 /**
  * Security headers. Swagger UI needs inline scripts/styles, so /api/docs gets a relaxed CSP;
@@ -41,6 +48,7 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): vo
   app.useLogger(app.get(Logger));
   app.set('trust proxy', config.trustProxy ? 1 : false);
   app.use(securityHeaders(config));
+  app.use(noStoreFor(PRIVATE_ROUTE_PREFIXES));
   app.enableCors({
     origin: [...config.corsOrigins],
     credentials: true,

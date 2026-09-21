@@ -81,6 +81,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       );
     }
 
+    // An error must never be kept by a browser or a CDN, even on a route whose successful answers
+    // are cacheable: Nest applies a route's Cache-Control before the handler runs, so it would otherwise
+    // be attached to a 400, or to a 503 while the database is down.
+    response.setHeader('Cache-Control', 'no-store');
     response.status(parts.status).json({
       success: false,
       message: parts.message,

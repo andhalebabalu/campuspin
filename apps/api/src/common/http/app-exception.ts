@@ -47,6 +47,11 @@ export class AppException extends HttpException {
     return new AppException(code, message, HttpStatus.BAD_REQUEST, details);
   }
 
+  /** 404: the thing asked for does not exist (or is not visible to this caller). */
+  static notFound(message = 'Not found'): AppException {
+    return new AppException('NOT_FOUND', message, HttpStatus.NOT_FOUND);
+  }
+
   /** 409: the request conflicts with existing state (for example a duplicate email). */
   static conflict(code: ErrorCode, message: string): AppException {
     return new AppException(code, message, HttpStatus.CONFLICT);

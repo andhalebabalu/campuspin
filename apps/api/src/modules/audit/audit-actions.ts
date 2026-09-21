@@ -16,6 +16,16 @@ export const AUDIT_ACTIONS = [
   'PASSWORD_RESET_COMPLETED',
   'REFRESH_TOKEN_ROTATED',
   'REFRESH_TOKEN_REUSE_DETECTED', // a rotated token was replayed: the whole session was revoked
+  // Colleges (Phase 4). Every staff change to the college directory is recorded.
+  'COLLEGE_CREATED',
+  'COLLEGE_UPDATED',
+  'COLLEGE_ACTIVATED',
+  'COLLEGE_DEACTIVATED',
+  'COLLEGE_VERIFIED',
+  'COLLEGE_UNVERIFIED',
+  'COLLEGE_IMAGE_ADDED',
+  'COLLEGE_IMAGE_UPDATED',
+  'COLLEGE_IMAGE_REMOVED',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

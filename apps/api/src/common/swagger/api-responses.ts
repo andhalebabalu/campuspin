@@ -7,6 +7,8 @@ import type { z } from 'zod';
 export interface EnvelopeExample {
   message: string;
   data: unknown;
+  /** Page details, for list endpoints. */
+  meta?: { page: number; limit: number; total: number; totalPages: number };
 }
 
 /** Documents a successful response wrapped in the standard envelope. */
@@ -20,7 +22,12 @@ export function ApiEnvelopeResponse(
     description: options.description ?? 'Success',
     standardSchema: options.example
       ? envelope.meta({
-          example: { success: true, data: options.example.data, message: options.example.message },
+          example: {
+            success: true,
+            data: options.example.data,
+            message: options.example.message,
+            ...(options.example.meta ? { meta: options.example.meta } : {}),
+          },
         })
       : envelope,
   });

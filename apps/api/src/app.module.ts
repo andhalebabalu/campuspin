@@ -13,6 +13,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './modules/auth/guards/permissions.guard.js';
 import { RolesGuard } from './modules/auth/guards/roles.guard.js';
+import { CollegesModule } from './modules/colleges/colleges.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 
 @Module({
@@ -31,6 +32,7 @@ import { HealthModule } from './modules/health/health.module.js';
     AuditModule,
     HttpModule,
     AuthModule,
+    CollegesModule,
     HealthModule,
   ],
   providers: [
