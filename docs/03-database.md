@@ -46,9 +46,13 @@ Migration `20260920145420_auth_tokens` (purely additive: 3 `CREATE TABLE` and 3 
 
 Indexes: unique `tokenHash`, `(userId, revokedAt)` and `familyId` on sessions, `userId` on the link tables, and `expiresAt` on all three for the cleanup job. **Cleanup strategy:** a token past its expiry can never be used again, so `npm run auth:purge-tokens` deletes every expired row (schedule it daily); issuing a new email link also removes that user's stale rows. **Timestamps are UTC.** Prisma writes and reads every `DATETIME` as UTC, and MariaDB stores it without a time zone. If you edit these rows by hand (phpMyAdmin, SQL), use `UTC_TIMESTAMP(3)`, **not** `NOW()`: on a machine that is not on UTC (India is UTC+5:30) `NOW()` is off by the offset, so a token you meant to expire an hour ago would still look valid for 4.5 hours. Events go to the existing `audit_logs` table; no schema change was needed for them, and `users` gained no columns (`emailVerifiedAt` and `lastLoginAt` already existed).
 
+### Colleges (Phase 4): no schema change
+
+The college directory needed no migration: `colleges`, `college_images` and `college_places` from Phase 2 were enough, and `users` gained nothing. `college_places` (which places serve which college, and how far) is now **maintained by `CollegeProximityService`**: a place is linked when `round(haversine) <= colleges.serviceRadiusMeters` (the rule the seed used), `AUTO` rows follow the college when it is created, moved or resized, and `PINNED` / `EXCLUDED` rows (staff decisions) are never deleted, only their distance is refreshed. The service asks the database only for places inside a latitude/longitude bounding box (the `(latitude, longitude)` index) and applies the exact distance in code. A test recomputes every seeded demo college and asserts the seed's links come out identical.
+
 ### Verified on XAMPP (MariaDB 10.4.32)
 
-The migration applies cleanly and `migrate status` reports it up to date with no drift. All 32 tables, 56 foreign keys and 23 CHECK constraints exist. The 6 `JSON` columns round-trip as real JSON through Prisma. `utf8mb4` stores Devanagari. Everything is covered by `npm run test:db` (33 tests against the real database). **One limitation:** Prisma Studio cannot load its table list on MariaDB 10.4 (it needs `JSON_ARRAYAGG`, added in MariaDB 10.5); use phpMyAdmin.
+The migration applies cleanly and `migrate status` reports it up to date with no drift. All 32 tables, 56 foreign keys and 23 CHECK constraints exist. The 6 `JSON` columns round-trip as real JSON through Prisma. `utf8mb4` stores Devanagari. Everything is covered by `npm run test:db` (tests against the real database, each rolled back). **One limitation:** Prisma Studio cannot load its table list on MariaDB 10.4 (it needs `JSON_ARRAYAGG`, added in MariaDB 10.5); use phpMyAdmin.
 
 ---
 

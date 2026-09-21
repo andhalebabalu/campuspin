@@ -54,6 +54,11 @@
 | JWT library | `@nestjs/jwt` 12 (official, supports Nest 12) and a small custom guard instead of Passport: fewer moving parts, exact control of the 401 codes, and a strict `HS256` allow-list | me |
 | Secure by default | A global `JwtAuthGuard`: every route needs a token unless `@Public()`. A test sweeps every documented route unauthenticated against an explicit allow-list | you (brief) |
 | Failed logins for blocked accounts | Recorded as audit action `ACCOUNT_SUSPENDED` (correct password, suspended/deactivated account) instead of `LOGIN_FAILED`, which is kept for wrong credentials and unverified emails | me |
+| Phase 4 scope | "Colleges only" (plan item 7), chosen by you when asked. Categories, places and search are later phases | you |
+| College lifecycle | DRAFT -> ACTIVE <-> INACTIVE, never deleted; a new college is a DRAFT; repeating an action is a no-op; the slug can change only while DRAFT (a published slug is a public link) | me |
+| Public vs staff | Browsing is anonymous and cacheable (`public, s-maxage=60`); staff routes need `colleges.manage` and are `no-store`. Errors are always `no-store` (found in testing: Nest applies a route's Cache-Control before the handler, so a 400 or a 5xx would have been cacheable) | me |
+| College search | `q` is plain text: `%`, `_` and `\` are escaped (Prisma's `contains` does not, so `q=%` used to match every college) | found in testing |
+| `nearest` / `popular` sorts | Computed in memory over all matches, because they cannot be a portable `ORDER BY`; fine for a directory of hundreds to a few thousand colleges | me |
 | Auth end-to-end tests | Run against the real `link_platform` (no second database): every account uses the reserved domain `@auth-e2e.localhost.test`, every request an `e2eauth-` id, and only those rows are deleted before and after the suite | me (constraint: no second DB) |
 
 ## Decisions still open

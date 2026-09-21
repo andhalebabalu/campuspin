@@ -137,6 +137,12 @@ Original design:
 
 ### 2.3 Cities and colleges
 
+> **Implemented in Phase 4 (colleges only):** `GET /colleges`, `GET /colleges/:idOrSlug` and, for staff, `GET|POST /admin/colleges`, `GET|PATCH /admin/colleges/:id`, `POST /admin/colleges/:id/{activate,deactivate,verify,unverify}` and `POST|PATCH|DELETE /admin/colleges/:id/images[/:imageId]`. Schemas are in `@platform/contracts` (`colleges.ts`), with examples in Swagger. Differences from the design below: the filter is `city` (a name), because there is no `cities` table yet, so `/cities` and `/admin/cities` are not built; `sort` is `name` (default) / `nearest` / `popular` (by number of active places) / `newest`; a card carries `verified`, `placeCount` and `distanceMeters` but not `popularCategories`; there is no `/colleges/popular` (use `sort=popular`), `/categories` or `/discover` yet (they need categories and places); `verify` has an `unverify` counterpart, both with an optional `reason`; images are managed per college. The permission is `colleges.manage` (see [07](07-rbac.md)).
+>
+> `GET /colleges` returns the list envelope with `meta`; a draft or deactivated college is a `404`; public responses are cacheable and every error is `no-store`.
+
+Original design:
+
 | Method | Path | Access | Notes |
 |---|---|---|---|
 | GET | `/cities` | Public | Launched cities. |

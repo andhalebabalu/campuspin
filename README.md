@@ -2,7 +2,7 @@
 
 Everything a student needs around their college: rooms, PGs, hostels, messes, libraries, gyms, laundry, transport and more, discoverable by college, verified by staff, contributed to by students and maintained by business owners.
 
-> **Status: Phases 1–2 of 23 complete** (project setup, then the XAMPP MySQL + Prisma database: schema, migration, seed and health check). Authentication and the product features arrive in the following phases (see [Roadmap](#roadmap)).
+> **Status: Phases 1–4 complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory). Places, search and the rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
 
 Launch market: Ahilyanagar, Maharashtra. The working brand name `LINK` lives in one config value and can change without touching the architecture.
 
@@ -59,7 +59,7 @@ Detailed design lives in [docs/](docs/README.md): architecture, database/ERD, AP
 │  │  ├─ src/
 │  │  │  ├─ common/         response envelope, error filter, zod validation, Swagger helpers
 │  │  │  ├─ infra/          config, database (Prisma), logging
-│  │  │  └─ modules/        feature modules (health today; auth, colleges, places, ... next)
+│  │  │  └─ modules/        feature modules (health, auth, audit, colleges; places, search, ... next)
 │  │  └─ test/              end-to-end tests (Supertest against the real Nest app)
 │  └─ web/                  Next.js app (@platform/web)
 │     └─ src/
@@ -396,17 +396,60 @@ The seeded demo admin (`admin@localhost.test` / `ChangeMe123!`, development only
 - **Cleanup:** `npm run auth:purge-tokens` deletes expired tokens; schedule it daily.
 - **Limits of this phase:** an access token stays valid until it expires (max 15 min) even after logout, suspension or a role change; the refresh and `/auth/me` always read the database. The rate limiter is per process (in memory). Only the development (`console`) email provider exists; the API refuses to start in production until a real one is added.
 
+## College directory
+
+Students browse colleges without an account; staff manage them behind the `colleges.manage` permission (ADMIN and SUPER_ADMIN). Swagger (`/api/docs`) has every request, response and example.
+
+**Public (no account)**
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/colleges` | Active colleges as cards, paginated. `q` (name, short name, city), `city`, `lat` + `lng` (adds each college's `distanceMeters`), `sort` = `name` (default) / `nearest` / `popular` / `newest`, `page`, `limit` (max 50) |
+| GET | `/colleges/:idOrSlug` | One active college with its images and the number of active places serving it |
+
+A draft or deactivated college is a `404`, exactly like one that does not exist. Both routes are cacheable (`Cache-Control: public, s-maxage=60, stale-while-revalidate=300` plus an ETag); an error response is never cached.
+
+**Staff (Bearer token with `colleges.manage`; every response is `no-store`)**
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/admin/colleges` | Every college in any status; filter by `status`, `verification`, `q`, `city`; sort `newest` / `updated` / `name` |
+| POST | `/admin/colleges` | Create (a DRAFT unless `status: "ACTIVE"`) |
+| GET / PATCH | `/admin/colleges/:id` | Read / edit only the fields you send (`null` clears optional ones) |
+| POST | `/admin/colleges/:id/activate`, `/deactivate` | Publish / hide. Optional body `{ "reason": "..." }` goes to the audit log |
+| POST | `/admin/colleges/:id/verify`, `/unverify` | Set / remove the public "verified" mark |
+| POST / PATCH / DELETE | `/admin/colleges/:id/images[/:imageId]` | Manage the gallery (links to pictures hosted elsewhere; at most 20) |
+
+**Rules worth knowing**
+
+- **Lifecycle:** DRAFT -> ACTIVE <-> INACTIVE. Colleges are never deleted, so history and student links survive. Repeating an action is a harmless no-op; deactivating a draft is a `409`.
+- **Slug:** generated from the name (`sample-arts-and-science-college`, then `-2`, `-3` if taken) or supplied. It can change only while the college is a DRAFT, because a published slug is a public link. Reserved words (`popular`, `cities`, ...) and id-shaped values are refused. The same name in the same city is a `409`.
+- **Which places serve a college:** every place within `serviceRadiusMeters` (default 5 km, 100 m to 50 km) by straight-line distance, stored in `college_places`. Creating a college, moving it or changing its radius recomputes the links with the same rule the seed uses; a place a staff member PINNED or EXCLUDED keeps that decision. `placeCount` counts ACTIVE places only.
+- **Plain text only:** names, addresses and descriptions refuse markup and control characters; links must be http(s) without credentials; coordinates 0, 0 ("null island") are refused; unknown fields in a body are a `400` (so `isDemo` or `status` can never be set by accident).
+- **Audit:** `COLLEGE_CREATED`, `COLLEGE_UPDATED`, `COLLEGE_ACTIVATED`, `COLLEGE_DEACTIVATED`, `COLLEGE_VERIFIED`, `COLLEGE_UNVERIFIED` and the three `COLLEGE_IMAGE_*` actions are written in the same transaction as the change. They name the fields that changed, never their text.
+- **Limits of this phase:** `sort=nearest` and `sort=popular` read every matching college and order it in memory (fine for hundreds or a few thousand colleges); two staff editing the same college is last-write-wins; the same-name check is best effort under two identical simultaneous requests.
+
+**Try it locally** (with the API running and the demo admin seeded):
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:3001/api/v1/auth/login -H "Content-Type: application/json" \
+  -d '{"email":"admin@localhost.test","password":"ChangeMe123!"}' | node -pe "JSON.parse(require('fs').readFileSync(0)).data.accessToken")
+curl -X POST http://localhost:3001/api/v1/admin/colleges -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"name":"My Test College","address":"Station Road","city":"Ahilyanagar","state":"Maharashtra","latitude":19.1,"longitude":74.75,"status":"ACTIVE"}'
+curl "http://localhost:3001/api/v1/colleges?sort=nearest&lat=19.096&lng=74.748"
+```
+
 ## Testing
 
 ```bash
 npm test               # unit tests: contracts, api-client, API helpers (no database)
 npm run test:e2e       # API end-to-end over HTTP: envelope, errors, validation, CORS, headers, rate limit, Swagger
 npm run test:db        # REAL database: connection, migration, all tables, relations, constraints, seed, purge, health API
-npm run test:e2e:db    # REAL database, over HTTP: register -> verify -> login -> me -> refresh -> logout, reset, roles, permissions, rate limit
+npm run test:e2e:db    # REAL database, over HTTP: authentication (register -> ... -> logout, reset, roles, permissions, rate limit) and the college directory (public browse, staff CRUD, proximity, audit)
 npm run typecheck && npm run lint
 ```
 
-`npm test` and `npm run test:e2e` never need XAMPP (they point at an unreachable database on purpose). `npm run test:e2e:db` does need it: authentication creates real rows, so those tests give every account an email under the reserved domain `@auth-e2e.localhost.test` and tag every request with an `e2eauth-` id, and they delete exactly those rows before and after the run (your seeded data is never touched). **`npm run test:db` needs XAMPP MySQL running, `link_platform` migrated (Step 5) and does not need it seeded.** Every database test runs inside a transaction that is **always rolled back**, so it leaves no data behind and needs no second database; your seeded demo data is never touched.
+`npm test` and `npm run test:e2e` never need XAMPP (they point at an unreachable database on purpose). `npm run test:e2e:db` does need it: authentication creates real rows, so those tests give every account an email under the reserved domain `@auth-e2e.localhost.test` and tag every request with an `e2eauth-` id, and they delete exactly those rows before and after the run. The college tests likewise create colleges and places whose slugs start with `e2e-` / `e2e-place-` (placed 20 km apart so they never interfere with each other or with the demo data) and remove only those (your seeded data is never touched). **`npm run test:db` needs XAMPP MySQL running, `link_platform` migrated (Step 5) and does not need it seeded.** Every database test runs inside a transaction that is **always rolled back**, so it leaves no data behind and needs no second database; your seeded demo data is never touched.
 
 ## Troubleshooting
 
@@ -428,6 +471,8 @@ npm run typecheck && npm run lint
 | Registering answers `503 Registration is temporarily unavailable` | The `STUDENT` role is missing: run `npm run db:seed:reference` |
 | API refuses to start: `Unsafe production configuration` | In production set real `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET`; `EMAIL_PROVIDER=console` is development-only and no production provider exists yet |
 | No verification email arrives | Development sends nothing: open the API terminal and copy the link printed under `DEV EMAIL` |
+| The public `/colleges` list is empty, or a new college returns 404 | Only **ACTIVE** colleges are public: a new one is a DRAFT until you `POST /admin/colleges/:id/activate` |
+| `403 FORBIDDEN` on `/admin/colleges` | The account needs the ADMIN or SUPER_ADMIN role (`colleges.manage`); roles are read at sign-in, so sign in again after a role change |
 | `429 RATE_LIMITED` while testing locally | Raise `AUTH_RATE_LIMIT` in `apps/api/.env` and restart the API |
 | A token/expiry you edited by hand in phpMyAdmin behaves oddly | Timestamps are **UTC**. Use `UTC_TIMESTAMP(3)`, not `NOW()`, which is offset on a non-UTC machine (India: +5:30) |
 
@@ -440,14 +485,13 @@ npm run typecheck && npm run lint
 
 ## Roadmap
 
-| # | Phase | Status |
-|---|---|---|
-| 1 | Project setup, API foundation, health check | ✅ done |
-| 2 | XAMPP MySQL + Prisma: schema, migration, seed, database health check | ✅ done |
-| 3 | Authentication, JWT, email verification, RBAC guards, audit service | ✅ done |
-| 4 | Migrations + seed | ✅ delivered in Phase 2 |
-| 5–6 | (Authentication and authorization) | ✅ delivered in Phase 3 |
-| 7–10 | Colleges, categories, places, search + filters + distance | |
+| Delivered as | Plan items ([docs/08](docs/08-roadmap.md)) | What | Status |
+|---|---|---|---|
+| Phase 1 | 1 | Project setup, API foundation, health check | ✅ done |
+| Phase 2 | 2, 4 | XAMPP MySQL + Prisma: schema, migration, seed, database health check | ✅ done |
+| Phase 3 | 5, 6 | Authentication, JWT, email verification, RBAC guards, audit service | ✅ done |
+| Phase 4 | 7 | Colleges: public directory, staff management, proximity links | ✅ done |
+| next | 8–10 | Categories, places, search + filters + distance | |
 | 11–16 | Submissions + duplicate detection, business owner, claims, reviews, reports, saved places | |
 | 17–21 | Next.js foundation, public website, student discovery, business + admin dashboards | |
 | 22–23 | Integration testing, performance + security review | |

@@ -14,7 +14,7 @@ The order below is the one specified for implementation: **backend first, then U
 | 4 | Migrations + seed | Roles, permissions, category tree + attributes + amenities, labelled demo colleges/places | Idempotent seed; demo data flagged and excluded from production | M | **Delivered in Phase 2** |
 | 5 | Authentication | Register, verify email, login, refresh rotation, forgot/reset, email-provider abstraction (dev logging) | All flows integration-tested; refresh-reuse revokes family | L | **Delivered in Phase 3** |
 | 6 | Roles + authorization | Permission guards, resource policies, audit of admin actions | Permission-matrix tests generated from [07-rbac](07-rbac.md); route-map test | M | Guards and route sweep **delivered in Phase 3**; resource policies and admin-action audit arrive with the resources they protect |
-| 7 | Colleges | CRUD, activate/deactivate, verify, list/detail | Admin-only writes enforced; tests | S | |
+| 7 | Colleges | CRUD, activate/deactivate, verify, list/detail, images, proximity links (`college_places`), audit | Admin-only writes enforced; public browse anonymous and cacheable; proximity matches the seed; tests | S | **Done** (delivered as Phase 4) |
 | 8 | Categories | Tree, attributes, amenities, filter descriptors, admin CRUD | Categories are 100 % data-driven | M | |
 | 9 | Places | CRUD, lifecycle/moderation, prices, hours, amenities, images (storage abstraction + local upload) | Lifecycle transitions and ownership rules tested | L | |
 | 10 | Search + filters + distance | Keyword, category, college, distance (Haversine), price, rating, verified, sorts, pagination; `college_places` | p95 list < 150 ms at 10k places; `EXPLAIN` reviewed | L | |

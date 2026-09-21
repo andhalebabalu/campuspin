@@ -203,6 +203,8 @@ Separate axes so states stay simple:
 
 ### 5.5 Distance and proximity
 
+> **Implemented in Phase 4 for colleges:** `CollegeProximityService` (`modules/colleges`) owns the college -> place links: bounding-box query, exact Haversine, minimal writes (only rows that change), inside the caller's transaction. It is exported so the places phase can call it when a place is created or moved. The nightly reconcile job and place-side triggers are not built yet. "Near me" for colleges is a `lat`/`lng` on `GET /colleges` (distance computed in code); it needs no raw SQL at directory scale.
+
 - Coordinates are the only source of truth. `college_places(college_id, place_id, distance_m, mode)` is **derived**: a `ProximityService` computes Haversine distance for every place within the college's `service_radius_m` (default 5 km) and upserts rows. `mode` is `AUTO`, `PINNED` (staff force-include beyond radius) or `EXCLUDED`.
 - Recomputed on: place goes live / coordinates change, college created / moved / radius changed, and a nightly reconcile job. One service owns this so the rule exists once.
 - A place can appear under many colleges (spec §34); the UI shows distance from the **selected** college.
