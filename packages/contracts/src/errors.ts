@@ -18,6 +18,14 @@ export const ERROR_CODES = [
   'SERVICE_UNAVAILABLE',
   'DATABASE_UNAVAILABLE',
   'INTERNAL_ERROR',
+  // Authentication (Phase 3). The HTTP status disambiguates where a code is reused.
+  'INVALID_CREDENTIALS', // 401: wrong email or password (deliberately not saying which)
+  'EMAIL_NOT_VERIFIED', // 403: credentials are right, but the email is not verified yet
+  'ACCOUNT_SUSPENDED', // 403: credentials are right, but a moderator suspended the account
+  'ACCOUNT_DEACTIVATED', // 403: credentials are right, but the account is deactivated
+  'EMAIL_ALREADY_REGISTERED', // 409
+  'TOKEN_INVALID', // 401 refresh token / 400 email-link token: unknown, already used or revoked
+  'TOKEN_EXPIRED', // 401 access token (refresh it) / 400 email-link token (request a new one)
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
