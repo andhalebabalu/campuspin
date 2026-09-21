@@ -22,6 +22,36 @@ export class AppException extends HttpException {
     });
   }
 
+  /** 401: the caller is not (validly) authenticated. */
+  static unauthorized(
+    code: ErrorCode = 'UNAUTHORIZED',
+    message = 'Authentication required',
+  ): AppException {
+    return new AppException(code, message, HttpStatus.UNAUTHORIZED);
+  }
+
+  /** 403: authenticated, but not allowed to do this. */
+  static forbidden(
+    code: ErrorCode = 'FORBIDDEN',
+    message = 'You do not have permission to perform this action',
+  ): AppException {
+    return new AppException(code, message, HttpStatus.FORBIDDEN);
+  }
+
+  /** 400 with a specific machine-readable code (for example an expired email-link token). */
+  static badRequest(
+    code: ErrorCode,
+    message: string,
+    details?: Record<string, unknown>,
+  ): AppException {
+    return new AppException(code, message, HttpStatus.BAD_REQUEST, details);
+  }
+
+  /** 409: the request conflicts with existing state (for example a duplicate email). */
+  static conflict(code: ErrorCode, message: string): AppException {
+    return new AppException(code, message, HttpStatus.CONFLICT);
+  }
+
   /** 503 when the database cannot be reached. */
   static databaseUnavailable(message: string, details?: Record<string, unknown>): AppException {
     return new AppException(

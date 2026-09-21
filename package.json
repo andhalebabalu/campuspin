@@ -28,6 +28,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:db": "npm run build:packages && npm run test:db -w @platform/api",
+    "test:e2e:db": "npm run build:packages && npm run test:e2e:db -w @platform/api",
+    "auth:purge-tokens": "npm run auth:purge-tokens -w @platform/api",
     "db:create": "npm run db:create -w @platform/api",
     "db:validate": "npm run db:validate -w @platform/api",
     "db:generate": "npm run db:generate -w @platform/api",

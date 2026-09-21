@@ -5,8 +5,11 @@ import { databaseHealthSchema, healthSchema } from '@platform/contracts';
 import type { DatabaseHealth, Health } from '@platform/contracts';
 import { ResponseMessage } from '../../common/http/response-message.decorator.js';
 import { ApiEnvelopeResponse, ApiErrorResponses } from '../../common/swagger/api-responses.js';
+import { Public } from '../auth/decorators/public.decorator.js';
 import { HealthService } from './health.service.js';
 
+// Probes must work without credentials (load balancers, uptime monitors, the web app's status badge).
+@Public()
 @ApiTags('Health')
 @Controller('health')
 export class HealthController {
