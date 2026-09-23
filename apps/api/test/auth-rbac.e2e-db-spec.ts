@@ -192,7 +192,10 @@ describe('Access control (e2e, real database)', () => {
       'GET /api/v1/admin/colleges/{id}',
       'GET /api/v1/admin/places',
       'GET /api/v1/admin/places/{id}',
+      'GET /api/v1/admin/submissions',
+      'GET /api/v1/admin/submissions/{id}',
       'GET /api/v1/auth/me',
+      'GET /api/v1/place-submissions/{id}',
       'PATCH /api/v1/admin/amenities/{id}',
       'PATCH /api/v1/admin/categories/{id}',
       'PATCH /api/v1/admin/categories/{id}/attributes/{attributeId}',
@@ -221,8 +224,13 @@ describe('Access control (e2e, real database)', () => {
       'POST /api/v1/admin/places/{id}/images',
       'POST /api/v1/admin/places/{id}/unverify',
       'POST /api/v1/admin/places/{id}/verify',
+      'POST /api/v1/admin/submissions/{id}/approve',
+      'POST /api/v1/admin/submissions/{id}/mark-duplicate',
+      'POST /api/v1/admin/submissions/{id}/reject',
       'POST /api/v1/auth/logout',
       'POST /api/v1/auth/logout-all',
+      'POST /api/v1/place-submissions',
+      'POST /api/v1/places/duplicate-check',
     ];
 
     it('answers 401 to every documented route that is not explicitly public', async () => {

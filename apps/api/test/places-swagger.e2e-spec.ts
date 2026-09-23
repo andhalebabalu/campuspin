@@ -58,7 +58,9 @@ describe('Swagger documentation of places (e2e)', () => {
 
   it('documents exactly the 2 public and 11 admin place routes', () => {
     const documented = Object.entries(doc.paths)
-      .filter(([path]) => path.includes('/places'))
+      // `/places/duplicate-check` is declared here for a tidy public URL, but it belongs to the
+      // submissions feature (tagged "Submissions", documented in submissions-swagger.e2e-spec.ts).
+      .filter(([path]) => path.includes('/places') && path !== '/api/v1/places/duplicate-check')
       .flatMap(([path, operations]) =>
         Object.keys(operations).map((method) => `${method} ${path}`),
       );

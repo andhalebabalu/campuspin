@@ -51,6 +51,12 @@ export async function removeAuthTestData(db: PrismaClient): Promise<void> {
       ],
     },
   });
+  // Submissions have no slug of their own to filter by; every one made in these tests was made BY a
+  // test user, and must go before that user (`submittedById` is RESTRICT) and before the place it
+  // created (`resultingPlaceId` is SET NULL on the submission, which would otherwise orphan it).
+  if (ids.length > 0) {
+    await db.placeSubmission.deleteMany({ where: { submittedById: { in: ids } } });
+  }
   await db.place.deleteMany({ where: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } });
   await db.college.deleteMany({ where: { slug: { startsWith: TEST_COLLEGE_SLUG_PREFIX } } });
   // A category's attributes and rating dimensions cascade with it, but a group with a child still
