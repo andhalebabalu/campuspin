@@ -17,6 +17,7 @@ import { CategoriesModule } from './modules/categories/categories.module.js';
 import { CollegesModule } from './modules/colleges/colleges.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { PlacesModule } from './modules/places/places.module.js';
+import { SubmissionsModule } from './modules/submissions/submissions.module.js';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { PlacesModule } from './modules/places/places.module.js';
     CollegesModule,
     CategoriesModule,
     PlacesModule,
+    SubmissionsModule,
     HealthModule,
   ],
   providers: [

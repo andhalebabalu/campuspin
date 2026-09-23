@@ -51,6 +51,12 @@ export const AUDIT_ACTIONS = [
   'PLACE_IMAGE_ADDED',
   'PLACE_IMAGE_UPDATED',
   'PLACE_IMAGE_REMOVED',
+  // Student submissions (Phase 8). A submission also creates a PENDING place; its own lifecycle
+  // (PLACE_ACTIVATED etc.) is recorded separately against that place when a submission is approved.
+  'SUBMISSION_CREATED',
+  'SUBMISSION_APPROVED',
+  'SUBMISSION_REJECTED',
+  'SUBMISSION_MARKED_DUPLICATE',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
