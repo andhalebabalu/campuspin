@@ -74,6 +74,9 @@
 | Category assignment is required, attribute values are not | A place needs >=1 leaf (never group) category, since that is core to what a place *is*; the first id is primary and decides the price-comparison unit. Per-category custom field values (`place_attribute_values`, e.g. a PG's `gender`) are deferred: the seed already writes them, but building read/write plus the runtime validator was a bigger scope than "CRUD, lifecycle, prices, hours, amenity links and images" covers | me |
 | Price summary rule | `priceMin`/`priceMax`/`priceUnit` compare only price options in the primary category's `defaultPriceUnit` (or the first option's own unit if none match) — the exact rule the Phase 2 seed already used, now shared as `summarizePrices` instead of living only in the seed | me |
 | College proximity, reversed | `CollegeProximityService.recomputeForPlace(placeId)` (new) reads every college into memory and checks distance against each one's own radius, rather than adding a new spatial query — consistent with the existing "hundreds, not millions, of colleges" scale assumption | me |
+| College hub gets real places | The Phase 5 "coming soon" placeholder on `/colleges/[collegeSlug]` is replaced with a real, working place list once the Places API exists, matching what the frontend scope always intended it to become | you (brief) |
+| College-embedded place list has no URL sync | Unlike the standalone `/colleges` directory, the places-at-this-college list is a section of a page, not a page of its own, so its search/sort/page live in component state only, not the query string | me |
+| Open in Google Maps is a real link, not a click handler | A plain `<a href target="_blank">`, not a Button `onClick` calling `window.open` — avoids needing `'use client'` on the whole detail view, and is more correct anyway (works without JS, opens properly on mobile) | me |
 
 ## Decisions still open
 

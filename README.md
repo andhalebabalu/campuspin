@@ -541,7 +541,7 @@ curl "http://localhost:3001/api/v1/places?sort=nearest&lat=19.096&lng=74.748"
 
 ## Frontend foundation
 
-Phase 5 also built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly). It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist (auth and the college directory). Places, search, the marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
+Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly), and Phase 6 continued it alongside the place directory. It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist. Search, the marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
 
 **Pages**
 
@@ -551,27 +551,31 @@ Phase 5 also built the first slice of `apps/web`, ahead of the master spec's bac
 | `/verify-email` | Doubles as the token landing page (`?token=`) and the "check your inbox" / resend screen (`?email=`) |
 | `/forgot-password`, `/reset-password` | Request a reset link, then set a new password with its token |
 | `/colleges` | Server-rendered first page of results (SEO, fast paint) handed off to client-side search, sort and paging that keep the URL in sync |
-| `/colleges/[collegeSlug]` | Server-rendered college detail: gallery, description, website; a honest "coming soon" placeholder where places will show up |
+| `/colleges/[collegeSlug]` | Server-rendered college detail: gallery, description, website, and (Phase 6) a real, working list of the places serving it — search, sort (nearest/cheapest/name/newest) and paging |
+| `/places/[placeSlug]` | Server-rendered place detail (Phase 6): gallery, price, categories, amenities, hours, description and an **Open in Google Maps** link (the place's own link if staff set one, otherwise built from its coordinates) |
 
 **Plumbing**
 
 - `lib/auth/token-store.ts` + `lib/auth/session-context.tsx`: the access token lives in memory only, the refresh token in `localStorage`; `SessionProvider` bootstraps a session on load via `POST /auth/refresh` and exposes `login`/`register`/`logout` to the rest of the app. The Navbar reads it to switch between "Sign in / Register" and "Hi, {name} · Sign out".
-- `services/auth.service.ts`, `services/colleges.service.ts`: thin wrappers over `@platform/api-client`, typed end to end by `@platform/contracts` — the same schemas the API validates with.
+- `services/auth.service.ts`, `services/colleges.service.ts`, `services/places.service.ts`: thin wrappers over `@platform/api-client`, typed end to end by `@platform/contracts` — the same schemas the API validates with.
 - `components/ui`: `Button`, `Input`, `Card`, `Badge`, `FormAlert` — enough of the [06](docs/06-design-system.md) component spec to build the pages above on the real tokens, not a redesign of the whole system.
+- `utils/format-price.ts`: "₹3,000 / month", a range, or "Price on request" — the one place this formatting rule lives, shared by the place card and its detail page.
 - Every page has a real loading, empty and error state (skeletons, `EmptyState`, `ErrorState` with retry and a request id), per [05 §5](docs/05-frontend.md#5-mandatory-states-per-route).
 
 **Rules worth knowing**
 
-- **No new dependencies:** forms are plain React state + the contracts' zod schemas (`safeParse` on submit), not react-hook-form; there is no Radix/CVA, TanStack Query or a map library yet — the pages built this phase did not need them.
-- **`notFound()` and `loading.tsx` don't mix across a route's own segment:** a parent segment's `loading.tsx` streams a 200 shell before a *sibling* dynamic route's `notFound()` call can resolve, so that route never gets a real HTTP 404 (found by testing `/colleges/:slug` for a missing college — it kept answering 200 with the not-found page's content until the loading.tsx one level up was removed and `generateMetadata` and the page were both made to call `notFound()` from the same memoized fetch). `/colleges` therefore has no `loading.tsx` for now; a route-scoped Suspense boundary that doesn't cascade to `[collegeSlug]` is deferred.
-- **No per-request "401 → silent refresh → retry":** every page this phase needs either no session (public browsing) or only reads it for display, so that interceptor is deferred to the phase that adds the first session-gated page.
-- **`sort=nearest` is left out** of the college directory's sort dropdown: it needs a geolocation UI this phase does not build.
+- **No new dependencies:** forms are plain React state + the contracts' zod schemas (`safeParse` on submit), not react-hook-form; there is no Radix/CVA, TanStack Query or a map library yet — the pages built so far did not need them.
+- **`notFound()` and `loading.tsx` don't mix across a route's own segment:** a parent segment's `loading.tsx` streams a 200 shell before a *sibling* dynamic route's `notFound()` call can resolve, so that route never gets a real HTTP 404 (found by testing `/colleges/:slug` for a missing college in Phase 5). Fixed by removing `/colleges/loading.tsx` and having `generateMetadata` and the page both call `notFound()` from one memoized fetch — the same pattern `/places/[placeSlug]` uses from the start.
+- **No per-request "401 → silent refresh → retry":** every page so far needs either no session (public browsing) or only reads it for display, so that interceptor is deferred to the phase that adds the first session-gated page.
+- **`sort=nearest` is left out** of the standalone `/colleges` directory's sort dropdown (it needs a geolocation UI not built yet), but **is** the default sort for the places list embedded in a college's own page — there, "nearest" is unambiguous (from that college), no geolocation needed.
+- **The college-embedded place list is not URL-synced**, unlike `/colleges` itself: it is a section of a larger page, not a page of its own, so its search/sort/page live in component state only.
 - Images (`logoUrl`, `coverImageUrl`, gallery) use plain `<img>`, not `next/image`, since no remote-image domains are configured yet.
 
 **Try it locally** (with the API running, `npm run dev -w @platform/web` or the root `npm run dev`):
 
 ```bash
 open http://localhost:3000/colleges       # or curl -s http://localhost:3000/colleges
+open http://localhost:3000/colleges/demo-sample-arts-science-college   # a real "college hub" with real places
 open http://localhost:3000/register
 ```
 
