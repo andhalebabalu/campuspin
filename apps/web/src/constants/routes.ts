@@ -5,6 +5,7 @@ export const ROUTES = {
   collegeDetail: (slug: string) => `/colleges/${slug}`,
   placeDetail: (slug: string) => `/places/${slug}`,
   search: '/search',
+  suggestPlace: '/suggest-a-place',
   login: '/login',
   register: '/register',
   verifyEmail: '/verify-email',

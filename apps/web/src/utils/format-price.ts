@@ -1,6 +1,6 @@
 import type { PriceUnit } from '@platform/contracts';
 
-const UNIT_LABELS: Record<PriceUnit, string> = {
+export const UNIT_LABELS: Record<PriceUnit, string> = {
   ONE_TIME: 'one-time',
   HOUR: 'hour',
   DAY: 'day',
