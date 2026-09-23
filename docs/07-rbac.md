@@ -8,6 +8,8 @@ Answers spec §62 item **9**. Authorisation is two-layered ([02 §5.2](02-archit
 
 > **Phase 4 status:** `colleges.manage` (ADMIN, SUPER_ADMIN) now guards every `/admin/colleges` route with `@Permissions('colleges.manage')`; moderators and students get `403` (tested for every route). Browsing colleges is **anonymous** (`@Public()`), matching "anonymous visitors can browse", so `colleges.read` is not used by any route yet: it is granted to every role and stays reserved for authenticated-only college views. Each college change writes a `COLLEGE_*` audit row in the same transaction. The secure-by-default route sweep lists the two public college routes and the eleven admin routes explicitly.
 
+> **Phase 5 status:** `categories.manage` (ADMIN, SUPER_ADMIN) now guards every `/admin/categories` and `/admin/amenities` route with `@Permissions('categories.manage')`; moderators and students get `403` (tested for every route, including the attribute and rating-dimension sub-resources). Browsing categories and amenities is **anonymous** (`@Public()`), so `categories.read` remains unused by any route, granted to every role, and reserved for a future authenticated-only view. Each category/attribute/rating-dimension/amenity change writes a `CATEGORY_*` or `AMENITY_*` audit row in the same transaction. The secure-by-default route sweep lists the three public category/amenity routes and the seventeen admin routes explicitly.
+
 ## 1. Roles
 
 | Role | Who | Notes |

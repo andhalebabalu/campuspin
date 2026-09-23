@@ -60,6 +60,11 @@
 | College search | `q` is plain text: `%`, `_` and `\` are escaped (Prisma's `contains` does not, so `q=%` used to match every college) | found in testing |
 | `nearest` / `popular` sorts | Computed in memory over all matches, because they cannot be a portable `ORDER BY`; fine for a directory of hundreds to a few thousand colleges | me |
 | Auth end-to-end tests | Run against the real `link_platform` (no second database): every account uses the reserved domain `@auth-e2e.localhost.test`, every request an `e2eauth-` id, and only those rows are deleted before and after the suite | me (constraint: no second DB) |
+| Phase 5 backend scope | "Categories only" (plan item 8), chosen by you when asked. A frontend foundation was also requested for this phase; see [05](05-frontend.md) once it lands | you |
+| Category/amenity lifecycle | ACTIVE <-> INACTIVE only, no DRAFT: a new category or amenity is ACTIVE unless `status: "INACTIVE"` is sent, unlike colleges. Never deleted; repeating an action is a no-op | me |
+| Category tree shape | Exactly two levels, enforced by the service layer, not the schema: `parentId` on create must reference an existing top-level group; `parentId` and `status` are immutable via PATCH (recreate instead of re-parenting) | you (brief) + me |
+| Attributes/rating dimensions scope | Only a category (never a group) may have them; adding one to a group is a `400`. An attribute's `key` and `dataType` are permanent once created | me |
+| Shared contracts/utils extraction | `diffFields`, slug generation (`apps/api/src/common/utils`) and plain-text/slug/id field builders (`packages/contracts/src/text.ts`) were pulled out of the colleges-specific modules into generic ones before categories needed the same logic, with colleges' own exports/tests unchanged via thin re-export wrappers | me |
 
 ## Decisions still open
 

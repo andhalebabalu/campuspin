@@ -158,6 +158,12 @@ Original design:
 
 ### 2.4 Categories and amenities
 
+> **Implemented in Phase 5:** `GET /categories`, `GET /categories/:idOrSlug`, `GET /amenities` and, for staff, `GET|POST /admin/categories`, `GET|PATCH /admin/categories/:id`, `POST /admin/categories/:id/{activate,deactivate}`, `POST|PATCH|DELETE /admin/categories/:id/attributes[/:attributeId]`, `POST|PATCH|DELETE /admin/categories/:id/rating-dimensions[/:dimensionId]` and `GET|POST /admin/amenities`, `PATCH /admin/amenities/:id`, `POST /admin/amenities/:id/{activate,deactivate}`. Schemas are in `@platform/contracts` (`categories.ts`), with examples in Swagger. Differences from the design below: there is no `scope` query param (the table is single-purpose, see [03](03-database.md)); a category's detail returns raw `attributes[]`/`ratingDimensions[]` but not yet a combined `filters[]` descriptor or `amenities[]` (amenities are catalogue-wide, not per category) — that assembly is deferred to the Places/Search phase that will actually render filter controls from it; "deactivate instead of delete when in use" is unconditional here, since categories and amenities have no DRAFT state and are never hard-deleted at all (matching colleges); `key` is the permanent lookup for both attributes and rating dimensions, so it is not editable via PATCH. The permission is `categories.manage` (see [07](07-rbac.md)).
+>
+> `GET /categories` returns the list envelope (no pagination — the tree is small); a category whose group is deactivated is a `404` even if the category itself is ACTIVE; public responses are cacheable and every error is `no-store`.
+
+Original design:
+
 | Method | Path | Access | Notes |
 |---|---|---|---|
 | GET | `/categories` | Public | `scope=PLACE` default. Tree of groups → categories (icon, slug, order). |

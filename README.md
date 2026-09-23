@@ -2,7 +2,7 @@
 
 Everything a student needs around their college: rooms, PGs, hostels, messes, libraries, gyms, laundry, transport and more, discoverable by college, verified by staff, contributed to by students and maintained by business owners.
 
-> **Status: Phases 1–4 complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory). Places, search and the rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
+> **Status: Phases 1–5 (backend) complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory; the category catalogue). Places, search and the rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
 
 Launch market: Ahilyanagar, Maharashtra. The working brand name `LINK` lives in one config value and can change without touching the architecture.
 
@@ -59,7 +59,7 @@ Detailed design lives in [docs/](docs/README.md): architecture, database/ERD, AP
 │  │  ├─ src/
 │  │  │  ├─ common/         response envelope, error filter, zod validation, Swagger helpers
 │  │  │  ├─ infra/          config, database (Prisma), logging
-│  │  │  └─ modules/        feature modules (health, auth, audit, colleges; places, search, ... next)
+│  │  │  └─ modules/        feature modules (health, auth, audit, colleges, categories; places, search, ... next)
 │  │  └─ test/              end-to-end tests (Supertest against the real Nest app)
 │  └─ web/                  Next.js app (@platform/web)
 │     └─ src/
@@ -439,17 +439,70 @@ curl -X POST http://localhost:3001/api/v1/admin/colleges -H "Authorization: Bear
 curl "http://localhost:3001/api/v1/colleges?sort=nearest&lat=19.096&lng=74.748"
 ```
 
+## Category catalogue
+
+Students browse the category tree without an account; staff manage it behind the `categories.manage` permission (ADMIN and SUPER_ADMIN). Swagger (`/api/docs`) has every request, response and example.
+
+A category tree is exactly **two levels**: a top-level **group** (e.g. "Stay") holding **categories** (e.g. "PG", "Hostel", "Boys Hostel"). Only a category (never a group) carries attributes, rating dimensions and a default price unit. Unlike colleges, a new category or amenity is **ACTIVE by default** (there is no DRAFT state) — set `status: "INACTIVE"` on create, or deactivate it afterwards, to keep it unpublished.
+
+**Public (no account)**
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/categories` | The tree: every ACTIVE group with its ACTIVE children |
+| GET | `/categories/:idOrSlug` | One ACTIVE category or group, with attributes and rating dimensions (empty for a group) |
+| GET | `/amenities` | Every ACTIVE amenity |
+
+A category whose group is deactivated is a `404`, even if the category itself is still ACTIVE — hiding a group hides everything under it. Public routes are cacheable (`Cache-Control: public, s-maxage=60, stale-while-revalidate=300`); an error response is never cached.
+
+**Staff (Bearer token with `categories.manage`; every response is `no-store`)**
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/admin/categories` | Every group and category, any status |
+| POST | `/admin/categories` | Create a group (no `parentId`) or a category (`parentId` of an existing top-level group) |
+| GET / PATCH | `/admin/categories/:id` | Read / edit only the fields you send (`parentId` and `status` are not editable here) |
+| POST | `/admin/categories/:id/activate`, `/deactivate` | Publish / hide. Optional body `{ "reason": "..." }` goes to the audit log |
+| POST / PATCH / DELETE | `/admin/categories/:id/attributes[/:attributeId]` | Manage a category's custom fields (BOOLEAN/INTEGER/DECIMAL/TEXT/ENUM/MULTI_ENUM/DATE) — category only, not a group |
+| POST / PATCH / DELETE | `/admin/categories/:id/rating-dimensions[/:dimensionId]` | Manage a category's review-rating axes — category only, not a group |
+| GET | `/admin/amenities` | Every amenity, any status |
+| POST | `/admin/amenities` | Create (global, not category-scoped) |
+| PATCH | `/admin/amenities/:id` | Edit only the fields you send |
+| POST | `/admin/amenities/:id/activate`, `/deactivate` | Publish / hide |
+
+**Rules worth knowing**
+
+- **Lifecycle:** ACTIVE <-> INACTIVE only (no DRAFT). Categories and amenities are never deleted, so history survives; repeating an action is a harmless no-op.
+- **Two levels, enforced by the API, not the schema:** `parentId` on create must point at an existing top-level group; a category with a `parentId` of its own is refused. `parentId` and `status` cannot change on a PATCH — recreate instead of re-parenting.
+- **Attributes and rating dimensions live on categories only:** adding one to a group is a `400`. An attribute's `key` and `dataType` are permanent (a place's value is looked up by key); `ENUM`/`MULTI_ENUM` must have at least one option, every other type must have none. Removing an attribute or dimension already used by a place's data is a `409` (foreign key restrict).
+- **Slug:** generated from the name (retried with `-2`, `-3` if taken) or supplied; a slug can be changed at any time via PATCH (categories have no "published" lock like colleges). Reserved words and id-shaped values are refused. The same name under the same parent (or among top-level groups) is a `409`.
+- **Plain text only:** names, descriptions and help text refuse markup and control characters; machine keys (`key`) must be lowercase `snake_case`; unknown fields in a body are a `400`.
+- **Audit:** `CATEGORY_CREATED`, `CATEGORY_UPDATED`, `CATEGORY_ACTIVATED`, `CATEGORY_DEACTIVATED`, the three `CATEGORY_ATTRIBUTE_*` and three `CATEGORY_RATING_DIMENSION_*` actions, and `AMENITY_CREATED`, `AMENITY_UPDATED`, `AMENITY_ACTIVATED`, `AMENITY_DEACTIVATED` are written in the same transaction as the change. They name the fields that changed, never their text.
+- **Limits of this phase:** no schema migration was needed (the tables were created in Phase 2); two staff editing the same category is last-write-wins.
+
+**Try it locally** (with the API running and the demo admin seeded):
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:3001/api/v1/auth/login -H "Content-Type: application/json" \
+  -d '{"email":"admin@localhost.test","password":"ChangeMe123!"}' | node -pe "JSON.parse(require('fs').readFileSync(0)).data.accessToken")
+GROUP=$(curl -s -X POST http://localhost:3001/api/v1/admin/categories -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"name":"My Test Group"}' | node -pe "JSON.parse(require('fs').readFileSync(0)).data.id")
+curl -X POST http://localhost:3001/api/v1/admin/categories -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"name\":\"My Test Category\",\"parentId\":\"$GROUP\"}"
+curl "http://localhost:3001/api/v1/categories"
+```
+
 ## Testing
 
 ```bash
 npm test               # unit tests: contracts, api-client, API helpers (no database)
 npm run test:e2e       # API end-to-end over HTTP: envelope, errors, validation, CORS, headers, rate limit, Swagger
 npm run test:db        # REAL database: connection, migration, all tables, relations, constraints, seed, purge, health API
-npm run test:e2e:db    # REAL database, over HTTP: authentication (register -> ... -> logout, reset, roles, permissions, rate limit) and the college directory (public browse, staff CRUD, proximity, audit)
+npm run test:e2e:db    # REAL database, over HTTP: authentication (register -> ... -> logout, reset, roles, permissions, rate limit), the college directory (public browse, staff CRUD, proximity, audit) and the category catalogue (public tree, staff CRUD, attributes, rating dimensions, amenities, audit)
 npm run typecheck && npm run lint
 ```
 
-`npm test` and `npm run test:e2e` never need XAMPP (they point at an unreachable database on purpose). `npm run test:e2e:db` does need it: authentication creates real rows, so those tests give every account an email under the reserved domain `@auth-e2e.localhost.test` and tag every request with an `e2eauth-` id, and they delete exactly those rows before and after the run. The college tests likewise create colleges and places whose slugs start with `e2e-` / `e2e-place-` (placed 20 km apart so they never interfere with each other or with the demo data) and remove only those (your seeded data is never touched). **`npm run test:db` needs XAMPP MySQL running, `link_platform` migrated (Step 5) and does not need it seeded.** Every database test runs inside a transaction that is **always rolled back**, so it leaves no data behind and needs no second database; your seeded demo data is never touched.
+`npm test` and `npm run test:e2e` never need XAMPP (they point at an unreachable database on purpose). `npm run test:e2e:db` does need it: authentication creates real rows, so those tests give every account an email under the reserved domain `@auth-e2e.localhost.test` and tag every request with an `e2eauth-` id, and they delete exactly those rows before and after the run. The college tests likewise create colleges and places whose slugs start with `e2e-` / `e2e-place-` (placed 20 km apart so they never interfere with each other or with the demo data), and the category tests create categories and amenities whose slugs/keys start with `e2e-cat-` / `e2e_test_`; each suite removes only the rows it made (your seeded data is never touched). **`npm run test:db` needs XAMPP MySQL running, `link_platform` migrated (Step 5) and does not need it seeded.** Every database test runs inside a transaction that is **always rolled back**, so it leaves no data behind and needs no second database; your seeded demo data is never touched.
 
 ## Troubleshooting
 
