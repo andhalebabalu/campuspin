@@ -2,7 +2,7 @@
 
 Everything a student needs around their college: rooms, PGs, hostels, messes, libraries, gyms, laundry, transport and more, discoverable by college, verified by staff, contributed to by students and maintained by business owners.
 
-> **Status: Phases 1–6 complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory; the category catalogue; a Next.js frontend foundation with real auth and college-directory pages; and the place directory). Search and the rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
+> **Status: Phases 1–7 backend complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory; the category catalogue; a Next.js frontend foundation with real auth, college-directory and place pages; the place directory; and full-text place search). The rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
 
 Launch market: Ahilyanagar, Maharashtra. The working brand name `LINK` lives in one config value and can change without touching the architecture.
 
@@ -500,7 +500,7 @@ Students browse places without an account; staff manage them behind the `places.
 
 | Method | Path | What it does |
 |---|---|---|
-| GET | `/places` | Active places as cards, paginated. `q` (name, address), `city`, `collegeSlug` (places serving that college), `categorySlug`, `lat` + `lng` (adds each place's `distanceMeters`; with `collegeSlug` alone, distance defaults to "from that college"), `sort` = `name` (default) / `nearest` / `newest` / `cheapest`, `page`, `limit` (max 50) |
+| GET | `/places` | Active places as cards, paginated. `q` (name, description, address), `city`, `collegeSlug` (places serving that college), `categorySlug`, `minPrice`/`maxPrice` (range overlap), `verified=true`, `lat` + `lng` (adds each place's `distanceMeters`; with `collegeSlug` alone, distance defaults to "from that college"), `sort` = `name` (default) / `nearest` / `newest` / `cheapest` / `relevance` (needs `q`), `page`, `limit` (max 50) |
 | GET | `/places/:idOrSlug` | One active place, with its categories, amenities, opening hours, price options and images |
 
 A draft, pending, rejected or deactivated place is a `404`, exactly like one that does not exist. Both routes are cacheable (`Cache-Control: public, s-maxage=60, stale-while-revalidate=300`); an error response is never cached.
@@ -526,7 +526,8 @@ A draft, pending, rejected or deactivated place is a `404`, exactly like one tha
 - **Plain text only:** names, addresses and descriptions refuse markup and control characters; links must be http(s) without credentials; coordinates 0, 0 ("null island") are refused; unknown fields in a body are a `400`.
 - **Permissions:** `places.create` and `places.update` are already seeded for `BUSINESS_OWNER` but are not wired to any route yet — they are reserved for the business-owner phase's own, ownership-scoped endpoints. Every route in this phase needs `places.manage` (staff only).
 - **Audit:** `PLACE_CREATED`, `PLACE_UPDATED`, `PLACE_ACTIVATED`, `PLACE_DEACTIVATED`, `PLACE_VERIFIED`, `PLACE_UNVERIFIED` and the three `PLACE_IMAGE_*` actions are written in the same transaction as the change. They name the fields that changed, never their text.
-- **Limits of this phase:** `sort=nearest` and `sort=cheapest` read every matching place and order it in memory (fine for hundreds to a few thousand places); no student-submission moderation, no business-owner self-service listings, no image upload (URLs only, same as colleges) and no per-category attribute values yet — all deferred to their own phases.
+- **Search (Phase 7):** `sort=relevance` uses a real MySQL/MariaDB `FULLTEXT` index on `name`/`description` (migration `add_place_fulltext_search` — the first schema change since Phase 2), ordered by Prisma's native `_relevance`. Since Prisma can order by relevance but cannot hand back the match score as a value, it can't be blended with distance and verified status in one SQL `ORDER BY`; instead `rankByRelevance` combines their **rank positions** (0.5 text + 0.2 proximity + 0.1 verified, the platform's original weights minus the rating term, which stays 0 until Reviews exists) in application code, over every relevance-matching row. `minPrice`/`maxPrice` never match a place with no price at all; `verified=true` shows only staff-verified places.
+- **Limits of this phase:** `sort=nearest`, `sort=cheapest` and `sort=relevance` read every matching place and order it in memory (fine for hundreds to a few thousand places); no student-submission moderation, no business-owner self-service listings, no image upload (URLs only, same as colleges), no per-category attribute values, no unified cross-entity `/search`, no autocomplete and no search analytics yet — all deferred to their own phases.
 
 **Try it locally** (with the API running and the demo admin seeded):
 
@@ -537,6 +538,8 @@ MESS=$(curl -s "http://localhost:3001/api/v1/categories" | node -pe "JSON.parse(
 curl -X POST http://localhost:3001/api/v1/admin/places -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d "{\"name\":\"My Test Mess\",\"address\":\"Station Road\",\"city\":\"Ahilyanagar\",\"state\":\"Maharashtra\",\"latitude\":19.1,\"longitude\":74.75,\"status\":\"ACTIVE\",\"categoryIds\":[\"$MESS\"]}"
 curl "http://localhost:3001/api/v1/places?sort=nearest&lat=19.096&lng=74.748"
+curl "http://localhost:3001/api/v1/places?q=mess&sort=relevance"
+curl "http://localhost:3001/api/v1/places?minPrice=1000&maxPrice=4000&verified=true"
 ```
 
 ## Frontend foundation
@@ -633,7 +636,8 @@ npm run typecheck && npm run lint
 | Phase 4 | 7 | Colleges: public directory, staff management, proximity links | ✅ done |
 | Phase 5 | 8, 17–18 (slice) | Categories, attributes, rating dimensions, amenities; a frontend foundation (session, primitives, auth pages, college directory) | ✅ done |
 | Phase 6 | 9, 17–18 (slice) | Places: public directory, staff management, categories/amenities/hours/prices, college proximity; frontend: a public place-detail page and a working college hub | ✅ done |
-| next | 10 | Search + filters + distance | |
+| Phase 7 | 10 (Places-scoped) | Full-text place search (MySQL `FULLTEXT`, relevance ranking), price/verified filters | ✅ backend done |
+| next | — | 10's remaining scope (cross-entity `/search`, autocomplete, analytics) folds into whichever later phase needs it | |
 | 11–16 | Submissions + duplicate detection, business owner, claims, reviews, reports, saved places | |
 | 17–21 | Public website, student discovery, business + admin dashboards (foundation slice delivered early) | |
 | 22–23 | Integration testing, performance + security review | |
