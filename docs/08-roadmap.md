@@ -25,7 +25,7 @@ The order below is the one specified for implementation: **backend first, then U
 | 15 | Reports | Unified report queue, resolution, audit | Report abuse controls tested | S | |
 | 16 | Saved places | Save / unsave / list | Idempotent; tests | S | |
 | 17 | Next.js foundation | Design-system primitives, layouts, session/auth, API client extended | Primitives documented and tested | L | Foundation slice (session/auth, a handful of primitives) **delivered early, in Phase 5**, at the user's request; the full primitive set and layouts remain |
-| 18 | Public website | Landing, college picker, college hub, category listing, place detail, search, auth pages | Responsive; skeleton / empty / error states everywhere | XL | College picker + hub and the auth pages **delivered early, in Phase 5**; the college hub gained a real place list and place detail **delivered early, in Phase 6**; landing, category listing and search remain |
+| 18 | Public website | Landing, college picker, college hub, category listing, place detail, search, auth pages | Responsive; skeleton / empty / error states everywhere | XL | College picker + hub and the auth pages **delivered early, in Phase 5**; the college hub gained a real place list and place detail **delivered early, in Phase 6**; a places-only search page **delivered early, in Phase 7** (single-entity, not the cross-entity design); landing and category listing remain |
 | 19 | Student discovery UI | Home, saved, suggest-a-place, profile | Real API only, no mocks | L | |
 | 20 | Business dashboard | Listings, claims, reviews, leads, analytics, profile | | L | |
 | 21 | Admin dashboard | Queues, colleges, categories, places, users, reports, audit | Every queue operable end to end | L | |

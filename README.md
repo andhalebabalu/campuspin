@@ -2,7 +2,7 @@
 
 Everything a student needs around their college: rooms, PGs, hostels, messes, libraries, gyms, laundry, transport and more, discoverable by college, verified by staff, contributed to by students and maintained by business owners.
 
-> **Status: Phases 1–7 backend complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory; the category catalogue; a Next.js frontend foundation with real auth, college-directory and place pages; the place directory; and full-text place search). The rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
+> **Status: Phases 1–7 complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory; the category catalogue; a Next.js frontend foundation with real auth, college-directory, place and search pages; the place directory; and full-text place search). The rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
 
 Launch market: Ahilyanagar, Maharashtra. The working brand name `LINK` lives in one config value and can change without touching the architecture.
 
@@ -544,7 +544,7 @@ curl "http://localhost:3001/api/v1/places?minPrice=1000&maxPrice=4000&verified=t
 
 ## Frontend foundation
 
-Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly), and Phase 6 continued it alongside the place directory. It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist. Search, the marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
+Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly), and Phases 6 and 7 continued it alongside the place directory and place search. It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist. The marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
 
 **Pages**
 
@@ -556,6 +556,7 @@ Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-
 | `/colleges` | Server-rendered first page of results (SEO, fast paint) handed off to client-side search, sort and paging that keep the URL in sync |
 | `/colleges/[collegeSlug]` | Server-rendered college detail: gallery, description, website, and (Phase 6) a real, working list of the places serving it — search, sort (nearest/cheapest/name/newest) and paging |
 | `/places/[placeSlug]` | Server-rendered place detail (Phase 6): gallery, price, categories, amenities, hours, description and an **Open in Google Maps** link (the place's own link if staff set one, otherwise built from its coordinates) |
+| `/search` | (Phase 7) A keyword search over places, ranked by real MySQL full-text relevance, that doubles as a plain price-range / verified-only filter browser when no keyword is given. URL-synced, like `/colleges` |
 
 **Plumbing**
 
@@ -563,6 +564,7 @@ Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-
 - `services/auth.service.ts`, `services/colleges.service.ts`, `services/places.service.ts`: thin wrappers over `@platform/api-client`, typed end to end by `@platform/contracts` — the same schemas the API validates with.
 - `components/ui`: `Button`, `Input`, `Card`, `Badge`, `FormAlert` — enough of the [06](docs/06-design-system.md) component spec to build the pages above on the real tokens, not a redesign of the whole system.
 - `utils/format-price.ts`: "₹3,000 / month", a range, or "Price on request" — the one place this formatting rule lives, shared by the place card and its detail page.
+- `features/search/lib/search-filters.ts`: `hasFilters`/`effectiveSort`, shared between the server page (the first, SSR'd page of results) and the client component (every search after that), so "what counts as a search" and "relevance needs a query, else fall back to name" are each defined exactly once.
 - Every page has a real loading, empty and error state (skeletons, `EmptyState`, `ErrorState` with retry and a request id), per [05 §5](docs/05-frontend.md#5-mandatory-states-per-route).
 
 **Rules worth knowing**
@@ -570,8 +572,10 @@ Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-
 - **No new dependencies:** forms are plain React state + the contracts' zod schemas (`safeParse` on submit), not react-hook-form; there is no Radix/CVA, TanStack Query or a map library yet — the pages built so far did not need them.
 - **`notFound()` and `loading.tsx` don't mix across a route's own segment:** a parent segment's `loading.tsx` streams a 200 shell before a *sibling* dynamic route's `notFound()` call can resolve, so that route never gets a real HTTP 404 (found by testing `/colleges/:slug` for a missing college in Phase 5). Fixed by removing `/colleges/loading.tsx` and having `generateMetadata` and the page both call `notFound()` from one memoized fetch — the same pattern `/places/[placeSlug]` uses from the start.
 - **No per-request "401 → silent refresh → retry":** every page so far needs either no session (public browsing) or only reads it for display, so that interceptor is deferred to the phase that adds the first session-gated page.
-- **`sort=nearest` is left out** of the standalone `/colleges` directory's sort dropdown (it needs a geolocation UI not built yet), but **is** the default sort for the places list embedded in a college's own page — there, "nearest" is unambiguous (from that college), no geolocation needed.
-- **The college-embedded place list is not URL-synced**, unlike `/colleges` itself: it is a section of a larger page, not a page of its own, so its search/sort/page live in component state only.
+- **`sort=nearest` is left out** of the standalone `/colleges` and `/search` sort dropdowns (it needs a geolocation UI not built yet), but **is** the default sort for the places list embedded in a college's own page — there, "nearest" is unambiguous (from that college), no geolocation needed.
+- **The college-embedded place list is not URL-synced**, unlike `/colleges` and `/search`: it is a section of a larger page, not a page of its own, so its search/sort/page live in component state only.
+- **`/search`'s keyword and price fields commit on submit, not as you type:** unlike `/colleges`' debounced search, this page waits for Enter or a "Search" click before fetching — standard for a dedicated search page, and it sidesteps debouncing three fields (query, min price, max price) independently. The sort dropdown and the verified checkbox still apply immediately.
+- **A React Hooks lint rule (`react-hooks/set-state-in-effect`) flags a data-fetching `useEffect` that has *two or more* separate `if (...) { return; }` guards before its "do the fetch" body**, even when neither guard calls `setState` — found while building `/search`'s effect (skip-on-first-render, then skip-if-nothing-to-search), fixed by merging both guards into one `if` block. `/colleges`' simpler effect (only one guard) was never affected. Worth remembering before adding a third guard to either effect.
 - Images (`logoUrl`, `coverImageUrl`, gallery) use plain `<img>`, not `next/image`, since no remote-image domains are configured yet.
 
 **Try it locally** (with the API running, `npm run dev -w @platform/web` or the root `npm run dev`):
@@ -579,6 +583,7 @@ Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-
 ```bash
 open http://localhost:3000/colleges       # or curl -s http://localhost:3000/colleges
 open http://localhost:3000/colleges/demo-sample-arts-science-college   # a real "college hub" with real places
+open "http://localhost:3000/search?q=mess"
 open http://localhost:3000/register
 ```
 
@@ -636,7 +641,7 @@ npm run typecheck && npm run lint
 | Phase 4 | 7 | Colleges: public directory, staff management, proximity links | ✅ done |
 | Phase 5 | 8, 17–18 (slice) | Categories, attributes, rating dimensions, amenities; a frontend foundation (session, primitives, auth pages, college directory) | ✅ done |
 | Phase 6 | 9, 17–18 (slice) | Places: public directory, staff management, categories/amenities/hours/prices, college proximity; frontend: a public place-detail page and a working college hub | ✅ done |
-| Phase 7 | 10 (Places-scoped) | Full-text place search (MySQL `FULLTEXT`, relevance ranking), price/verified filters | ✅ backend done |
+| Phase 7 | 10 (Places-scoped), 17–18 (slice) | Full-text place search (MySQL `FULLTEXT`, relevance ranking), price/verified filters; frontend: a working `/search` page | ✅ done |
 | next | — | 10's remaining scope (cross-entity `/search`, autocomplete, analytics) folds into whichever later phase needs it | |
 | 11–16 | Submissions + duplicate detection, business owner, claims, reviews, reports, saved places | |
 | 17–21 | Public website, student discovery, business + admin dashboards (foundation slice delivered early) | |
