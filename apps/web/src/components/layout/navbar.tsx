@@ -20,6 +20,9 @@ export function Navbar() {
           <Link href={ROUTES.colleges} className="text-sm font-medium text-body hover:text-ink">
             Colleges
           </Link>
+          <Link href={ROUTES.search} className="text-sm font-medium text-body hover:text-ink">
+            Search
+          </Link>
 
           {status === 'loading' ? (
             <div className="h-9 w-20 animate-pulse rounded-md bg-neutral-100" />

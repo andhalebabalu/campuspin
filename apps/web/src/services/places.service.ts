@@ -7,6 +7,11 @@ export interface PlaceListParams {
   city?: string;
   collegeSlug?: string;
   categorySlug?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  /** Sent as the literal string `true` when set; omitted entirely otherwise (the API rejects any
+   * other value for this flag, so a plain `false` must never be sent). */
+  verified?: true;
   sort?: (typeof PLACE_SORTS)[number];
   page?: number;
   limit?: number;
@@ -18,7 +23,7 @@ export const placesService = {
   /** `GET /places`: active places as cards, paginated (public, cacheable). */
   list: (params: PlaceListParams = {}, signal?: AbortSignal) =>
     apiClient.get('/places', {
-      query: { ...params },
+      query: { ...params, verified: params.verified ? 'true' : undefined },
       schema: placeListSchema,
       signal,
       init: { next: { revalidate: 60 } },
