@@ -210,6 +210,24 @@ Original design:
 | PATCH | `/place-submissions/:id` | Own | Edit while `PENDING` / `NEEDS_CHANGES`; resubmits after changes. |
 | DELETE | `/place-submissions/:id` | Own | Withdraw. |
 
+> **Implemented in Phase 8:** `POST /places/duplicate-check` (any signed-in user; `{ name, categoryId,
+> latitude, longitude, address?, phone? }` → `{ candidates: [{ placeId, name, slug, distanceMeters,
+> score, level, reasons[] }] }`, `suggest`/`block`-level only, best first), `POST /place-submissions`
+> (`201`, not `202` — the standard envelope's success responses in this API are always synchronous;
+> `409 DUPLICATE_PLACE_SUSPECTED` exactly as designed, with the candidates in `error.details`) and
+> `GET /place-submissions/:id` (own, or staff with `submissions.review`; a 404 either way for anyone
+> else). Schemas are in `@platform/contracts` (`submissions.ts`), with examples in Swagger. **Not
+> built:** `PATCH`/`DELETE /place-submissions/:id` (no edit-before-review or withdraw in this phase —
+> a submitter can create and check status, nothing else) and `/places/:id/contributions` (a separate,
+> later feature; see [02 §5.7](02-architecture.md#57-suggest-a-place-duplicates-contributions)). Staff
+> review is at `/admin/submissions` instead of `PATCH /place-submissions/:id`, matching this API's own
+> established `/admin/<resource>` convention rather than the flatter shape above: `GET
+> /admin/submissions` (queue, filterable by `status`), `GET /admin/submissions/:id`, `POST
+> /admin/submissions/:id/approve` (publishes the pending place), `POST .../reject` (`reason`
+> required — a student's only feedback) and `POST .../mark-duplicate` (`{ duplicateOfPlaceId, reason?
+> }`, replacing "merge" — see [02 §5.7](02-architecture.md#57-suggest-a-place-duplicates-contributions)
+> for why there is no automatic contribution). All behind `submissions.review` (see [07](07-rbac.md)).
+
 ### 2.7 Businesses, listings, leads
 
 | Method | Path | Access | Notes |

@@ -542,6 +542,50 @@ curl "http://localhost:3001/api/v1/places?q=mess&sort=relevance"
 curl "http://localhost:3001/api/v1/places?minPrice=1000&maxPrice=4000&verified=true"
 ```
 
+## Student submissions
+
+Any signed-in user (student, business owner or staff — no special role needed) can suggest a new place; staff review it behind the `submissions.review` permission (MODERATOR, ADMIN, SUPER_ADMIN). Swagger (`/api/docs`) has every request, response and example.
+
+**Authenticated (any signed-in user; Bearer token, no `submissions.review` needed)**
+
+| Method | Path | What it does |
+|---|---|---|
+| POST | `/places/duplicate-check` | Scores nearby places against `{ name, categoryId, latitude, longitude, address?, phone? }`; returns `suggest`/`block`-level candidates only, best first, with human-readable reasons |
+| POST | `/place-submissions` | Creates a place (`PENDING`, invisible to the public) and a submission recording the workflow. Re-runs duplicate detection server-side: a `block`-level match without `confirmDifferent: true` is a `409 DUPLICATE_PLACE_SUSPECTED` instead, and nothing is created |
+| GET | `/place-submissions/:id` | The submitter's own submission, or any submission for a `submissions.review` holder; anyone else gets a `404` (existence hidden) |
+
+**Staff (Bearer token with `submissions.review`)**
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/admin/submissions` | The moderation queue; filter by `status`, sort `newest` (default) / `oldest` |
+| GET | `/admin/submissions/:id` | One submission |
+| POST | `/admin/submissions/:id/approve` | Publishes the pending place (`PENDING` → `ACTIVE`); optional `reason` |
+| POST | `/admin/submissions/:id/reject` | Rejects the submission and its pending place; `reason` is required — the student's only feedback |
+| POST | `/admin/submissions/:id/mark-duplicate` | Links the submission to `duplicateOfPlaceId` instead of publishing a second place; the pending place is rejected |
+
+**Rules worth knowing**
+
+- **Duplicate scoring (`duplicate-rules.ts`):** `0.45 × name + 0.25 × geo + 0.15 × category + 0.10 × address + 0.05 × phone`. Name similarity is Jaro-Winkler over normalised text (lowercased, punctuation/diacritics stripped, a few Indic spelling variants folded — `aa→a`, `w→v`, `ph→f` — and generic category words like "mess"/"hostel"/"pg" removed so they don't dilute the comparison). Geo decays linearly from 1.0 at ≤50 m to 0 at 300 m. Category is 1 for the same leaf, 0.5 for the same group, else 0. Two overrides guarantee a `block`-level score regardless of the blend: an exact phone match, or a near-exact name (≥0.92) within 100 m. Thresholds are the exported constant `DUPLICATE_THRESHOLDS` (`suggest: 0.60`, `block: 0.85`) — there is no settings table, so they are not admin-configurable yet.
+- **Candidate pool:** every `DRAFT`/`PENDING`/`ACTIVE` place within a ~2 km bounding box of the suggested point. A place another still-pending submission created is an ordinary `PENDING` place, so "other pending suggestions are candidates too" needs no separate query.
+- **A submission creates its place immediately**, not on approval: `POST /place-submissions` inserts a `Place` row with `status: "PENDING"` right away (the same `PENDING` status that has existed in the schema since Phase 2 but was unreachable until now). Approval is `PENDING → ACTIVE`; reject or mark-duplicate is `PENDING → REJECTED`.
+- **A submission is lightweight:** one category (not `categoryIds[]`), one optional price point (not `priceOptions[]`), up to 10 photos. `collegeId` is context only — the college page the student was browsing — and never gates anything.
+- **A decision is final in this phase:** there is no "request changes" → resubmit loop (the schema's `SubmissionStatus` has `PENDING → UNDER_REVIEW → APPROVED | REJECTED | DUPLICATE`, no `NEEDS_CHANGES`). A student who disagrees with a rejection submits again.
+- **Audit:** `SUBMISSION_CREATED`, `SUBMISSION_APPROVED` (plus the resulting place's own `PLACE_ACTIVATED`), `SUBMISSION_REJECTED` and `SUBMISSION_MARKED_DUPLICATE` are written in the same transaction as the change.
+- **Limits of this phase:** no contributions (suggesting an edit to an *existing* place — `place_contributions` is untouched), no per-user daily quotas or photo content-hash dedupe, no admin-configurable thresholds. See [02 §5.7](docs/02-architecture.md#57-suggest-a-place-duplicates-contributions) for the full list.
+
+**Try it locally** (with the API running and a verified account signed in):
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:3001/api/v1/auth/login -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"YourPassword1!"}' | node -pe "JSON.parse(require('fs').readFileSync(0)).data.accessToken")
+MESS=$(curl -s "http://localhost:3001/api/v1/categories" | node -pe "JSON.parse(require('fs').readFileSync(0)).data.find(g=>g.slug==='food').children.find(c=>c.slug==='mess').id")
+curl -X POST http://localhost:3001/api/v1/places/duplicate-check -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"name\":\"My New Mess\",\"categoryId\":\"$MESS\",\"latitude\":19.1,\"longitude\":74.75}"
+curl -X POST http://localhost:3001/api/v1/place-submissions -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"name\":\"My New Mess\",\"categoryId\":\"$MESS\",\"address\":\"Station Road\",\"city\":\"Ahilyanagar\",\"latitude\":19.1,\"longitude\":74.75}"
+```
+
 ## Frontend foundation
 
 Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly), and Phases 6 and 7 continued it alongside the place directory and place search. It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist. The marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
@@ -593,7 +637,7 @@ open http://localhost:3000/register
 npm test               # unit tests: contracts, api-client, API helpers (no database)
 npm run test:e2e       # API end-to-end over HTTP: envelope, errors, validation, CORS, headers, rate limit, Swagger
 npm run test:db        # REAL database: connection, migration, all tables, relations, constraints, seed, purge, health API
-npm run test:e2e:db    # REAL database, over HTTP: authentication (register -> ... -> logout, reset, roles, permissions, rate limit), the college directory (public browse, staff CRUD, proximity, audit), the category catalogue (public tree, staff CRUD, attributes, rating dimensions, amenities, audit) and the place directory (public browse, staff CRUD, categories/amenities/hours/prices, college proximity, audit)
+npm run test:e2e:db    # REAL database, over HTTP: authentication (register -> ... -> logout, reset, roles, permissions, rate limit), the college directory (public browse, staff CRUD, proximity, audit), the category catalogue (public tree, staff CRUD, attributes, rating dimensions, amenities, audit), the place directory (public browse, staff CRUD, categories/amenities/hours/prices, college proximity, audit) and student submissions (duplicate-check, create + server-side block, ownership-scoped reads, staff approve/reject/mark-duplicate, audit)
 npm run typecheck && npm run lint
 ```
 
@@ -642,8 +686,9 @@ npm run typecheck && npm run lint
 | Phase 5 | 8, 17–18 (slice) | Categories, attributes, rating dimensions, amenities; a frontend foundation (session, primitives, auth pages, college directory) | ✅ done |
 | Phase 6 | 9, 17–18 (slice) | Places: public directory, staff management, categories/amenities/hours/prices, college proximity; frontend: a public place-detail page and a working college hub | ✅ done |
 | Phase 7 | 10 (Places-scoped), 17–18 (slice) | Full-text place search (MySQL `FULLTEXT`, relevance ranking), price/verified filters; frontend: a working `/search` page | ✅ done |
-| next | — | 10's remaining scope (cross-entity `/search`, autocomplete, analytics) folds into whichever later phase needs it | |
-| 11–16 | Submissions + duplicate detection, business owner, claims, reviews, reports, saved places | |
+| Phase 8 | 11 (narrowed), 17–19 (slice) | Student submissions + duplicate detection (name/geo/category/address/phone scoring), staff approve/reject/mark-duplicate; frontend: a working "Suggest a place" flow | ✅ done |
+| next | — | 10's remaining scope (cross-entity `/search`, autocomplete, analytics) and 11's remaining scope (contributions, request-changes loop, abuse quotas) fold into whichever later phase needs them | |
+| 12–16 | Business owner, claims, reviews, reports, saved places | |
 | 17–21 | Public website, student discovery, business + admin dashboards (foundation slice delivered early) | |
 | 22–23 | Integration testing, performance + security review | |
 

@@ -260,6 +260,46 @@ flowchart TD
 - **Abuse controls:** per-user daily quotas (default 5 submissions / 20 contributions, lower for accounts < 24 h old), content-hash dedupe on photos, URL/keyword filter on text.
 - **Owner edits (D2):** the same contribution mechanism with `source = OWNER`; low-risk fields `AUTO_APPLIED`, high-risk `PENDING`.
 
+> **Implemented in Phase 8, scoped to submissions + duplicate detection only (no contributions):**
+> `modules/submissions` delivers `POST /places/duplicate-check`, `POST /place-submissions` and staff
+> review (`GET/POST /admin/submissions/...`), behind `submissions.review` for the staff routes and
+> plain authentication (any signed-in user, no special role) for the student-facing ones. Everything
+> above the flowchart's `G`/`K`/`L` nodes (contributions, "same place" merging a submission's details
+> into an existing place) is **out of scope**: `place_contributions` is untouched. The migrated schema
+> is also simpler than the flowchart in ways this phase mirrors rather than papers over —
+> `SubmissionStatus` has `PENDING → UNDER_REVIEW → APPROVED | REJECTED | DUPLICATE`, not
+> `NEEDS_CHANGES`/`MERGED`, so there is **no "request changes" → resubmit loop**: a decision is final,
+> and a student who disagrees submits again. `UNDER_REVIEW` exists in the enum but is not reachable
+> through this API (no "claim this for review" action yet). "Merge" becomes **mark as duplicate**:
+> staff link the submission to an existing place (`duplicateOfPlaceId`) and the pending place the
+> submission created is rejected — no automatic contribution is created from the submitter's details.
+>
+> **Detection v1 is deliberately narrower** than the design above (`duplicate-rules.ts` +
+> `duplicate-detection.service.ts`):
+> - *Candidate pool:* one query, not three — every `DRAFT`/`PENDING`/`ACTIVE` place within a ~2 km
+>   bounding box of the suggested point (there is no `city_id` table; a city is a plain string
+>   column, so geography replaces it). This already satisfies "pending suggestions are candidates
+>   too", since a submission's own pending place is a normal `Place` row the moment it is created.
+>   There is no separate "exact phone match anywhere in the city" query — a phone match further than
+>   2 km is treated as a coincidence, not scored.
+> - *Name score:* Jaro-Winkler alone, after lowercasing, stripping punctuation/diacritics, folding
+>   `aa→a`/`w→v`/`ph→f` and dropping generic category words ("mess", "hostel", "pg", ...). No
+>   IDF-weighted token Dice (no per-city name corpus is built) and no Devanagari transliteration.
+> - *Other signals, composite and outcome:* implemented exactly as designed — geo decay (1.0 at
+>   ≤ 50 m → 0 at 300 m), category match (same leaf = 1, same group = 0.5), address-token overlap
+>   (overlap coefficient), phone match, the `0.45/0.25/0.15/0.10/0.05` blend, both override rules, and
+>   the `0.60`/`0.85` suggest/block thresholds. There is no `app_settings` table, so the thresholds are
+>   the exported constant `DUPLICATE_THRESHOLDS` in `@platform/contracts`, not admin-configurable.
+> - Runs client-triggered (`duplicate-check`) **and again, authoritatively, server-side on submit**: a
+>   `block`-level candidate without `confirmDifferent: true` in the request is a `409
+>   DUPLICATE_PLACE_SUSPECTED` with the candidates in `error.details`, and nothing is created.
+>
+> **Not built this phase:** per-user daily quotas, content-hash photo dedupe, and the
+> URL/keyword text filter (abuse controls) — every signed-in user can submit as often as they like,
+> same as every other authenticated write in the platform so far. A submission accepts a single price
+> point and a single category (matching the schema's flatter `PlaceSubmission` shape), not the full
+> `priceOptions`/`categoryIds` arrays a staff-created place has.
+
 ### 5.8 Claims
 
 ```mermaid
