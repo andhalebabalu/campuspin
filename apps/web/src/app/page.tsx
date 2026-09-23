@@ -1,5 +1,7 @@
+import Link from 'next/link';
 import { ApiStatus } from '@/components/system/api-status';
 import { BRAND } from '@/constants/brand';
+import { ROUTES } from '@/constants/routes';
 
 // Phase 1 foundation page. The real landing page (hero, college search, categories...) is built
 // in the public-website phase; this page verifies the web app is wired to the API.
@@ -15,6 +17,12 @@ export default function HomePage() {
           Everything You Need Around Your College.
         </h1>
         <p className="max-w-xl text-lg text-body">{BRAND.description}</p>
+        <Link
+          href={ROUTES.colleges}
+          className="inline-flex h-11 w-fit items-center rounded-md bg-action px-5 font-medium text-white transition-colors hover:bg-action-hover"
+        >
+          Browse colleges
+        </Link>
       </header>
 
       <ApiStatus />

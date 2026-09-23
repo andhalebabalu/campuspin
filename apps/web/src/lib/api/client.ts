@@ -1,4 +1,5 @@
 import { createApiClient } from '@platform/api-client';
+import { tokenStore } from '@/lib/auth/token-store';
 import { env } from '@/lib/env';
 
 /**
@@ -9,4 +10,5 @@ import { env } from '@/lib/env';
 export const apiClient = createApiClient({
   baseUrl: env.NEXT_PUBLIC_API_URL,
   defaultHeaders: { 'X-Client': 'web' },
+  getAccessToken: () => tokenStore.getAccessToken(),
 });
