@@ -588,7 +588,7 @@ curl -X POST http://localhost:3001/api/v1/place-submissions -H "Authorization: B
 
 ## Frontend foundation
 
-Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly), and Phases 6 and 7 continued it alongside the place directory and place search. It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist. The marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
+Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly), and Phases 6, 7 and 8 continued it alongside the place directory, place search and student submissions. It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist. The marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
 
 **Pages**
 
@@ -601,12 +601,13 @@ Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-
 | `/colleges/[collegeSlug]` | Server-rendered college detail: gallery, description, website, and (Phase 6) a real, working list of the places serving it — search, sort (nearest/cheapest/name/newest) and paging |
 | `/places/[placeSlug]` | Server-rendered place detail (Phase 6): gallery, price, categories, amenities, hours, description and an **Open in Google Maps** link (the place's own link if staff set one, otherwise built from its coordinates) |
 | `/search` | (Phase 7) A keyword search over places, ranked by real MySQL full-text relevance, that doubles as a plain price-range / verified-only filter browser when no keyword is given. URL-synced, like `/colleges` |
+| `/suggest-a-place` | (Phase 8) The first page that genuinely **needs** a session, not just reads one: signed out, it shows a "sign in to continue" prompt (`?next=` brings the visitor straight back after login); signed in, a form to suggest a new place, with a "check for duplicates" step and a 409 from the server itself surfacing the same candidates if skipped |
 
 **Plumbing**
 
 - `lib/auth/token-store.ts` + `lib/auth/session-context.tsx`: the access token lives in memory only, the refresh token in `localStorage`; `SessionProvider` bootstraps a session on load via `POST /auth/refresh` and exposes `login`/`register`/`logout` to the rest of the app. The Navbar reads it to switch between "Sign in / Register" and "Hi, {name} · Sign out".
-- `services/auth.service.ts`, `services/colleges.service.ts`, `services/places.service.ts`: thin wrappers over `@platform/api-client`, typed end to end by `@platform/contracts` — the same schemas the API validates with.
-- `components/ui`: `Button`, `Input`, `Card`, `Badge`, `FormAlert` — enough of the [06](docs/06-design-system.md) component spec to build the pages above on the real tokens, not a redesign of the whole system.
+- `services/auth.service.ts`, `services/colleges.service.ts`, `services/places.service.ts`, `services/categories.service.ts`, `services/submissions.service.ts`: thin wrappers over `@platform/api-client`, typed end to end by `@platform/contracts` — the same schemas the API validates with.
+- `components/ui`: `Button`, `Input`, `Card`, `Badge` (now with a `danger` tone, for a duplicate-check candidate scored `block`), `FormAlert` — enough of the [06](docs/06-design-system.md) component spec to build the pages above on the real tokens, not a redesign of the whole system.
 - `utils/format-price.ts`: "₹3,000 / month", a range, or "Price on request" — the one place this formatting rule lives, shared by the place card and its detail page.
 - `features/search/lib/search-filters.ts`: `hasFilters`/`effectiveSort`, shared between the server page (the first, SSR'd page of results) and the client component (every search after that), so "what counts as a search" and "relevance needs a query, else fall back to name" are each defined exactly once.
 - Every page has a real loading, empty and error state (skeletons, `EmptyState`, `ErrorState` with retry and a request id), per [05 §5](docs/05-frontend.md#5-mandatory-states-per-route).
@@ -615,7 +616,9 @@ Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-
 
 - **No new dependencies:** forms are plain React state + the contracts' zod schemas (`safeParse` on submit), not react-hook-form; there is no Radix/CVA, TanStack Query or a map library yet — the pages built so far did not need them.
 - **`notFound()` and `loading.tsx` don't mix across a route's own segment:** a parent segment's `loading.tsx` streams a 200 shell before a *sibling* dynamic route's `notFound()` call can resolve, so that route never gets a real HTTP 404 (found by testing `/colleges/:slug` for a missing college in Phase 5). Fixed by removing `/colleges/loading.tsx` and having `generateMetadata` and the page both call `notFound()` from one memoized fetch — the same pattern `/places/[placeSlug]` uses from the start.
-- **No per-request "401 → silent refresh → retry":** every page so far needs either no session (public browsing) or only reads it for display, so that interceptor is deferred to the phase that adds the first session-gated page.
+- **No per-request "401 → silent refresh → retry":** `/suggest-a-place` (Phase 8) is the first page that genuinely needs a session to be *used*, not just read for display, and it still doesn't need that interceptor — `SessionProvider` already refreshes once on load, so by the time the form is interactive the access token is valid for its usual lifetime; a token that expires mid-fill surfaces as an ordinary form error instead. The interceptor itself stays deferred until a page needs it.
+- **`/suggest-a-place`'s duplicate check is a manual button, not as-you-type:** the original design's live, debounced check is real backend behaviour (`POST /places/duplicate-check`), but the frontend calls it only when "Check for duplicates" is clicked — simpler than debouncing five fields (name, category, address, lat, lng) together, and the server re-checks authoritatively on submit regardless, surfacing the same candidates via a `409` if the button was never clicked.
+- **No map picker for `/suggest-a-place`'s coordinates:** latitude/longitude are plain number inputs with a "from Google Maps" hint, matching "no map library yet" above.
 - **`sort=nearest` is left out** of the standalone `/colleges` and `/search` sort dropdowns (it needs a geolocation UI not built yet), but **is** the default sort for the places list embedded in a college's own page — there, "nearest" is unambiguous (from that college), no geolocation needed.
 - **The college-embedded place list is not URL-synced**, unlike `/colleges` and `/search`: it is a section of a larger page, not a page of its own, so its search/sort/page live in component state only.
 - **`/search`'s keyword and price fields commit on submit, not as you type:** unlike `/colleges`' debounced search, this page waits for Enter or a "Search" click before fetching — standard for a dedicated search page, and it sidesteps debouncing three fields (query, min price, max price) independently. The sort dropdown and the verified checkbox still apply immediately.
@@ -629,6 +632,7 @@ open http://localhost:3000/colleges       # or curl -s http://localhost:3000/col
 open http://localhost:3000/colleges/demo-sample-arts-science-college   # a real "college hub" with real places
 open "http://localhost:3000/search?q=mess"
 open http://localhost:3000/register
+open http://localhost:3000/suggest-a-place   # signed out: a "sign in to continue" prompt; signed in: the form
 ```
 
 ## Testing
