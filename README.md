@@ -2,7 +2,7 @@
 
 Everything a student needs around their college: rooms, PGs, hostels, messes, libraries, gyms, laundry, transport and more, discoverable by college, verified by staff, contributed to by students and maintained by business owners.
 
-> **Status: Phases 1–5 complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory; the category catalogue; and, ahead of the original backend-first order, a Next.js frontend foundation with real auth and college-directory pages). Places, search and the rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
+> **Status: Phases 1–6 complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory; the category catalogue; a Next.js frontend foundation with real auth and college-directory pages; and the place directory). Search and the rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
 
 Launch market: Ahilyanagar, Maharashtra. The working brand name `LINK` lives in one config value and can change without touching the architecture.
 
@@ -59,7 +59,7 @@ Detailed design lives in [docs/](docs/README.md): architecture, database/ERD, AP
 │  │  ├─ src/
 │  │  │  ├─ common/         response envelope, error filter, zod validation, Swagger helpers
 │  │  │  ├─ infra/          config, database (Prisma), logging
-│  │  │  └─ modules/        feature modules (health, auth, audit, colleges, categories; places, search, ... next)
+│  │  │  └─ modules/        feature modules (health, auth, audit, colleges, categories, places; search, ... next)
 │  │  └─ test/              end-to-end tests (Supertest against the real Nest app)
 │  └─ web/                  Next.js app (@platform/web)
 │     └─ src/
@@ -492,6 +492,53 @@ curl -X POST http://localhost:3001/api/v1/admin/categories -H "Authorization: Be
 curl "http://localhost:3001/api/v1/categories"
 ```
 
+## Place directory
+
+Students browse places without an account; staff manage them behind the `places.manage` permission (ADMIN and SUPER_ADMIN). Swagger (`/api/docs`) has every request, response and example.
+
+**Public (no account)**
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/places` | Active places as cards, paginated. `q` (name, address), `city`, `collegeSlug` (places serving that college), `categorySlug`, `lat` + `lng` (adds each place's `distanceMeters`; with `collegeSlug` alone, distance defaults to "from that college"), `sort` = `name` (default) / `nearest` / `newest` / `cheapest`, `page`, `limit` (max 50) |
+| GET | `/places/:idOrSlug` | One active place, with its categories, amenities, opening hours, price options and images |
+
+A draft, pending, rejected or deactivated place is a `404`, exactly like one that does not exist. Both routes are cacheable (`Cache-Control: public, s-maxage=60, stale-while-revalidate=300`); an error response is never cached.
+
+**Staff (Bearer token with `places.manage`; every response is `no-store`)**
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/admin/places` | Every place in any status; filter by `status`, `verification`, `q`, `city`; sort `newest` / `updated` / `name` |
+| POST | `/admin/places` | Create (a DRAFT unless `status: "ACTIVE"`); `categoryIds` (first = primary), `amenityIds`, `hours` and `priceOptions` can be sent up front or added later |
+| GET / PATCH | `/admin/places/:id` | Read / edit only the fields you send (`null` clears optional ones); `categoryIds`/`amenityIds`/`hours`/`priceOptions` REPLACE the whole list when sent |
+| POST | `/admin/places/:id/activate`, `/deactivate` | Publish / hide. Optional body `{ "reason": "..." }` goes to the audit log |
+| POST | `/admin/places/:id/verify`, `/unverify` | Set / remove the public "verified" mark |
+| POST / PATCH / DELETE | `/admin/places/:id/images[/:imageId]` | Manage the gallery (links to pictures hosted elsewhere; at most 20; the first image becomes the cover unless told otherwise) |
+
+**Rules worth knowing**
+
+- **Lifecycle:** this API only ever uses DRAFT → ACTIVE ↔ INACTIVE, exactly like colleges. `PENDING` and `REJECTED` exist in the schema for the student-submission moderation workflow (a later phase) and are not reachable here. Places are never deleted, so history and reviews survive. Repeating an action is a harmless no-op; deactivating a place that was never published is a `409`.
+- **Categories:** every place needs at least one, and each id must be a leaf category (never a group) that is ACTIVE. The first id becomes the primary category, which decides the price comparison unit below.
+- **Prices:** `priceMin`/`priceMax`/`priceUnit` are computed from `priceOptions`, comparing only the options in the primary category's `defaultPriceUnit` (or the first option's own unit, if none match) — "cheapest" always compares like with like. Recomputed whenever `categoryIds` or `priceOptions` changes.
+- **Slug:** generated from the name (`-2`, `-3` if taken) or supplied. It can change only while the place is a DRAFT, because a published slug is a public link.
+- **College proximity:** creating or moving a place (changing its coordinates) recomputes `college_places` for every college that might now include or exclude it, reusing the exact `CollegeProximityService` colleges themselves use, in the other direction.
+- **Plain text only:** names, addresses and descriptions refuse markup and control characters; links must be http(s) without credentials; coordinates 0, 0 ("null island") are refused; unknown fields in a body are a `400`.
+- **Permissions:** `places.create` and `places.update` are already seeded for `BUSINESS_OWNER` but are not wired to any route yet — they are reserved for the business-owner phase's own, ownership-scoped endpoints. Every route in this phase needs `places.manage` (staff only).
+- **Audit:** `PLACE_CREATED`, `PLACE_UPDATED`, `PLACE_ACTIVATED`, `PLACE_DEACTIVATED`, `PLACE_VERIFIED`, `PLACE_UNVERIFIED` and the three `PLACE_IMAGE_*` actions are written in the same transaction as the change. They name the fields that changed, never their text.
+- **Limits of this phase:** `sort=nearest` and `sort=cheapest` read every matching place and order it in memory (fine for hundreds to a few thousand places); no student-submission moderation, no business-owner self-service listings, no image upload (URLs only, same as colleges) and no per-category attribute values yet — all deferred to their own phases.
+
+**Try it locally** (with the API running and the demo admin seeded):
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:3001/api/v1/auth/login -H "Content-Type: application/json" \
+  -d '{"email":"admin@localhost.test","password":"ChangeMe123!"}' | node -pe "JSON.parse(require('fs').readFileSync(0)).data.accessToken")
+MESS=$(curl -s "http://localhost:3001/api/v1/categories" | node -pe "JSON.parse(require('fs').readFileSync(0)).data.find(g=>g.slug==='food').children.find(c=>c.slug==='mess').id")
+curl -X POST http://localhost:3001/api/v1/admin/places -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"name\":\"My Test Mess\",\"address\":\"Station Road\",\"city\":\"Ahilyanagar\",\"state\":\"Maharashtra\",\"latitude\":19.1,\"longitude\":74.75,\"status\":\"ACTIVE\",\"categoryIds\":[\"$MESS\"]}"
+curl "http://localhost:3001/api/v1/places?sort=nearest&lat=19.096&lng=74.748"
+```
+
 ## Frontend foundation
 
 Phase 5 also built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly). It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist (auth and the college directory). Places, search, the marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
@@ -534,11 +581,11 @@ open http://localhost:3000/register
 npm test               # unit tests: contracts, api-client, API helpers (no database)
 npm run test:e2e       # API end-to-end over HTTP: envelope, errors, validation, CORS, headers, rate limit, Swagger
 npm run test:db        # REAL database: connection, migration, all tables, relations, constraints, seed, purge, health API
-npm run test:e2e:db    # REAL database, over HTTP: authentication (register -> ... -> logout, reset, roles, permissions, rate limit), the college directory (public browse, staff CRUD, proximity, audit) and the category catalogue (public tree, staff CRUD, attributes, rating dimensions, amenities, audit)
+npm run test:e2e:db    # REAL database, over HTTP: authentication (register -> ... -> logout, reset, roles, permissions, rate limit), the college directory (public browse, staff CRUD, proximity, audit), the category catalogue (public tree, staff CRUD, attributes, rating dimensions, amenities, audit) and the place directory (public browse, staff CRUD, categories/amenities/hours/prices, college proximity, audit)
 npm run typecheck && npm run lint
 ```
 
-`npm test` and `npm run test:e2e` never need XAMPP (they point at an unreachable database on purpose). `npm run test:e2e:db` does need it: authentication creates real rows, so those tests give every account an email under the reserved domain `@auth-e2e.localhost.test` and tag every request with an `e2eauth-` id, and they delete exactly those rows before and after the run. The college tests likewise create colleges and places whose slugs start with `e2e-` / `e2e-place-` (placed 20 km apart so they never interfere with each other or with the demo data), and the category tests create categories and amenities whose slugs/keys start with `e2e-cat-` / `e2e_test_`; each suite removes only the rows it made (your seeded data is never touched). **`npm run test:db` needs XAMPP MySQL running, `link_platform` migrated (Step 5) and does not need it seeded.** Every database test runs inside a transaction that is **always rolled back**, so it leaves no data behind and needs no second database; your seeded demo data is never touched.
+`npm test` and `npm run test:e2e` never need XAMPP (they point at an unreachable database on purpose). `npm run test:e2e:db` does need it: authentication creates real rows, so those tests give every account an email under the reserved domain `@auth-e2e.localhost.test` and tag every request with an `e2eauth-` id, and they delete exactly those rows before and after the run. The college and place tests likewise create colleges and places whose slugs start with `e2e-` / `e2e-place-` (each test picks its own spot, far enough apart that they never interfere with each other or with the demo data), and the category tests create categories and amenities whose slugs/keys start with `e2e-cat-` / `e2e_test_`; each suite removes only the rows it made (your seeded data is never touched). **`npm run test:db` needs XAMPP MySQL running, `link_platform` migrated (Step 5) and does not need it seeded.** Every database test runs inside a transaction that is **always rolled back**, so it leaves no data behind and needs no second database; your seeded demo data is never touched.
 
 ## Troubleshooting
 
@@ -580,9 +627,11 @@ npm run typecheck && npm run lint
 | Phase 2 | 2, 4 | XAMPP MySQL + Prisma: schema, migration, seed, database health check | ✅ done |
 | Phase 3 | 5, 6 | Authentication, JWT, email verification, RBAC guards, audit service | ✅ done |
 | Phase 4 | 7 | Colleges: public directory, staff management, proximity links | ✅ done |
-| next | 8–10 | Categories, places, search + filters + distance | |
+| Phase 5 | 8, 17–18 (slice) | Categories, attributes, rating dimensions, amenities; a frontend foundation (session, primitives, auth pages, college directory) | ✅ done |
+| Phase 6 | 9, 17–18 (slice) | Places: public directory, staff management, categories/amenities/hours/prices, college proximity; frontend: a public place-detail page and a working college hub | ✅ done |
+| next | 10 | Search + filters + distance | |
 | 11–16 | Submissions + duplicate detection, business owner, claims, reviews, reports, saved places | |
-| 17–21 | Next.js foundation, public website, student discovery, business + admin dashboards | |
+| 17–21 | Public website, student discovery, business + admin dashboards (foundation slice delivered early) | |
 | 22–23 | Integration testing, performance + security review | |
 
 Full plan with exit criteria: [docs/08-roadmap.md](docs/08-roadmap.md).

@@ -176,6 +176,12 @@ Original design:
 
 ### 2.5 Places
 
+> **Implemented in Phase 6:** `GET /places`, `GET /places/:idOrSlug` and, for staff, `GET|POST /admin/places`, `GET|PATCH /admin/places/:id`, `POST /admin/places/:id/{activate,deactivate,verify,unverify}` and `POST|PATCH|DELETE /admin/places/:id/images[/:imageId]`. Schemas are in `@platform/contracts` (`places.ts`), with examples in Swagger. Differences from the design below: the filter is `collegeSlug`/`categorySlug` (single, not multi) — a `q` search, `lat`+`lng` and those two slugs, no `radiusM`/`minPrice`/`maxPrice`/`minRating`/`amenities`/`attr.*` filters yet (those need the Search phase's filter engine); `sort` is `name` (default) / `nearest` / `newest` / `cheapest`, not `distance`/`price_asc`/`price_desc`/`rating`/`relevance`; a card carries `verified`, `ratingAverage`/`ratingCount` (always 0 until Reviews exists) and `priceMin`/`priceMax`/`priceUnit` but not the nested `PlaceCard` shape from [§1](#representative-response-shape-placecard) — see [places.ts](../packages/contracts/src/places.ts) for the reasoning. There is no `/places/:id/reviews`, `/save`, `/report`, `/contributions`, `/claims`, `/leads` or `/places/duplicate-check` yet (their own phases); `POST`/`PATCH /places` here are staff-only at `/admin/places` behind `places.manage`, not the owner-or-staff `place.create`/`place.update` split described below — `places.create`/`places.update` are already seeded for `BUSINESS_OWNER` but reserved for the business-owner phase's own routes. `categoryIds`/`amenityIds`/`hours`/`priceOptions` replace their whole list when sent, rather than the design's more granular per-field collection semantics.
+>
+> `GET /places` returns the list envelope with `meta`; a draft, pending, rejected or deactivated place is a `404`; public responses are cacheable and every error is `no-store`.
+
+Original design:
+
 | Method | Path | Access | Notes |
 |---|---|---|---|
 | GET | `/places` | Public | **List/search/filter.** Params: `collegeId` or `collegeSlug`, `categoryId` or `categorySlug` (multi), `q`, `lat`+`lng`, `radiusM`, `minPrice`, `maxPrice`, `minRating`, `verified`, `openNow`, `amenities` (keys), `attr.*`, `sort` (`distance`, `price_asc`, `price_desc`, `rating`, `newest`, `relevance`), page. Returns `PlaceCard[]`. |
