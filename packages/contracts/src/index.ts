@@ -5,5 +5,6 @@ export * from './colleges.js';
 export * from './errors.js';
 export * from './health.js';
 export * from './pagination.js';
+export * from './places.js';
 export * from './rbac.js';
 export * from './text.js';
