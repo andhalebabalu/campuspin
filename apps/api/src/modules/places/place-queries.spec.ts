@@ -1,4 +1,10 @@
-import { escapeLike, idOrSlugFilter, searchFilter } from './place-queries.js';
+import {
+  escapeLike,
+  idOrSlugFilter,
+  priceFilter,
+  searchFilter,
+  verifiedFilter,
+} from './place-queries.js';
 
 describe('idOrSlugFilter', () => {
   it('treats an id-shaped value as an id, lower-cased', () => {
@@ -29,9 +35,13 @@ describe('searchFilter', () => {
     expect(searchFilter({})).toEqual({});
   });
 
-  it('q searches name or address', () => {
+  it('q searches name, description or address', () => {
     expect(searchFilter({ q: 'mess' })).toEqual({
-      OR: [{ name: { contains: 'mess' } }, { address: { contains: 'mess' } }],
+      OR: [
+        { name: { contains: 'mess' } },
+        { description: { contains: 'mess' } },
+        { address: { contains: 'mess' } },
+      ],
     });
   });
 
@@ -41,13 +51,56 @@ describe('searchFilter', () => {
 
   it('escapes a literal percent sign in q, so it does not match every row', () => {
     const filter = searchFilter({ q: '%' });
-    expect(filter).toEqual({ OR: [{ name: { contains: '\\%' } }, { address: { contains: '\\%' } }] });
+    expect(filter).toEqual({
+      OR: [
+        { name: { contains: '\\%' } },
+        { description: { contains: '\\%' } },
+        { address: { contains: '\\%' } },
+      ],
+    });
   });
 
   it('combines q and city', () => {
     expect(searchFilter({ q: 'mess', city: 'Ahilyanagar' })).toEqual({
-      OR: [{ name: { contains: 'mess' } }, { address: { contains: 'mess' } }],
+      OR: [
+        { name: { contains: 'mess' } },
+        { description: { contains: 'mess' } },
+        { address: { contains: 'mess' } },
+      ],
       city: { equals: 'Ahilyanagar' },
     });
+  });
+});
+
+describe('priceFilter', () => {
+  it('is empty with no bounds', () => {
+    expect(priceFilter({})).toEqual({});
+  });
+
+  it('never matches a place with no price at all', () => {
+    const filter = priceFilter({ minPrice: 1000 });
+    expect(filter).toEqual({ AND: [{ priceMin: { not: null } }, { priceMax: { gte: 1000 } }] });
+  });
+
+  it('maxPrice keeps places whose cheapest tier is affordable', () => {
+    expect(priceFilter({ maxPrice: 5000 })).toEqual({
+      AND: [{ priceMin: { not: null } }, { priceMin: { lte: 5000 } }],
+    });
+  });
+
+  it('minPrice and maxPrice together express a range overlap', () => {
+    expect(priceFilter({ minPrice: 1000, maxPrice: 5000 })).toEqual({
+      AND: [{ priceMin: { not: null } }, { priceMin: { lte: 5000 } }, { priceMax: { gte: 1000 } }],
+    });
+  });
+});
+
+describe('verifiedFilter', () => {
+  it('filters to VERIFIED only when true', () => {
+    expect(verifiedFilter(true)).toEqual({ verificationStatus: 'VERIFIED' });
+  });
+
+  it('is empty (no filter) when false', () => {
+    expect(verifiedFilter(false)).toEqual({});
   });
 });

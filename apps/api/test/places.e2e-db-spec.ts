@@ -547,6 +547,113 @@ describe('Places (e2e, real database)', () => {
       const response = await ctx.get(`${API}/places?sort=nearest`);
       expect(response.status).toBe(400);
     });
+
+    it('sort=relevance needs q', async () => {
+      const response = await ctx.get(`${API}/places?sort=relevance`);
+      expect(response.status).toBe(400);
+    });
+
+    it('sort=relevance ranks by MySQL full-text relevance on name and description', async () => {
+      const uniqueWord = `Zephyrus${run.toUpperCase()}`;
+      const matchByName = await createPlace({
+        name: `${uniqueWord} Mess`,
+        slug: uniqueSlug('relevance-name'),
+        status: 'ACTIVE',
+      });
+      const matchByDescription = await createPlace({
+        description: `A place also known for ${uniqueWord}.`,
+        slug: uniqueSlug('relevance-desc'),
+        status: 'ACTIVE',
+        name: uniqueName('RelevanceDesc'),
+      });
+      const noMatch = await createPlace({
+        slug: uniqueSlug('relevance-none'),
+        status: 'ACTIVE',
+        name: uniqueName('RelevanceNone'),
+      });
+
+      const response = successOf(
+        listOf(placeCardSchema),
+        await ctx.get(`${API}/places?q=${uniqueWord}&sort=relevance`).expect(200),
+      );
+      const ids = response.data.map((p) => p.id);
+      expect(ids).toContain(matchByName.id);
+      expect(ids).toContain(matchByDescription.id);
+      expect(ids).not.toContain(noMatch.id);
+    });
+
+    it('sort=relevance still reports distanceMeters when lat/lng are also sent', async () => {
+      const uniqueWord = `Palindrome${run.toUpperCase()}`;
+      const place = await createPlace({
+        name: `${uniqueWord} Mess`,
+        slug: uniqueSlug('relevance-distance'),
+        status: 'ACTIVE',
+      });
+      const response = successOf(
+        listOf(placeCardSchema),
+        await ctx
+          .get(
+            `${API}/places?q=${uniqueWord}&sort=relevance&lat=${place.latitude}&lng=${place.longitude}`,
+          )
+          .expect(200),
+      );
+      expect(response.data.find((p) => p.id === place.id)?.distanceMeters).toBe(0);
+    });
+
+    it('minPrice/maxPrice keep only places whose range overlaps the window, excluding places with no price', async () => {
+      const tag = `Budget${run.toUpperCase()}`;
+      const inRange = await createPlace({
+        name: `${tag} A`,
+        slug: uniqueSlug('budget-in'),
+        status: 'ACTIVE',
+        priceOptions: [{ label: 'Monthly', amount: 1500, unit: 'MONTH' }],
+      });
+      const tooExpensive = await createPlace({
+        name: `${tag} B`,
+        slug: uniqueSlug('budget-out'),
+        status: 'ACTIVE',
+        priceOptions: [{ label: 'Monthly', amount: 9000, unit: 'MONTH' }],
+      });
+      const noPrice = await createPlace({
+        name: `${tag} C`,
+        slug: uniqueSlug('budget-none'),
+        status: 'ACTIVE',
+      });
+
+      const response = successOf(
+        listOf(placeCardSchema),
+        await ctx.get(`${API}/places?q=${tag}&minPrice=500&maxPrice=2000`).expect(200),
+      );
+      const ids = response.data.map((p) => p.id);
+      expect(ids).toContain(inRange.id);
+      expect(ids).not.toContain(tooExpensive.id);
+      expect(ids).not.toContain(noPrice.id);
+    });
+
+    it('verified=true shows only staff-verified places', async () => {
+      const tag = `Verif${run.toUpperCase()}`;
+      const verified = await createPlace({
+        name: `${tag} A`,
+        slug: uniqueSlug('verif-yes'),
+        status: 'ACTIVE',
+      });
+      await asAdmin(ctx.post(`${API}/admin/places/${verified.id}/verify`))
+        .send({})
+        .expect(200);
+      const unverified = await createPlace({
+        name: `${tag} B`,
+        slug: uniqueSlug('verif-no'),
+        status: 'ACTIVE',
+      });
+
+      const response = successOf(
+        listOf(placeCardSchema),
+        await ctx.get(`${API}/places?q=${tag}&verified=true`).expect(200),
+      );
+      const ids = response.data.map((p) => p.id);
+      expect(ids).toContain(verified.id);
+      expect(ids).not.toContain(unverified.id);
+    });
   });
 
   // ── Editing ──────────────────────────────────────────────────────────────────────────────────

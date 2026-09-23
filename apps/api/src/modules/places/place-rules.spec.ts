@@ -4,6 +4,7 @@ import {
   diffFields,
   metersFrom,
   planStatusChange,
+  rankByRelevance,
   sortCards,
   summarizePrices,
 } from './place-rules.js';
@@ -167,5 +168,57 @@ describe('metersFrom', () => {
     );
     expect(meters).toBeGreaterThan(0);
     expect(Number.isInteger(meters)).toBe(true);
+  });
+});
+
+describe('rankByRelevance', () => {
+  it('keeps the original (relevance) order when there is no point and nothing is verified', () => {
+    const cards = [
+      card({ id: 'a', name: 'A' }),
+      card({ id: 'b', name: 'B' }),
+      card({ id: 'c', name: 'C' }),
+    ];
+    expect(rankByRelevance(cards, false).map((c) => c.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  // With N results, adjacent relevance ranks are only 0.5/(N-1) apart — small enough for the 0.1
+  // verified or 0.2 proximity weight to flip a NEIGHBOURING pair, but nowhere near enough to
+  // overturn the full 0.5 gap between the best match and one far down the list.
+  const tenByRelevance = (overrides: Record<string, Partial<PlaceCard>> = {}) =>
+    Array.from({ length: 10 }, (_, index) =>
+      card({ id: `p${index}`, name: `P${index}`, ...overrides[`p${index}`] }),
+    );
+
+  it('a verified place can move ahead of an adjacent tie, but never past a clearly better match', () => {
+    const adjacent = tenByRelevance({ p5: { verified: true } });
+    const rankOf = (id: string) => rankByRelevance(adjacent, false).findIndex((c) => c.id === id);
+    expect(rankOf('p5')).toBeLessThan(5); // moved up from position 5...
+    expect(rankOf('p5')).toBeGreaterThan(0); // ...but not all the way to the top.
+    expect(rankByRelevance(adjacent, false)[0]?.id).toBe('p0'); // the best match is untouched.
+  });
+
+  it('without a search point, distance never influences the order (every proximity score is 0)', () => {
+    const cards = tenByRelevance({ p9: { distanceMeters: 1 } });
+    expect(rankByRelevance(cards, false).map((c) => c.id)).toEqual(cards.map((c) => c.id));
+  });
+
+  it('with a search point, a much nearer place can move ahead of an adjacent tie', () => {
+    const cards = tenByRelevance({ p5: { distanceMeters: 10 }, p4: { distanceMeters: 5000 } });
+    const ranked = rankByRelevance(cards, true).map((c) => c.id);
+    expect(ranked.indexOf('p5')).toBeLessThan(ranked.indexOf('p4'));
+    expect(ranked[0]).toBe('p0'); // still can't beat the best text match.
+  });
+
+  it('is a no-op for 0 or 1 cards', () => {
+    expect(rankByRelevance([], false)).toEqual([]);
+    const single = [card({ id: 'a', name: 'A' })];
+    expect(rankByRelevance(single, false)).toEqual(single);
+  });
+
+  it('does not mutate the input array', () => {
+    const cards = [card({ id: 'b', name: 'B' }), card({ id: 'a', name: 'A' })];
+    const original = [...cards];
+    rankByRelevance(cards, false);
+    expect(cards).toEqual(original);
   });
 });
