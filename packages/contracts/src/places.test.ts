@@ -81,6 +81,23 @@ describe('listPlacesQuerySchema', () => {
     expect(parsed.collegeSlug).toBe('sample-arts-science-college');
     expect(parsed.categorySlug).toBe('mess');
   });
+
+  it('rejects sort=relevance without q', () => {
+    expect(listPlacesQuerySchema.safeParse({ sort: 'relevance' }).success).toBe(false);
+    expect(listPlacesQuerySchema.safeParse({ sort: 'relevance', q: 'mess' }).success).toBe(true);
+  });
+
+  it('accepts a price range, and rejects minPrice above maxPrice', () => {
+    const parsed = listPlacesQuerySchema.parse({ minPrice: '1000', maxPrice: '5000' });
+    expect(parsed).toMatchObject({ minPrice: 1000, maxPrice: 5000 });
+    expect(listPlacesQuerySchema.safeParse({ minPrice: 5000, maxPrice: 1000 }).success).toBe(false);
+  });
+
+  it('verified defaults to false, and only the literal "true" turns it on', () => {
+    expect(listPlacesQuerySchema.parse({}).verified).toBe(false);
+    expect(listPlacesQuerySchema.parse({ verified: 'true' }).verified).toBe(true);
+    expect(listPlacesQuerySchema.safeParse({ verified: 'yes' }).success).toBe(false);
+  });
 });
 
 describe('createPlaceRequestSchema', () => {

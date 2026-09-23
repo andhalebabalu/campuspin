@@ -31,7 +31,7 @@ export const PLACE_STATUSES = ['DRAFT', 'PENDING', 'ACTIVE', 'INACTIVE', 'REJECT
 export type PlaceStatus = (typeof PLACE_STATUSES)[number];
 export const placeStatusSchema = z.enum(PLACE_STATUSES);
 
-export const PLACE_SORTS = ['name', 'nearest', 'newest', 'cheapest'] as const;
+export const PLACE_SORTS = ['name', 'nearest', 'newest', 'cheapest', 'relevance'] as const;
 export const ADMIN_PLACE_SORTS = ['newest', 'updated', 'name'] as const;
 
 export const MAX_PLACE_IMAGES = 20;
@@ -78,11 +78,20 @@ export const placeIdOrSlugSchema = idOrSlugField('sample-mess');
 
 // ── Public directory ─────────────────────────────────────────────────────────────────────────────
 
+const MAX_PRICE_FILTER = 10_000_000;
+
+/** `?verified=true` turns the filter on; anything else (including omitting it) leaves it off. */
+const verifiedFlagSchema = z
+  .literal('true')
+  .optional()
+  .transform((value) => value === 'true');
+
 /**
  * `GET /places` query. `lat`/`lng` go together; `sort=nearest` needs them, unless `collegeSlug` is
  * given instead — then distance defaults to "from that college" (overridden by explicit `lat`/`lng`).
  * `collegeSlug` scopes the list to places serving that college (the "college hub" journey);
- * `categorySlug` narrows further.
+ * `categorySlug` narrows further. `sort=relevance` needs `q`: it ranks by MySQL full-text relevance,
+ * with distance from a point and verified status breaking ties among equally relevant results.
  */
 export const listPlacesQuerySchema = paginationQuerySchema
   .extend({
@@ -97,10 +106,25 @@ export const listPlacesQuerySchema = paginationQuerySchema
     categorySlug: z.string().trim().max(100).optional().meta({ example: 'mess' }),
     lat: z.coerce.number().min(-90).max(90).optional().meta({ example: 19.098 }),
     lng: z.coerce.number().min(-180).max(180).optional().meta({ example: 74.75 }),
+    minPrice: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .max(MAX_PRICE_FILTER)
+      .optional()
+      .meta({ example: 1000 }),
+    maxPrice: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .max(MAX_PRICE_FILTER)
+      .optional()
+      .meta({ example: 5000 }),
+    verified: verifiedFlagSchema.meta({ example: 'true' }),
     sort: z.enum(PLACE_SORTS).default('name'),
   })
   .check((ctx) => {
-    const { lat, lng, sort, collegeSlug } = ctx.value;
+    const { lat, lng, sort, collegeSlug, q, minPrice, maxPrice } = ctx.value;
     if ((lat === undefined) !== (lng === undefined)) {
       ctx.issues.push({
         code: 'custom',
@@ -115,12 +139,26 @@ export const listPlacesQuerySchema = paginationQuerySchema
         input: ctx.value,
         path: ['sort'],
       });
+    } else if (sort === 'relevance' && !q) {
+      ctx.issues.push({
+        code: 'custom',
+        message: 'sort=relevance needs q',
+        input: ctx.value,
+        path: ['sort'],
+      });
     } else if (isNullIsland(lat, lng)) {
       ctx.issues.push({
         code: 'custom',
         message: NULL_ISLAND_MESSAGE,
         input: ctx.value,
         path: ['lat'],
+      });
+    } else if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
+      ctx.issues.push({
+        code: 'custom',
+        message: 'minPrice cannot be greater than maxPrice',
+        input: ctx.value,
+        path: ['minPrice'],
       });
     }
   });
