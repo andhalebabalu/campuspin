@@ -1,5 +1,12 @@
 import { z } from 'zod';
 import { paginationQuerySchema } from './pagination.js';
+import {
+  createSlugSchema,
+  httpUrlField,
+  idOrSlugField,
+  multiLineField,
+  singleLineField,
+} from './text.js';
 
 /**
  * College contracts: the public directory (cards, detail) and the admin management API. The API
@@ -37,55 +44,11 @@ export const RESERVED_COLLEGE_SLUGS = [
   'admin',
 ] as const;
 
-const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-
-/** True for text shaped like an id. The public API resolves such a value as an id, never a slug. */
-export const looksLikeUuid = (value: string): boolean => UUID_SHAPE.test(value.toLowerCase());
-
 // ── Field building blocks ────────────────────────────────────────────────────────────────────────
 
-const SINGLE_LINE_FORBIDDEN = /[<>\p{Cc}\p{Cs}\p{Co}\p{Bidi_Control}]/u;
-// Multi-line text may also contain tab, line feed and carriage return.
-const MULTI_LINE_FORBIDDEN = /[<>\p{Cs}\p{Co}\p{Bidi_Control}]|(?![\t\n\r])\p{Cc}/u;
-
-/**
- * Trimmed, every run of whitespace (tabs and line breaks from a paste included) collapsed to one
- * space, then any markup or remaining control character refused. Collapsing comes first on purpose:
- * a stray newline is harmless and gets normalised, a NUL byte or a bidi override is not and is refused.
- */
-const singleLine = (label: string, max: number) =>
-  z
-    .string()
-    .trim()
-    .min(1, `${label} is required`)
-    .max(max, `Use at most ${max} characters`)
-    .transform((value) => value.replace(/\s+/g, ' '))
-    .refine((value) => !SINGLE_LINE_FORBIDDEN.test(value), {
-      message: `${label} contains characters that are not allowed`,
-    });
-
-const multiLine = (label: string, max: number) =>
-  z
-    .string()
-    .trim()
-    .min(1, `${label} is required`)
-    .max(max, `Use at most ${max} characters`)
-    .refine((value) => !MULTI_LINE_FORBIDDEN.test(value), {
-      message: `${label} contains characters that are not allowed`,
-    })
-    .transform((value) => value.replace(/\r\n?/g, '\n'));
-
-/** http(s) only (no `javascript:`, `data:` or `ftp:`), and never with `user:password@`. */
-const httpUrl = (max: number) =>
-  z
-    .url({ protocol: /^https?$/ })
-    .max(max, `Use at most ${max} characters`)
-    // `user:password@host` puts an `@` in the authority (the part before the first `/`, `?` or `#`).
-    // Done with a pattern, not `new URL`, because this package also runs where that global is absent.
-    .refine((value) => !/^https?:\/\/[^/?#]*@/i.test(value), {
-      message: 'The link must not contain a username or password',
-    });
+const singleLine = singleLineField;
+const multiLine = multiLineField;
+const httpUrl = httpUrlField;
 
 const latitude = z.number().min(-90).max(90).meta({ example: 19.0952 });
 const longitude = z.number().min(-180).max(180).meta({ example: 74.7496 });
@@ -102,28 +65,13 @@ const radius = z
   .max(COLLEGE_RADIUS.max)
   .meta({ example: COLLEGE_RADIUS.default });
 
-export const slugSchema = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .min(3, 'Use at least 3 characters')
-  .max(120, 'Use at most 120 characters')
-  .regex(SLUG_PATTERN, 'Use lowercase letters, numbers and single hyphens')
-  .refine((value) => !(RESERVED_COLLEGE_SLUGS as readonly string[]).includes(value), {
-    message: 'This slug is reserved',
-  })
-  .refine((value) => !UUID_SHAPE.test(value), { message: 'A slug must not look like an id' })
-  .meta({ example: 'sample-arts-science-college' });
-
-export const uuidSchema = z.uuid();
+export const slugSchema = createSlugSchema({
+  reservedWords: RESERVED_COLLEGE_SLUGS,
+  example: 'sample-arts-science-college',
+});
 
 /** The `:idOrSlug` of a public college URL. */
-export const collegeIdOrSlugSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(200)
-  .meta({ example: 'sample-arts-science-college' });
+export const collegeIdOrSlugSchema = idOrSlugField('sample-arts-science-college');
 
 // ── Public directory ─────────────────────────────────────────────────────────────────────────────
 
