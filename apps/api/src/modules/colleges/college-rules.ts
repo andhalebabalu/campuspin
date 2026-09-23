@@ -48,18 +48,7 @@ export function planVerificationChange(
 
 // ── Editing ──────────────────────────────────────────────────────────────────────────────────────
 
-/**
- * The names of the fields in `patch` whose value differs from `current`. A patch that changes
- * nothing produces no write and no audit row, which keeps repeated saves from cluttering the trail.
- */
-export function diffFields<T extends object>(
-  current: T,
-  patch: Partial<T>,
-): Array<keyof T & string> {
-  return (Object.keys(patch) as Array<keyof T & string>).filter(
-    (key) => patch[key] !== undefined && patch[key] !== current[key],
-  );
-}
+export { diffFields } from '../../common/utils/diff-fields.js';
 
 /** Fields that decide which places belong to a college. Changing one means recomputing the links. */
 export const PROXIMITY_FIELDS = ['latitude', 'longitude', 'serviceRadiusMeters'] as const;

@@ -13,6 +13,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './modules/auth/guards/permissions.guard.js';
 import { RolesGuard } from './modules/auth/guards/roles.guard.js';
+import { CategoriesModule } from './modules/categories/categories.module.js';
 import { CollegesModule } from './modules/colleges/colleges.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 
@@ -33,6 +34,7 @@ import { HealthModule } from './modules/health/health.module.js';
     HttpModule,
     AuthModule,
     CollegesModule,
+    CategoriesModule,
     HealthModule,
   ],
   providers: [
