@@ -596,6 +596,7 @@ model Place {
   @@index([businessProfileId])
   @@index([createdById])
   @@index([latitude, longitude])
+  @@fulltext([name, description])
   @@map("places")
 }
 

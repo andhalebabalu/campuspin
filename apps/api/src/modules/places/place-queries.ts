@@ -100,6 +100,11 @@ export const ADMIN_ORDER_BY: Record<
   updated: [{ updatedAt: 'desc' }, { id: 'desc' }],
 };
 
+/** Must name exactly the columns of the `places_name_description_idx` FULLTEXT index. */
+export function relevanceOrderBy(search: string): Prisma.PlaceOrderByWithRelationInput[] {
+  return [{ _relevance: { fields: ['name', 'description'], search, sort: 'desc' } }];
+}
+
 /**
  * Makes a percent sign, an underscore and a backslash in user text match themselves. Prisma's
  * `contains` builds a `LIKE` pattern and does not escape these, so without this a search for `%`
@@ -110,7 +115,11 @@ export function escapeLike(text: string): string {
   return text.replace(/[\\%_]/g, (character) => `\\${character}`);
 }
 
-/** `q` matches the name or address as plain text; `city` is an exact match. */
+/**
+ * `q` matches the name, description or address as plain text (the same three fields available to
+ * relevance ranking, so a query never filters out a row that relevance ordering could still rank);
+ * `city` is an exact match.
+ */
 export function searchFilter(filter: {
   q?: string | undefined;
   city?: string | undefined;
@@ -119,9 +128,40 @@ export function searchFilter(filter: {
   const like = term ? escapeLike(term) : undefined;
   const city = filter.city?.trim();
   return {
-    ...(like ? { OR: [{ name: { contains: like } }, { address: { contains: like } }] } : {}),
+    ...(like
+      ? {
+          OR: [
+            { name: { contains: like } },
+            { description: { contains: like } },
+            { address: { contains: like } },
+          ],
+        }
+      : {}),
     ...(city ? { city: { equals: city } } : {}),
   };
+}
+
+/**
+ * A place's advertised price range overlapping the requested [minPrice, maxPrice] window. A place
+ * with no price data at all never matches a price filter (there is nothing to compare).
+ */
+export function priceFilter(filter: {
+  minPrice?: number | undefined;
+  maxPrice?: number | undefined;
+}): Prisma.PlaceWhereInput {
+  if (filter.minPrice === undefined && filter.maxPrice === undefined) return {};
+  return {
+    AND: [
+      { priceMin: { not: null } },
+      ...(filter.maxPrice !== undefined ? [{ priceMin: { lte: filter.maxPrice } }] : []),
+      ...(filter.minPrice !== undefined ? [{ priceMax: { gte: filter.minPrice } }] : []),
+    ],
+  };
+}
+
+/** `verified=true` shows only staff-verified places; otherwise every status is included. */
+export function verifiedFilter(verified: boolean): Prisma.PlaceWhereInput {
+  return verified ? { verificationStatus: 'VERIFIED' } : {};
 }
 
 /** A UUID-shaped value is an id; anything else is a slug. (A slug can never look like an id.) */

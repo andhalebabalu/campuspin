@@ -11,9 +11,12 @@ import {
   DETAIL_SELECT,
   NEWEST_ORDER_BY,
   idOrSlugFilter,
+  priceFilter,
+  relevanceOrderBy,
   searchFilter,
+  verifiedFilter,
 } from './place-queries.js';
-import { metersFrom, sortCards } from './place-rules.js';
+import { metersFrom, rankByRelevance, sortCards } from './place-rules.js';
 
 interface Point {
   latitude: number;
@@ -35,6 +38,8 @@ export class PlacesService {
     const where: Prisma.PlaceWhereInput = {
       status: 'ACTIVE',
       ...searchFilter(query),
+      ...priceFilter(query),
+      ...verifiedFilter(query.verified),
       ...(categoryId ? { categories: { some: { categoryId } } } : {}),
       ...(college
         ? { colleges: { some: { collegeId: college.id, mode: { not: 'EXCLUDED' } } } }
@@ -60,6 +65,26 @@ export class PlacesService {
         }),
       ]);
       return Paginated.of(rows.map(card), { page: query.page, limit: query.limit, total });
+    }
+
+    if (query.sort === 'relevance') {
+      // `q` is required by the schema for this sort. MySQL's native FULLTEXT relevance gives the
+      // base order (a portable ORDER BY, but not one whose score Prisma can hand back as a value to
+      // blend with distance), so every match is read in that order and `rankByRelevance` blends it
+      // with proximity and verified status before the page is cut.
+      if (!query.q) throw new Error('listPlacesQuerySchema guarantees q when sort=relevance');
+      const rows = await this.prisma.place.findMany({
+        where,
+        orderBy: relevanceOrderBy(query.q),
+        select: { ...CARD_SELECT, latitude: true, longitude: true },
+      });
+      const ranked = rankByRelevance(rows.map(card), point !== undefined);
+      const { skip, take } = pageWindow(query);
+      return Paginated.of(ranked.slice(skip, skip + take), {
+        page: query.page,
+        limit: query.limit,
+        total: ranked.length,
+      });
     }
 
     // Nearest (distance from a point) and cheapest (comparing across a nullable column) cannot be

@@ -97,6 +97,43 @@ export function sortCards(cards: readonly PlaceCard[], sort: 'nearest' | 'cheape
   return [...cards].sort(compare);
 }
 
+/**
+ * Blends MySQL's native full-text relevance order (the order `cards` already arrives in — index 0
+ * is the best text match) with distance from a search point and verified status. Combines each
+ * signal's RANK rather than its raw value: a relevance score and a distance in metres have no
+ * natural common scale, so fusing normalised rank positions (1 = best, 0 = worst) is the standard
+ * way to blend ranked signals without inventing a false equivalence between them. Weights mirror
+ * the platform's original search-ranking design (0.5 text + 0.2 proximity + 0.2 rating + 0.1
+ * verified) with the rating term dropped: every place has `ratingCount` 0 until Reviews exists, so
+ * it would only add noise. Ties (most often "no point was given, so proximity is 0 for everyone")
+ * keep the original relevance order, so this is a stable refinement, never a shuffle.
+ */
+export function rankByRelevance(cards: readonly PlaceCard[], hasPoint: boolean): PlaceCard[] {
+  const n = cards.length;
+  if (n <= 1) return [...cards];
+
+  const textRankScore = (index: number): number => 1 - index / (n - 1);
+
+  const knownDistances = cards
+    .map((card) => card.distanceMeters)
+    .filter((distance): distance is number => distance !== null);
+  const maxDistance = knownDistances.length > 0 ? Math.max(...knownDistances) : 0;
+  const proximityScore = (distanceMeters: number | null): number =>
+    hasPoint && distanceMeters !== null && maxDistance > 0 ? 1 - distanceMeters / maxDistance : 0;
+
+  return cards
+    .map((card, index) => ({
+      card,
+      index,
+      score:
+        0.5 * textRankScore(index) +
+        0.2 * proximityScore(card.distanceMeters) +
+        0.1 * (card.verified ? 1 : 0),
+    }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((entry) => entry.card);
+}
+
 /** Straight-line metres from a point, rounded the same way as the stored college-place distances. */
 export function metersFrom(
   point: { latitude: number; longitude: number } | undefined,
