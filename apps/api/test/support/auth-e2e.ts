@@ -19,6 +19,9 @@ const REQUEST_ID_PREFIX = 'e2eauth';
  */
 export const TEST_COLLEGE_SLUG_PREFIX = 'e2e-';
 export const TEST_PLACE_SLUG_PREFIX = 'e2e-place-';
+export const TEST_CATEGORY_SLUG_PREFIX = 'e2e-cat-';
+/** Amenity, attribute and rating-dimension keys are machine keys (letters/digits/underscore only). */
+export const TEST_KEY_PREFIX = 'e2e_test_';
 
 /** Passes the password policy, does not contain the email name, and is not a common word. */
 export const STRONG_PASSWORD = 'Blue!Lantern88Sky';
@@ -50,6 +53,12 @@ export async function removeAuthTestData(db: PrismaClient): Promise<void> {
   });
   await db.place.deleteMany({ where: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } });
   await db.college.deleteMany({ where: { slug: { startsWith: TEST_COLLEGE_SLUG_PREFIX } } });
+  // A category's attributes and rating dimensions cascade with it, but a group with a child still
+  // in it is protected by a foreign key (RESTRICT), so children are removed before their groups.
+  const categoryFilter = { slug: { startsWith: TEST_CATEGORY_SLUG_PREFIX } };
+  await db.category.deleteMany({ where: { ...categoryFilter, parentId: { not: null } } });
+  await db.category.deleteMany({ where: { ...categoryFilter, parentId: null } });
+  await db.amenity.deleteMany({ where: { key: { startsWith: TEST_KEY_PREFIX } } });
   if (ids.length > 0) await db.user.deleteMany({ where: { id: { in: ids } } });
 }
 
