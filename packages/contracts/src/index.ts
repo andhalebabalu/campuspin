@@ -7,4 +7,5 @@ export * from './health.js';
 export * from './pagination.js';
 export * from './places.js';
 export * from './rbac.js';
+export * from './submissions.js';
 export * from './text.js';

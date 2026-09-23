@@ -26,6 +26,9 @@ export const ERROR_CODES = [
   'EMAIL_ALREADY_REGISTERED', // 409
   'TOKEN_INVALID', // 401 refresh token / 400 email-link token: unknown, already used or revoked
   'TOKEN_EXPIRED', // 401 access token (refresh it) / 400 email-link token (request a new one)
+  // Student submissions (Phase 8). 409: server-side duplicate detection scored an existing place
+  // at or above the "block" threshold and the caller did not confirm this is a different place.
+  'DUPLICATE_PLACE_SUSPECTED',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
