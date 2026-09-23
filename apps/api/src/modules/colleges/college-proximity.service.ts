@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { boundingBox } from '../../common/geo/bounding-box.js';
+import { distanceMeters } from '../../common/geo/haversine.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../infra/database/prisma.service.js';
 import { type ExistingLink, planLinks } from './college-rules.js';
@@ -108,5 +109,45 @@ export class CollegeProximityService {
       removed: plan.remove.length,
       total: rows.length - plan.remove.length + plan.create.length,
     };
+  }
+
+  /**
+   * The reverse direction of {@link recompute}: a place was created or moved, so every college that
+   * might now include (or must now drop) it needs its links recomputed. "Might" is decided the same
+   * way `recompute` would: within the college's own radius, plus any college that already links this
+   * place (so a place moving OUT of range gets its stale link removed too).
+   *
+   * Reads every college into memory to check the distance — fine at the scale this directory is
+   * built for (hundreds, not millions, of colleges); a spatial index would replace this if that ever
+   * changes.
+   */
+  async recomputeForPlace(
+    placeId: string,
+    db: Db = this.prisma,
+  ): Promise<{ collegesAffected: number }> {
+    const place = await db.place.findUniqueOrThrow({
+      where: { id: placeId },
+      select: { latitude: true, longitude: true },
+    });
+    const linked = await db.collegePlace.findMany({
+      where: { placeId },
+      select: { collegeId: true },
+    });
+    const colleges = await db.college.findMany({
+      select: { id: true, latitude: true, longitude: true, serviceRadiusMeters: true },
+    });
+
+    const affected = new Set(linked.map((link) => link.collegeId));
+    for (const college of colleges) {
+      // +1 m: the same rounding tolerance `recompute` itself uses at the boundary.
+      if (Math.round(distanceMeters(place, college)) <= college.serviceRadiusMeters + 1) {
+        affected.add(college.id);
+      }
+    }
+
+    for (const collegeId of affected) {
+      await this.recompute(collegeId, db);
+    }
+    return { collegesAffected: affected.size };
   }
 }

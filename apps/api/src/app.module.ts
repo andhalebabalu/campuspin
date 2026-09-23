@@ -16,6 +16,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
 import { CollegesModule } from './modules/colleges/colleges.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { PlacesModule } from './modules/places/places.module.js';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { HealthModule } from './modules/health/health.module.js';
     AuthModule,
     CollegesModule,
     CategoriesModule,
+    PlacesModule,
     HealthModule,
   ],
   providers: [

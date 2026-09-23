@@ -41,6 +41,16 @@ export const AUDIT_ACTIONS = [
   'AMENITY_UPDATED',
   'AMENITY_ACTIVATED',
   'AMENITY_DEACTIVATED',
+  // Places (Phase 6). Every staff change to the place directory is recorded.
+  'PLACE_CREATED',
+  'PLACE_UPDATED',
+  'PLACE_ACTIVATED',
+  'PLACE_DEACTIVATED',
+  'PLACE_VERIFIED',
+  'PLACE_UNVERIFIED',
+  'PLACE_IMAGE_ADDED',
+  'PLACE_IMAGE_UPDATED',
+  'PLACE_IMAGE_REMOVED',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
