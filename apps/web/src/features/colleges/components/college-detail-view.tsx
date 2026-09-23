@@ -1,9 +1,15 @@
-import type { CollegeDetail } from '@platform/contracts';
+import type { CollegeDetail, PageMeta, PlaceCard } from '@platform/contracts';
 import { Card } from '@/components/ui/card';
 import { VerifiedBadge } from '@/components/ui/badge';
-import { EmptyState } from '@/components/shared/empty-state';
+import { CollegePlaceList } from '@/features/places/components/college-place-list';
 
-export function CollegeDetailView({ college }: { college: CollegeDetail }) {
+export interface CollegeDetailViewProps {
+  college: CollegeDetail;
+  initialPlaces: PlaceCard[];
+  initialMeta: PageMeta;
+}
+
+export function CollegeDetailView({ college, initialPlaces, initialMeta }: CollegeDetailViewProps) {
   const cover = college.coverImageUrl ?? college.images[0]?.imageUrl ?? null;
 
   return (
@@ -69,9 +75,10 @@ export function CollegeDetailView({ college }: { college: CollegeDetail }) {
         <h2 className="text-xl font-semibold text-ink">
           Places around {college.shortName ?? college.name}
         </h2>
-        <EmptyState
-          title={`${college.placeCount} ${college.placeCount === 1 ? 'place' : 'places'} tracked so far`}
-          description="Rooms, PGs, messes and more are coming to this college hub in a later phase."
+        <CollegePlaceList
+          collegeSlug={college.slug}
+          initialPlaces={initialPlaces}
+          initialMeta={initialMeta}
         />
       </div>
     </div>

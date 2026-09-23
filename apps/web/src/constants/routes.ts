@@ -3,6 +3,7 @@ export const ROUTES = {
   home: '/',
   colleges: '/colleges',
   collegeDetail: (slug: string) => `/colleges/${slug}`,
+  placeDetail: (slug: string) => `/places/${slug}`,
   login: '/login',
   register: '/register',
   verifyEmail: '/verify-email',

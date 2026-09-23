@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { cache } from 'react';
 import { CollegeDetailView } from '@/features/colleges/components/college-detail-view';
 import { collegesService } from '@/services/colleges.service';
+import { placesService } from '@/services/places.service';
 
 interface PageParams {
   collegeSlug: string;
@@ -43,9 +44,17 @@ export default async function CollegeDetailPage({ params }: { params: Promise<Pa
   const result = await loadCollege(collegeSlug);
   if (!result) notFound();
 
+  const places = await placesService.list({ collegeSlug, sort: 'nearest' });
+
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
-      <CollegeDetailView college={result.data} />
+      <CollegeDetailView
+        college={result.data}
+        initialPlaces={places.data}
+        initialMeta={
+          places.meta ?? { page: 1, limit: 20, total: places.data.length, totalPages: 1 }
+        }
+      />
     </main>
   );
 }
