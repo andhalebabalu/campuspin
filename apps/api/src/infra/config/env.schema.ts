@@ -74,8 +74,8 @@ export const envSchema = z
     // `console` prints emails (including their links) to the API log: development only.
     // `memory` keeps them in an in-process outbox: automated tests only.
     EMAIL_PROVIDER: z.enum(['console', 'memory']).default('console'),
-    EMAIL_FROM: z.string().trim().min(3).max(200).default('LINK <no-reply@localhost.test>'),
-    APP_NAME: z.string().trim().min(1).max(60).default('LINK'),
+    EMAIL_FROM: z.string().trim().min(3).max(200).default('CampusPin <no-reply@localhost.test>'),
+    APP_NAME: z.string().trim().min(1).max(60).default('CampusPin'),
   })
   .check((ctx) => {
     const { JWT_ACCESS_SECRET: access, JWT_REFRESH_SECRET: refresh } = ctx.value;

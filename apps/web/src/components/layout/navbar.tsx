@@ -1,61 +1,117 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
 import { BRAND } from '@/constants/brand';
 import { useSession } from '@/lib/auth/session-context';
 
-export function Navbar() {
+const NAV_LINKS = [
+  { href: ROUTES.search, label: 'Discover' },
+  { href: ROUTES.colleges, label: 'Colleges' },
+  { href: `${ROUTES.home}#how-it-works`, label: 'How it works' },
+  { href: `${ROUTES.home}#for-businesses`, label: 'For businesses' },
+  { href: ROUTES.suggestPlace, label: 'Suggest a place' },
+];
+
+function AccountActions({ onNavigate }: { onNavigate?: () => void }) {
   const { status, user, logout } = useSession();
 
+  if (status === 'loading') {
+    return <div className="h-9 w-40 animate-pulse rounded-full bg-neutral-100" />;
+  }
+  if (status === 'authenticated' && user) {
+    return (
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-body">Hi, {user.name.split(' ')[0]}</span>
+        <Button variant="ghost" size="sm" onClick={() => void logout()}>
+          Sign out
+        </Button>
+      </div>
+    );
+  }
   return (
-    <header className="sticky top-0 z-10 border-b border-line bg-surface/95 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href={ROUTES.home} className="font-display text-lg font-bold text-ink">
-          {BRAND.name}
+    <div className="flex items-center gap-2">
+      <Link
+        href={ROUTES.login}
+        onClick={onNavigate}
+        className="inline-flex h-9 items-center justify-center rounded-full border border-control px-4 text-sm font-semibold text-primary-800 transition-colors hover:bg-subtle"
+      >
+        Log in
+      </Link>
+      <Link
+        href={ROUTES.register}
+        onClick={onNavigate}
+        className="inline-flex h-9 items-center justify-center rounded-full bg-accent-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-650"
+      >
+        Get started
+      </Link>
+    </div>
+  );
+}
+
+export function Navbar() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+        <Link href={ROUTES.home} className="flex shrink-0 items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element -- static brand asset. */}
+          <img src="/logo.png" alt={BRAND.name} width={135} height={36} className="h-9 w-auto" />
         </Link>
 
-        <nav className="flex items-center gap-4 sm:gap-6">
-          <Link href={ROUTES.colleges} className="text-sm font-medium text-body hover:text-ink">
-            Colleges
-          </Link>
-          <Link href={ROUTES.search} className="text-sm font-medium text-body hover:text-ink">
-            Search
-          </Link>
-          <Link
-            href={ROUTES.suggestPlace}
-            className="text-sm font-medium text-body hover:text-ink"
-          >
-            Suggest a place
-          </Link>
-
-          {status === 'loading' ? (
-            <div className="h-9 w-20 animate-pulse rounded-md bg-neutral-100" />
-          ) : status === 'authenticated' && user ? (
-            <div className="flex items-center gap-3">
-              <span className="hidden text-sm text-body sm:inline">
-                Hi, {user.name.split(' ')[0]}
-              </span>
-              <Button variant="ghost" size="sm" onClick={() => void logout()}>
-                Sign out
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Link href={ROUTES.login} className="text-sm font-medium text-body hover:text-ink">
-                Sign in
-              </Link>
-              <Link
-                href={ROUTES.register}
-                className="inline-flex h-9 items-center justify-center rounded-md bg-action px-3 text-sm font-medium text-white transition-colors hover:bg-action-hover"
-              >
-                Register
-              </Link>
-            </div>
-          )}
+        <nav aria-label="Main" className="hidden items-center gap-6 lg:flex">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={pathname === link.href ? 'page' : undefined}
+              className="text-sm font-medium text-body transition-colors hover:text-primary-800 aria-[current=page]:font-semibold aria-[current=page]:text-primary-800"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
+
+        <div className="hidden lg:block">
+          <AccountActions />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          aria-expanded={open}
+          aria-controls="mobile-menu"
+          className="inline-flex size-10 items-center justify-center rounded-md text-ink hover:bg-subtle lg:hidden"
+        >
+          <Icon name={open ? 'close' : 'menu'} label={open ? 'Close menu' : 'Open menu'} />
+        </button>
       </div>
+
+      {open && (
+        <div id="mobile-menu" className="border-t border-line bg-surface lg:hidden">
+          <nav aria-label="Main" className="mx-auto flex max-w-6xl flex-col px-4 py-3 sm:px-6">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className="rounded-md px-2 py-3 text-base font-medium text-ink hover:bg-subtle"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="mt-2 border-t border-line px-2 pt-4 pb-2">
+              <AccountActions onNavigate={() => setOpen(false)} />
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

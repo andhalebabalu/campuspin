@@ -152,16 +152,16 @@ describe('ConsoleEmailProvider (development only)', () => {
     const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
 
     await new ConsoleEmailProvider().send({
-      from: 'LINK <no-reply@localhost.test>',
+      from: 'CampusPin <no-reply@localhost.test>',
       to: 'asha@example.test',
-      subject: 'Verify your email for LINK',
+      subject: 'Verify your email for CampusPin',
       text: 'Open http://localhost:3000/verify-email?token=abc',
       html: '<p>ignored</p>',
     });
 
     const printed = String(log.mock.calls[0]?.[0]);
     expect(printed).toContain('To:      asha@example.test');
-    expect(printed).toContain('Subject: Verify your email for LINK');
+    expect(printed).toContain('Subject: Verify your email for CampusPin');
     expect(printed).toContain('http://localhost:3000/verify-email?token=abc');
     expect(printed).not.toContain('<p>');
   });

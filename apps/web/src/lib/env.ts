@@ -6,7 +6,7 @@ const schema = z.object({
       'NEXT_PUBLIC_API_URL is missing or invalid. Copy apps/web/.env.example to apps/web/.env.local.',
   }),
   NEXT_PUBLIC_SITE_URL: z.url().default('http://localhost:3000'),
-  NEXT_PUBLIC_BRAND_NAME: z.string().min(1).default('LINK'),
+  NEXT_PUBLIC_BRAND_NAME: z.string().min(1).default('CampusPin'),
 });
 
 // Next.js only inlines NEXT_PUBLIC_* variables that are referenced literally, so list them explicitly.

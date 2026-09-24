@@ -12,27 +12,30 @@
   --color-transparent: transparent;
   --color-current: currentColor;
 
-  /* Primary: cobalt */
-  --color-primary-50: #eef3ff;
-  --color-primary-100: #dde7ff;
-  --color-primary-200: #c0d0ff;
-  --color-primary-300: #96b0ff;
-  --color-primary-400: #6486ff;
-  --color-primary-500: #3d63f5;
-  --color-primary-600: #2b4bde;
-  --color-primary-700: #2238b0;
-  --color-primary-800: #1f318c;
-  --color-primary-900: #1e2d6e;
+  /* Primary: CampusPin navy (from the logo mark; primary-800 is the logo's own navy) */
+  --color-primary-50: #eff6fe;
+  --color-primary-100: #dbeafd;
+  --color-primary-200: #bad7fb;
+  --color-primary-300: #8abcf9;
+  --color-primary-400: #509bf6;
+  --color-primary-500: #187bf3;
+  --color-primary-600: #0b63cf;
+  --color-primary-700: #084590;
+  --color-primary-800: #052f63;
+  --color-primary-900: #042349;
 
   /* Secondary: ink */
   --color-ink-900: #0b1220;
   --color-ink-800: #111b30;
   --color-ink-700: #1b2842;
 
-  /* Accent: amber (offers, featured) */
-  --color-accent-50: #fff7e6;
-  --color-accent-400: #ffb020;
-  --color-accent-700: #92400e;
+  /* Accent: CampusPin green (from the logo's "Pin" wordmark) */
+  --color-accent-50: #edf8ee;
+  --color-accent-400: #2c963c;
+  /* 5.4:1 on white: the green for text and for white-on-green buttons (400 is 3.8:1, icons only) */
+  --color-accent-600: #1f7a2e;
+  --color-accent-650: #196626;
+  --color-accent-700: #0f5712;
 
   /* Neutral: cool slate */
   --color-neutral-25: #fafbfc;
@@ -55,6 +58,17 @@
   --color-danger-600: #d92d20;
   --color-danger-700: #b42318;
 
+  /* Category tints: icon chips only (50 = chip background, 600 = glyph). Never for text or
+     actions, so they never compete with primary/accent. */
+  --color-amber-50: #fff4e8;
+  --color-amber-600: #d9650b;
+  --color-violet-50: #f3effe;
+  --color-violet-600: #6d3fd6;
+  --color-rose-50: #fdeff1;
+  --color-rose-600: #d62c4a;
+  --color-teal-50: #e7f7f6;
+  --color-teal-600: #0e8a83;
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -67,6 +81,18 @@
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
 }
 
 /*

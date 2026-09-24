@@ -1,31 +1,60 @@
-import Link from 'next/link';
-import { ApiStatus } from '@/components/system/api-status';
+import type { Metadata } from 'next';
 import { BRAND } from '@/constants/brand';
-import { ROUTES } from '@/constants/routes';
+import {
+  BusinessSection,
+  CtaBand,
+  WhyUsSection,
+} from '@/features/landing/components/closing-sections';
+import {
+  CommunitySection,
+  MarketplaceSection,
+} from '@/features/landing/components/community-sections';
+import {
+  CategoryGridSection,
+  HowItWorksSection,
+  MapDiscoverySection,
+} from '@/features/landing/components/discovery-sections';
+import { HeroSection } from '@/features/landing/components/hero-section';
+import { collegesService } from '@/services/colleges.service';
+import { placesService } from '@/services/places.service';
 
-// Phase 1 foundation page. The real landing page (hero, college search, categories...) is built
-// in the public-website phase; this page verifies the web app is wired to the API.
-export default function HomePage() {
+export const metadata: Metadata = {
+  title: { absolute: `${BRAND.name}: everything around your campus` },
+  description: BRAND.description,
+};
+
+/**
+ * The landing page. Everything on it that looks like data is real (the college picker, the counts,
+ * the featured place) and every tile, chip and map pin links into a working search. Each fetch
+ * fails soft: if the API is down the page still renders, just without the live bits.
+ */
+export default async function HomePage() {
+  const [colleges, places] = await Promise.all([
+    collegesService.list({ sort: 'popular', limit: 50 }).catch(() => null),
+    placesService.list({ sort: 'newest', limit: 6 }).catch(() => null),
+  ]);
+
+  const collegeOptions = [...(colleges?.data ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+  const featured =
+    places?.data.find((place) => place.verified) ?? places?.data[0] ?? null;
+
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-10 px-4 py-16 sm:px-6 lg:px-8">
-      <header className="flex flex-col gap-4">
-        <p className="inline-flex w-fit items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700">
-          <span aria-hidden="true" className="size-1.5 rounded-full bg-primary-600" />
-          {BRAND.name} · foundation build
-        </p>
-        <h1 className="text-4xl font-extrabold leading-tight text-ink sm:text-5xl">
-          Everything You Need Around Your College.
-        </h1>
-        <p className="max-w-xl text-lg text-body">{BRAND.description}</p>
-        <Link
-          href={ROUTES.colleges}
-          className="inline-flex h-11 w-fit items-center rounded-md bg-action px-5 font-medium text-white transition-colors hover:bg-action-hover"
-        >
-          Browse colleges
-        </Link>
-      </header>
-
-      <ApiStatus />
+    <main className="flex-1">
+      <HeroSection
+        colleges={collegeOptions}
+        stats={{
+          colleges: colleges ? (colleges.meta?.total ?? colleges.data.length) : null,
+          places: places ? (places.meta?.total ?? places.data.length) : null,
+        }}
+      />
+      <HowItWorksSection />
+      <CategoryGridSection />
+      <MapDiscoverySection featured={featured} />
+      <CommunitySection />
+      <MarketplaceSection />
+      <BusinessSection />
+      <WhyUsSection />
+      <CtaBand />
     </main>
   );
 }

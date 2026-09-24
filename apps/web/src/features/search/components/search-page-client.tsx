@@ -1,7 +1,12 @@
 'use client';
 
 import { ApiClientError } from '@platform/api-client';
-import type { PageMeta, PlaceCard as PlaceCardData } from '@platform/contracts';
+import type {
+  CategoryGroup,
+  CollegeCard,
+  PageMeta,
+  PlaceCard as PlaceCardData,
+} from '@platform/contracts';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
@@ -10,13 +15,19 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { PlaceCard } from '@/features/places/components/place-card';
 import { PlaceCardSkeleton } from '@/features/places/components/place-card-skeleton';
-import { effectiveSort, hasFilters, type Applied } from '@/features/search/lib/search-filters';
-import { placesService, type PlaceListParams } from '@/services/places.service';
+import {
+  hasFilters,
+  searchHref,
+  toPlaceListParams,
+  type Applied,
+} from '@/features/search/lib/search-filters';
+import { placesService } from '@/services/places.service';
 
 type Sort = Applied['sort'];
 /** `nearest` is left out: it needs a geolocation UI this foundation phase does not build. */
 const SORT_OPTIONS: Array<{ value: Sort; label: string }> = [
   { value: 'relevance', label: 'Best match' },
+  { value: 'rating', label: 'Top rated' },
   { value: 'cheapest', label: 'Cheapest' },
   { value: 'newest', label: 'Newest' },
   { value: 'name', label: 'Name' },
@@ -26,11 +37,18 @@ export interface SearchPageClientProps {
   initialApplied: Applied;
   initialPlaces: PlaceCardData[];
   initialMeta: PageMeta;
+  /** Set when the server's own fetch was a 404 (an unknown category or college slug). */
+  initialError?: string | null;
+  categoryGroups: CategoryGroup[];
+  colleges: CollegeCard[];
 }
+
+const SELECT_CLASSES = 'h-11 rounded-md border border-control bg-surface px-3.5 text-base text-ink';
 
 /**
  * The one search page: a keyword search over places (ranked by real MySQL full-text relevance) that
- * doubles as a plain price/verified filter browser when no keyword is given. Unlike the
+ * doubles as a plain category/college/price/verified filter browser when no keyword is given (the
+ * landing page's category tiles and campus search link straight into it). Unlike the
  * college-embedded place list, this page's filters ARE synced to the URL — it is the page itself,
  * shareable and back-button safe, the same as the standalone `/colleges` directory.
  */
@@ -38,6 +56,9 @@ export function SearchPageClient({
   initialApplied,
   initialPlaces,
   initialMeta,
+  initialError = null,
+  categoryGroups,
+  colleges,
 }: SearchPageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -48,8 +69,12 @@ export function SearchPageClient({
   const [applied, setApplied] = useState<Applied>(initialApplied);
   const [places, setPlaces] = useState(initialPlaces);
   const [meta, setMeta] = useState(initialMeta);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
-  const [error, setError] = useState<{ message: string; requestId?: string } | null>(null);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>(
+    initialError ? 'error' : 'idle',
+  );
+  const [error, setError] = useState<{ message: string; requestId?: string } | null>(
+    initialError ? { message: initialError } : null,
+  );
   const [retryCount, setRetryCount] = useState(0);
 
   const isFirstRun = useRef(true);
@@ -70,14 +95,8 @@ export function SearchPageClient({
     setStatus('loading');
     setError(null);
 
-    const params: PlaceListParams = { sort: effectiveSort(applied), page: applied.page };
-    if (applied.q) params.q = applied.q;
-    if (applied.minPrice) params.minPrice = Number(applied.minPrice);
-    if (applied.maxPrice) params.maxPrice = Number(applied.maxPrice);
-    if (applied.verified) params.verified = true;
-
     placesService
-      .list(params, controller.signal)
+      .list(toPlaceListParams(applied), controller.signal)
       .then((result) => {
         setPlaces(result.data);
         setMeta(
@@ -90,15 +109,7 @@ export function SearchPageClient({
         );
         setStatus('idle');
 
-        const search = new URLSearchParams();
-        if (applied.q) search.set('q', applied.q);
-        if (applied.minPrice) search.set('minPrice', applied.minPrice);
-        if (applied.maxPrice) search.set('maxPrice', applied.maxPrice);
-        if (applied.verified) search.set('verified', 'true');
-        if (applied.sort !== 'relevance') search.set('sort', applied.sort);
-        if (applied.page !== 1) search.set('page', String(applied.page));
-        const suffix = search.toString();
-        router.replace(suffix ? `${pathname}?${suffix}` : pathname, { scroll: false });
+        router.replace(searchHref(applied), { scroll: false });
       })
       .catch((caught: unknown) => {
         if (controller.signal.aborted) return;
@@ -135,6 +146,46 @@ export function SearchPageClient({
           onChange={(event) => setQInput(event.target.value)}
         />
         <div className="flex flex-wrap items-end gap-4">
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
+            Category
+            <select
+              value={applied.category}
+              onChange={(event) =>
+                setApplied((current) => ({ ...current, category: event.target.value, page: 1 }))
+              }
+              className={SELECT_CLASSES}
+            >
+              <option value="">Any category</option>
+              {categoryGroups.map((group) => (
+                <optgroup key={group.id} label={group.name}>
+                  {group.children.map((category) => (
+                    <option key={category.id} value={category.slug}>
+                      {category.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+          {colleges.length > 0 && (
+            <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
+              Near college
+              <select
+                value={applied.college}
+                onChange={(event) =>
+                  setApplied((current) => ({ ...current, college: event.target.value, page: 1 }))
+                }
+                className={`${SELECT_CLASSES} max-w-64`}
+              >
+                <option value="">Any college</option>
+                {colleges.map((college) => (
+                  <option key={college.id} value={college.slug}>
+                    {college.shortName ?? college.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <Input
             label="Min price (₹)"
             type="number"
@@ -151,6 +202,23 @@ export function SearchPageClient({
             onChange={(event) => setMaxPriceInput(event.target.value)}
             className="w-32"
           />
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
+            Rating
+            <select
+              value={applied.minRating}
+              onChange={(event) =>
+                setApplied((current) => ({ ...current, minRating: event.target.value, page: 1 }))
+              }
+              className={SELECT_CLASSES}
+            >
+              <option value="">Any rating</option>
+              {['4', '3', '2'].map((stars) => (
+                <option key={stars} value={stars}>
+                  {stars}★ and up
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="flex h-11 items-center gap-2 text-sm font-medium text-ink">
             <input
               type="checkbox"
@@ -169,7 +237,7 @@ export function SearchPageClient({
               onChange={(event) =>
                 setApplied((current) => ({ ...current, sort: event.target.value as Sort, page: 1 }))
               }
-              className="h-11 rounded-md border border-control bg-surface px-3.5 text-base text-ink"
+              className={SELECT_CLASSES}
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -185,7 +253,7 @@ export function SearchPageClient({
       {!hasFilters(applied) ? (
         <EmptyState
           title="Search for a place"
-          description="Try a name, a category like “mess” or “library”, or set a price range below."
+          description="Try a name, pick a category or college, or set a price range above."
         />
       ) : status === 'error' && error ? (
         <ErrorState

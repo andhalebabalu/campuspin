@@ -2,6 +2,7 @@ import { ApiClientError } from '@platform/api-client';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
+import { BRAND } from '@/constants/brand';
 import { CollegeDetailView } from '@/features/colleges/components/college-detail-view';
 import { collegesService } from '@/services/colleges.service';
 import { placesService } from '@/services/places.service';
@@ -35,7 +36,8 @@ export async function generateMetadata({
   return {
     title: result.data.name,
     description:
-      result.data.description ?? `Everything discovered around ${result.data.name} on LINK.`,
+      result.data.description ??
+      `Everything discovered around ${result.data.name} on ${BRAND.name}.`,
   };
 }
 

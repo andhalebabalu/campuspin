@@ -16,8 +16,8 @@ describe('AppConfig: authentication settings', () => {
     expect(auth.emailVerificationTtlSeconds).toBe(86_400);
     expect(auth.passwordResetTtlSeconds).toBe(3600);
     expect(auth.rateLimit).toEqual({ limit: 20, ttlMs: 60_000 });
-    expect(email).toEqual({ provider: 'console', from: 'LINK <no-reply@localhost.test>' });
-    expect(appName).toBe('LINK');
+    expect(email).toEqual({ provider: 'console', from: 'CampusPin <no-reply@localhost.test>' });
+    expect(appName).toBe('CampusPin');
   });
 
   it('reads every setting from the environment', () => {
