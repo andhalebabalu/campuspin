@@ -90,6 +90,18 @@ describe('createApiClient', () => {
     expect(init?.body).toBe(JSON.stringify({ rating: 5 }));
   });
 
+  it('sends a FormData body untouched, letting fetch set the multipart Content-Type', async () => {
+    const fetchStub = stubFetch(() => Promise.resolve(okResponse({})));
+    const form = new FormData();
+    form.append('file', new Blob(['x'], { type: 'image/png' }), 'x.png');
+
+    await clientWith(fetchStub).post('/uploads/images', { body: form });
+
+    const [, init] = fetchStub.mock.calls[0] ?? [];
+    expect(init?.body).toBe(form);
+    expect(init?.headers).not.toHaveProperty('Content-Type');
+  });
+
   it('throws ApiClientError carrying code, details and request id from an error envelope', async () => {
     const fetchStub = stubFetch(() =>
       Promise.resolve(

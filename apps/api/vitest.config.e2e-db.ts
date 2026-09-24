@@ -1,3 +1,5 @@
+import os from 'node:os';
+import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 // HTTP end-to-end tests that need the REAL database (authentication creates users, sessions and
@@ -24,6 +26,8 @@ export default defineConfig({
       // Generous, so the flow tests are never throttled. The rate-limit spec lowers it for itself.
       AUTH_RATE_LIMIT: '10000',
       THROTTLE_LIMIT: '10000',
+      // Uploaded test images go to a throwaway folder, never the real apps/api/uploads.
+      UPLOAD_DIR: path.join(os.tmpdir(), 'campuspin-e2e-uploads'),
     },
   },
 });

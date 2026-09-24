@@ -200,6 +200,10 @@ describe('Access control (e2e, real database)', () => {
       'GET /api/v1/admin/submissions',
       'GET /api/v1/admin/submissions/{id}',
       'GET /api/v1/auth/me',
+      'GET /api/v1/business/dashboard',
+      'GET /api/v1/business/enquiries',
+      'GET /api/v1/business/listings',
+      'GET /api/v1/business/reviews',
       'GET /api/v1/me/reviews',
       'GET /api/v1/place-submissions/{id}',
       'PATCH /api/v1/admin/amenities/{id}',
@@ -210,6 +214,8 @@ describe('Access control (e2e, real database)', () => {
       'PATCH /api/v1/admin/colleges/{id}/images/{imageId}',
       'PATCH /api/v1/admin/places/{id}',
       'PATCH /api/v1/admin/places/{id}/images/{imageId}',
+      'PATCH /api/v1/business/enquiries/{id}',
+      'PATCH /api/v1/business/profile',
       'PATCH /api/v1/reviews/{id}',
       'POST /api/v1/admin/amenities',
       'POST /api/v1/admin/amenities/{id}/activate',
@@ -239,9 +245,12 @@ describe('Access control (e2e, real database)', () => {
       'POST /api/v1/admin/submissions/{id}/reject',
       'POST /api/v1/auth/logout',
       'POST /api/v1/auth/logout-all',
+      'POST /api/v1/business/listings',
       'POST /api/v1/place-submissions',
       'POST /api/v1/places/duplicate-check',
+      'POST /api/v1/places/{idOrSlug}/enquiries',
       'POST /api/v1/places/{idOrSlug}/reviews',
+      'POST /api/v1/uploads/images',
     ];
 
     it('answers 401 to every documented route that is not explicitly public', async () => {

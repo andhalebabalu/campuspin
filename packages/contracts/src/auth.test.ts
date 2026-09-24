@@ -88,7 +88,30 @@ describe('registerRequestSchema', () => {
 
   it('normalises the email and whitespace in the name', () => {
     const parsed = registerRequestSchema.parse({ ...valid, name: '  Asha   Patil ' });
-    expect(parsed).toEqual({ name: 'Asha Patil', email: 'asha@example.com', password: STRONG });
+    expect(parsed).toEqual({
+      name: 'Asha Patil',
+      email: 'asha@example.com',
+      password: STRONG,
+      accountType: 'STUDENT',
+    });
+  });
+
+  it('defaults to a student account and only allows the two self-service types', () => {
+    expect(registerRequestSchema.parse(valid).accountType).toBe('STUDENT');
+    expect(registerRequestSchema.safeParse({ ...valid, accountType: 'ADMIN' }).success).toBe(false);
+  });
+
+  it('requires a business name for a business account only', () => {
+    const business = registerRequestSchema.safeParse({ ...valid, accountType: 'BUSINESS' });
+    expect(business.success).toBe(false);
+    expect(business.error?.issues.map((issue) => issue.path.join('.'))).toContain('businessName');
+
+    const named = registerRequestSchema.parse({
+      ...valid,
+      accountType: 'BUSINESS',
+      businessName: '  Sai   Krupa Mess ',
+    });
+    expect(named.businessName).toBe('Sai Krupa Mess');
   });
 
   it('accepts names in other scripts', () => {

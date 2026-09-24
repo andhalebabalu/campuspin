@@ -58,6 +58,7 @@ const detailRow: DetailRow = {
   verificationStatus: 'VERIFIED',
   ratingAverage: 4.2,
   ratingCount: 18,
+  businessProfileId: null,
   priceMin: 3000,
   priceMax: 3500,
   priceUnit: 'MONTH',

@@ -12,7 +12,12 @@ vi.mock('../../common/security/password-hasher.js', async (importOriginal) => {
 });
 
 describe('AuthService.register', () => {
-  const dto = { name: 'Asha Patil', email: 'asha@example.test', password: STRONG };
+  const dto = {
+    name: 'Asha Patil',
+    email: 'asha@example.test',
+    password: STRONG,
+    accountType: 'STUDENT' as const,
+  };
 
   it('creates a STUDENT with an Argon2id hash, unverified, and emails a verification link', async () => {
     const kit = buildAuthKit();

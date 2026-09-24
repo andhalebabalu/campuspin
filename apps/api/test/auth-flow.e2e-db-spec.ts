@@ -115,7 +115,9 @@ describe('Authentication flow (e2e, real database)', () => {
       const emails = Array.from({ length: 8 }, (_, index) => testEmail(`burst${index}`));
       const responses = await Promise.all(
         emails.map((email) =>
-          ctx.post(`${API}/register`).send({ name: 'Burst User', email, password: STRONG_PASSWORD }),
+          ctx
+            .post(`${API}/register`)
+            .send({ name: 'Burst User', email, password: STRONG_PASSWORD }),
         ),
       );
 

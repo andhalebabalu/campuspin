@@ -11,6 +11,7 @@ import { createDb } from './support/db.js';
 const EXPECTED_TABLES = [
   'refresh_tokens',
   'email_verification_tokens',
+  'leads',
   'password_reset_tokens',
   'users',
   'roles',

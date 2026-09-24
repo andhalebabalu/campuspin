@@ -27,7 +27,13 @@ interface OpenApiDocument {
 
 /** [method, path, request body fields (or none), success status, needs a Bearer token] */
 const AUTH_ENDPOINTS = [
-  ['post', '/api/v1/auth/register', ['name', 'email', 'password'], '201', false],
+  [
+    'post',
+    '/api/v1/auth/register',
+    ['name', 'email', 'password', 'accountType', 'businessName'],
+    '201',
+    false,
+  ],
   ['post', '/api/v1/auth/verify-email', ['token'], '200', false],
   ['post', '/api/v1/auth/resend-verification', ['email'], '200', false],
   ['post', '/api/v1/auth/login', ['email', 'password'], '200', false],

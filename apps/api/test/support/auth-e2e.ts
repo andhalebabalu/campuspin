@@ -69,6 +69,9 @@ export async function removeAuthTestData(db: PrismaClient): Promise<void> {
   });
   await db.place.deleteMany({ where: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } });
   await db.college.deleteMany({ where: { slug: { startsWith: TEST_COLLEGE_SLUG_PREFIX } } });
+  // A business profile blocks deleting its owner (RESTRICT). Its enquiries cascade with it; its
+  // places were test places, removed just above.
+  if (ids.length > 0) await db.businessProfile.deleteMany({ where: { ownerId: { in: ids } } });
   // A category's attributes and rating dimensions cascade with it, but a group with a child still
   // in it is protected by a foreign key (RESTRICT), so children are removed before their groups.
   const categoryFilter = { slug: { startsWith: TEST_CATEGORY_SLUG_PREFIX } };
@@ -160,13 +163,26 @@ export function jwtPayload(token: string): Record<string, unknown> {
 /** Registers an account and completes email verification, as a real user would. */
 export async function registerAndVerify(
   ctx: AuthTestContext,
-  options: { label?: string; password?: string; name?: string } = {},
+  options: {
+    label?: string;
+    password?: string;
+    name?: string;
+    /** Sign up as a business (BUSINESS_OWNER with a business profile of this name). */
+    businessName?: string;
+  } = {},
 ): Promise<{ email: string; password: string; userId: string }> {
   const email = testEmail(options.label);
   const password = options.password ?? STRONG_PASSWORD;
   const registered = await ctx
     .post('/api/v1/auth/register')
-    .send({ name: options.name ?? 'Test Student', email, password })
+    .send({
+      name: options.name ?? 'Test Student',
+      email,
+      password,
+      ...(options.businessName
+        ? { accountType: 'BUSINESS', businessName: options.businessName }
+        : {}),
+    })
     .expect(201);
   await ctx
     .post('/api/v1/auth/verify-email')

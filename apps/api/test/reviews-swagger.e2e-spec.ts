@@ -64,7 +64,8 @@ describe('Swagger documentation of reviews (e2e)', () => {
 
   it('documents exactly the 2 public, 4 authenticated and 5 admin review routes', () => {
     const documented = Object.entries(doc.paths)
-      .filter(([path]) => path.includes('review'))
+      // `/business/reviews` is the business dashboard's view (business-swagger.e2e-spec.ts).
+      .filter(([path]) => path.includes('review') && !path.startsWith('/api/v1/business'))
       .flatMap(([path, operations]) =>
         Object.keys(operations).map((method) => `${method} ${path}`),
       );
