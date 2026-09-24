@@ -57,6 +57,14 @@ export const AUDIT_ACTIONS = [
   'SUBMISSION_APPROVED',
   'SUBMISSION_REJECTED',
   'SUBMISSION_MARKED_DUPLICATE',
+  // Reviews (Phase 9). The author's own changes and every staff moderation decision. A withdrawn
+  // review is deleted, so its audit row is what records that it existed.
+  'REVIEW_CREATED',
+  'REVIEW_UPDATED',
+  'REVIEW_WITHDRAWN',
+  'REVIEW_HIDDEN',
+  'REVIEW_RESTORED',
+  'REVIEW_REMOVED',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

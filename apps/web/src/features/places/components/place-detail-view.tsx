@@ -1,6 +1,7 @@
 import type { PlaceDetail } from '@platform/contracts';
 import { Badge, VerifiedBadge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { PlaceReviews } from '@/features/reviews/components/place-reviews';
 import { formatPrice } from '@/utils/format-price';
 
 const DAY_LABELS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -48,11 +49,11 @@ export function PlaceDetailView({ place }: { place: PlaceDetail }) {
         <p className="text-lg font-semibold text-ink">
           {formatPrice(place.priceMin, place.priceMax, place.priceUnit)}
         </p>
-        <p className="text-sm text-muted">
+        <a href="#reviews" className="w-fit text-sm text-muted underline-offset-2 hover:underline">
           {place.ratingCount > 0
             ? `★ ${place.ratingAverage.toFixed(1)} (${place.ratingCount} ${place.ratingCount === 1 ? 'review' : 'reviews'})`
             : 'No reviews yet'}
-        </p>
+        </a>
 
         <a
           href={directionsUrl(place)}
@@ -120,6 +121,8 @@ export function PlaceDetailView({ place }: { place: PlaceDetail }) {
           </div>
         </div>
       )}
+
+      <PlaceReviews placeId={place.id} placeSlug={place.slug} />
     </div>
   );
 }

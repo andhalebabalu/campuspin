@@ -57,6 +57,16 @@ export async function removeAuthTestData(db: PrismaClient): Promise<void> {
   if (ids.length > 0) {
     await db.placeSubmission.deleteMany({ where: { submittedById: { in: ids } } });
   }
+  // Reviews block deleting both their author and their place (RESTRICT on each), so they go first:
+  // any review by a test user, and any review of a test place. Dimension ratings cascade.
+  await db.review.deleteMany({
+    where: {
+      OR: [
+        ...(ids.length > 0 ? [{ userId: { in: ids } }] : []),
+        { place: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } },
+      ],
+    },
+  });
   await db.place.deleteMany({ where: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } });
   await db.college.deleteMany({ where: { slug: { startsWith: TEST_COLLEGE_SLUG_PREFIX } } });
   // A category's attributes and rating dimensions cascade with it, but a group with a child still

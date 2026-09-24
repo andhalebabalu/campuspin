@@ -101,11 +101,13 @@ export class PlacesController {
       '`city` matches exactly. `collegeSlug` scopes the list to places serving that college (excluding any ' +
       'a staff member explicitly excluded), and `categorySlug` narrows further. `minPrice`/`maxPrice` keep ' +
       'places whose own price range overlaps the window (places with no price never match); `verified=true` ' +
-      "shows only staff-verified places. Send `lat` and `lng` (together) for each place's straight-line " +
+      'shows only staff-verified places; `minRating` (1-5) keeps places whose review average is at least that ' +
+      "(unrated places never match). Send `lat` and `lng` (together) for each place's straight-line " +
       "`distanceMeters`; with `collegeSlug` alone, distance defaults to 'from that college'. `sort=nearest` " +
       'needs one of those; `sort=cheapest` orders by `priceMin` (places with no price sort last, never as ' +
-      'free); `sort=relevance` needs `q` and ranks by MySQL full-text relevance on name/description, with ' +
-      'distance and verified status breaking ties among equally relevant results. Unknown sort values and ' +
+      'free); `sort=rating` is "top rated", a Bayesian average so one 5-star review does not outrank forty ' +
+      '4.6-star ones (unrated places last); `sort=relevance` needs `q` and ranks by MySQL full-text relevance ' +
+      'on name/description, blended with distance, rating and verified status. Unknown sort values and ' +
       'impossible coordinates are a 400.',
   })
   @ApiEnvelopeResponse(z.array(placeCardSchema), {

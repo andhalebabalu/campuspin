@@ -60,7 +60,13 @@ describe('Swagger documentation of places (e2e)', () => {
     const documented = Object.entries(doc.paths)
       // `/places/duplicate-check` is declared here for a tidy public URL, but it belongs to the
       // submissions feature (tagged "Submissions", documented in submissions-swagger.e2e-spec.ts).
-      .filter(([path]) => path.includes('/places') && path !== '/api/v1/places/duplicate-check')
+      // Likewise `/places/{idOrSlug}/reviews[/summary]` belong to reviews (reviews-swagger.e2e-spec.ts).
+      .filter(
+        ([path]) =>
+          path.includes('/places') &&
+          path !== '/api/v1/places/duplicate-check' &&
+          !path.includes('/reviews'),
+      )
       .flatMap(([path, operations]) =>
         Object.keys(operations).map((method) => `${method} ${path}`),
       );

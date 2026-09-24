@@ -74,6 +74,22 @@ export function summarizePrices(
   return { priceMin: Math.min(...amounts), priceMax: Math.max(...amounts), priceUnit: unit };
 }
 
+// ── Ratings ───────────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * "Top rated" ordering. A Bayesian average pulls a place with few reviews towards a prior, so one
+ * 5-star review (3.75) does not outrank forty 4.6-star ones (4.48). The prior is a constant (3.5
+ * stars, worth 5 reviews) rather than the live platform mean: there is no settings table to tune it
+ * and early on the platform mean is itself built from very few reviews.
+ */
+export const RATING_PRIOR = { mean: 3.5, weight: 5 } as const;
+
+export function bayesianRating(average: number, count: number): number {
+  return (
+    (RATING_PRIOR.mean * RATING_PRIOR.weight + average * count) / (RATING_PRIOR.weight + count)
+  );
+}
+
 // ── Public listing ───────────────────────────────────────────────────────────────────────────────
 
 const byName = (a: PlaceCard, b: PlaceCard): number =>
@@ -82,19 +98,31 @@ const byName = (a: PlaceCard, b: PlaceCard): number =>
 /** A place with no price in the comparison unit sorts last, never first (never "cheapest: free"). */
 const priceRank = (card: PlaceCard): number => card.priceMin ?? Number.POSITIVE_INFINITY;
 
+/** Higher is better. An unrated place sorts after every rated one, never at the prior's 3.5 stars. */
+const ratingRank = (card: PlaceCard): number =>
+  card.ratingCount > 0
+    ? bayesianRating(card.ratingAverage, card.ratingCount)
+    : Number.NEGATIVE_INFINITY;
+
+const COMPARE: Record<'nearest' | 'cheapest' | 'rating', (a: PlaceCard, b: PlaceCard) => number> = {
+  nearest: (a, b) =>
+    (a.distanceMeters ?? Number.POSITIVE_INFINITY) -
+      (b.distanceMeters ?? Number.POSITIVE_INFINITY) || byName(a, b),
+  cheapest: (a, b) => priceRank(a) - priceRank(b) || byName(a, b),
+  // Both unrated: -Infinity - -Infinity is NaN, which `||` treats as a tie, so name decides.
+  rating: (a, b) => ratingRank(b) - ratingRank(a) || b.ratingCount - a.ratingCount || byName(a, b),
+};
+
 /**
- * Orders cards for the two sorts a database `ORDER BY` cannot portably express (distance from a
- * point, and comparing prices across rows that may be null). Ties fall back to name then id, so a
- * page never repeats or skips a row.
+ * Orders cards for the sorts a database `ORDER BY` cannot portably express (distance from a point,
+ * comparing prices across rows that may be null, and a Bayesian "top rated" score). Ties fall back to
+ * name then id, so a page never repeats or skips a row.
  */
-export function sortCards(cards: readonly PlaceCard[], sort: 'nearest' | 'cheapest'): PlaceCard[] {
-  const compare =
-    sort === 'nearest'
-      ? (a: PlaceCard, b: PlaceCard) =>
-          (a.distanceMeters ?? Number.POSITIVE_INFINITY) -
-            (b.distanceMeters ?? Number.POSITIVE_INFINITY) || byName(a, b)
-      : (a: PlaceCard, b: PlaceCard) => priceRank(a) - priceRank(b) || byName(a, b);
-  return [...cards].sort(compare);
+export function sortCards(
+  cards: readonly PlaceCard[],
+  sort: 'nearest' | 'cheapest' | 'rating',
+): PlaceCard[] {
+  return [...cards].sort(COMPARE[sort]);
 }
 
 /**
@@ -102,11 +130,12 @@ export function sortCards(cards: readonly PlaceCard[], sort: 'nearest' | 'cheape
  * is the best text match) with distance from a search point and verified status. Combines each
  * signal's RANK rather than its raw value: a relevance score and a distance in metres have no
  * natural common scale, so fusing normalised rank positions (1 = best, 0 = worst) is the standard
- * way to blend ranked signals without inventing a false equivalence between them. Weights mirror
- * the platform's original search-ranking design (0.5 text + 0.2 proximity + 0.2 rating + 0.1
- * verified) with the rating term dropped: every place has `ratingCount` 0 until Reviews exists, so
- * it would only add noise. Ties (most often "no point was given, so proximity is 0 for everyone")
- * keep the original relevance order, so this is a stable refinement, never a shuffle.
+ * way to blend ranked signals without inventing a false equivalence between them. Weights are the
+ * platform's original search-ranking design: 0.5 text + 0.2 proximity + 0.2 rating + 0.1 verified.
+ * Rating is the Bayesian score on its own 1-5 scale mapped to 0-1 (an unrated place scores 0), so a
+ * place with one 5-star review gains little over an unrated one. Ties (most often "no point was
+ * given, so proximity is 0 for everyone") keep the original relevance order, so this is a stable
+ * refinement, never a shuffle.
  */
 export function rankByRelevance(cards: readonly PlaceCard[], hasPoint: boolean): PlaceCard[] {
   const n = cards.length;
@@ -121,6 +150,9 @@ export function rankByRelevance(cards: readonly PlaceCard[], hasPoint: boolean):
   const proximityScore = (distanceMeters: number | null): number =>
     hasPoint && distanceMeters !== null && maxDistance > 0 ? 1 - distanceMeters / maxDistance : 0;
 
+  const ratingScore = (card: PlaceCard): number =>
+    card.ratingCount > 0 ? (bayesianRating(card.ratingAverage, card.ratingCount) - 1) / 4 : 0;
+
   return cards
     .map((card, index) => ({
       card,
@@ -128,6 +160,7 @@ export function rankByRelevance(cards: readonly PlaceCard[], hasPoint: boolean):
       score:
         0.5 * textRankScore(index) +
         0.2 * proximityScore(card.distanceMeters) +
+        0.2 * ratingScore(card) +
         0.1 * (card.verified ? 1 : 0),
     }))
     .sort((a, b) => b.score - a.score || a.index - b.index)

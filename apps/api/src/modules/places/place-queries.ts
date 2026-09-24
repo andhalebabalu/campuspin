@@ -164,6 +164,16 @@ export function verifiedFilter(verified: boolean): Prisma.PlaceWhereInput {
   return verified ? { verificationStatus: 'VERIFIED' } : {};
 }
 
+/**
+ * At least `minRating` stars on average. `ratingCount > 0` matters: an unrated place stores
+ * `ratingAverage` 0 and must never match, however low the threshold.
+ */
+export function ratingFilter(minRating: number | undefined): Prisma.PlaceWhereInput {
+  return minRating === undefined
+    ? {}
+    : { ratingCount: { gt: 0 }, ratingAverage: { gte: minRating } };
+}
+
 /** A UUID-shaped value is an id; anything else is a slug. (A slug can never look like an id.) */
 export function idOrSlugFilter(value: string): { id: string } | { slug: string } {
   const trimmed = value.trim();

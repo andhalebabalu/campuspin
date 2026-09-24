@@ -1,6 +1,7 @@
 import type { PlaceCard } from '@platform/contracts';
 import {
   affectsProximity,
+  bayesianRating,
   diffFields,
   metersFrom,
   planStatusChange,
@@ -148,11 +149,48 @@ describe('sortCards', () => {
     expect(sortCards(cards, 'cheapest').map((c) => c.id)).toEqual(['a', 'b', 'c']);
   });
 
+  it('rating: forty 4.6-star reviews beat one 5-star review; unrated places sort last, by name', () => {
+    const cards = [
+      card({ id: 'one-five', name: 'D', ratingAverage: 5, ratingCount: 1 }),
+      card({ id: 'unrated-b', name: 'B' }),
+      card({ id: 'forty', name: 'C', ratingAverage: 4.6, ratingCount: 40 }),
+      card({ id: 'unrated-a', name: 'A' }),
+      card({ id: 'low', name: 'E', ratingAverage: 2, ratingCount: 30 }),
+    ];
+    expect(sortCards(cards, 'rating').map((c) => c.id)).toEqual([
+      'forty',
+      'one-five',
+      'low',
+      'unrated-a',
+      'unrated-b',
+    ]);
+  });
+
+  it('rating: an equal score is broken by the larger review count, then by name', () => {
+    const cards = [
+      card({ id: 'few', name: 'A', ratingAverage: 3.5, ratingCount: 2 }),
+      card({ id: 'many', name: 'B', ratingAverage: 3.5, ratingCount: 20 }),
+    ];
+    expect(sortCards(cards, 'rating').map((c) => c.id)).toEqual(['many', 'few']);
+  });
+
   it('does not mutate the input array', () => {
     const cards = [card({ id: 'b', name: 'B' }), card({ id: 'a', name: 'A' })];
     const original = [...cards];
     sortCards(cards, 'nearest');
     expect(cards).toEqual(original);
+  });
+});
+
+describe('bayesianRating', () => {
+  it('pulls a place with few reviews towards the 3.5-star prior', () => {
+    expect(bayesianRating(5, 1)).toBeCloseTo(3.75);
+    expect(bayesianRating(4.6, 40)).toBeCloseTo(4.478, 3);
+    expect(bayesianRating(1, 1)).toBeCloseTo(3.083, 3);
+  });
+
+  it('approaches the real average as reviews accumulate', () => {
+    expect(bayesianRating(4.8, 10_000)).toBeCloseTo(4.8, 2);
   });
 });
 
@@ -207,6 +245,27 @@ describe('rankByRelevance', () => {
     const ranked = rankByRelevance(cards, true).map((c) => c.id);
     expect(ranked.indexOf('p5')).toBeLessThan(ranked.indexOf('p4'));
     expect(ranked[0]).toBe('p0'); // still can't beat the best text match.
+  });
+
+  it('a well-rated place can move ahead of an adjacent tie, but never past a clearly better match', () => {
+    const cards = tenByRelevance({ p5: { ratingAverage: 4.8, ratingCount: 60 } });
+    const ranked = rankByRelevance(cards, false).map((c) => c.id);
+    expect(ranked.indexOf('p5')).toBeLessThan(5);
+    expect(ranked[0]).toBe('p0');
+  });
+
+  it('a single 5-star review lifts the weakest match less than a well-established rating does', () => {
+    // 30 results: adjacent ranks are 0.5/29 apart, fine enough to see the two lifts differ.
+    const rankOfLast = (rating: Partial<PlaceCard>) => {
+      const cards = Array.from({ length: 30 }, (_, index) =>
+        card({ id: `p${index}`, name: `P${index}`, ...(index === 29 ? rating : {}) }),
+      );
+      return rankByRelevance(cards, false).findIndex((c) => c.id === 'p29');
+    };
+    const single = rankOfLast({ ratingAverage: 5, ratingCount: 1 });
+    const established = rankOfLast({ ratingAverage: 4.7, ratingCount: 80 });
+    expect(single).toBeLessThan(29);
+    expect(established).toBeLessThan(single);
   });
 
   it('is a no-op for 0 or 1 cards', () => {

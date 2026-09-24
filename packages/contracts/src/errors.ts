@@ -29,6 +29,8 @@ export const ERROR_CODES = [
   // Student submissions (Phase 8). 409: server-side duplicate detection scored an existing place
   // at or above the "block" threshold and the caller did not confirm this is a different place.
   'DUPLICATE_PLACE_SUSPECTED',
+  // Reviews (Phase 9). 409: this user already has a review of this place (edit it instead).
+  'ALREADY_REVIEWED',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

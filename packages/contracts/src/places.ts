@@ -31,7 +31,14 @@ export const PLACE_STATUSES = ['DRAFT', 'PENDING', 'ACTIVE', 'INACTIVE', 'REJECT
 export type PlaceStatus = (typeof PLACE_STATUSES)[number];
 export const placeStatusSchema = z.enum(PLACE_STATUSES);
 
-export const PLACE_SORTS = ['name', 'nearest', 'newest', 'cheapest', 'relevance'] as const;
+export const PLACE_SORTS = [
+  'name',
+  'nearest',
+  'newest',
+  'cheapest',
+  'relevance',
+  'rating',
+] as const;
 export const ADMIN_PLACE_SORTS = ['newest', 'updated', 'name'] as const;
 
 export const MAX_PLACE_IMAGES = 20;
@@ -91,7 +98,8 @@ const verifiedFlagSchema = z
  * given instead — then distance defaults to "from that college" (overridden by explicit `lat`/`lng`).
  * `collegeSlug` scopes the list to places serving that college (the "college hub" journey);
  * `categorySlug` narrows further. `sort=relevance` needs `q`: it ranks by MySQL full-text relevance,
- * with distance from a point and verified status breaking ties among equally relevant results.
+ * blended with distance from a point, rating and verified status. `sort=rating` is "top rated": a
+ * Bayesian average, so one 5-star review does not outrank forty 4.6-star ones (unrated places last).
  */
 export const listPlacesQuerySchema = paginationQuerySchema
   .extend({
@@ -121,6 +129,8 @@ export const listPlacesQuerySchema = paginationQuerySchema
       .optional()
       .meta({ example: 5000 }),
     verified: verifiedFlagSchema.meta({ example: 'true' }),
+    /** At least this average from published reviews. Unrated places never match. */
+    minRating: z.coerce.number().min(1).max(5).optional().meta({ example: 4 }),
     sort: z.enum(PLACE_SORTS).default('name'),
   })
   .check((ctx) => {

@@ -12,6 +12,7 @@ import {
   NEWEST_ORDER_BY,
   idOrSlugFilter,
   priceFilter,
+  ratingFilter,
   relevanceOrderBy,
   searchFilter,
   verifiedFilter,
@@ -40,6 +41,7 @@ export class PlacesService {
       ...searchFilter(query),
       ...priceFilter(query),
       ...verifiedFilter(query.verified),
+      ...ratingFilter(query.minRating),
       ...(categoryId ? { categories: { some: { categoryId } } } : {}),
       ...(college
         ? { colleges: { some: { collegeId: college.id, mode: { not: 'EXCLUDED' } } } }
@@ -87,8 +89,8 @@ export class PlacesService {
       });
     }
 
-    // Nearest (distance from a point) and cheapest (comparing across a nullable column) cannot be
-    // expressed as a portable ORDER BY, so every match is read (a directory has hundreds to a few
+    // Nearest (distance from a point), cheapest (comparing across a nullable column) and rating (a
+    // Bayesian score computed from two columns) cannot be expressed as a portable ORDER BY, so every match is read (a directory has hundreds to a few
     // thousand places, not millions), ordered here and then cut into the requested page.
     const rows = await this.prisma.place.findMany({
       where,
