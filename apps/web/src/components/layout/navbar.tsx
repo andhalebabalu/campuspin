@@ -27,6 +27,15 @@ function AccountActions({ onNavigate }: { onNavigate?: () => void }) {
     return (
       <div className="flex items-center gap-3">
         <span className="text-sm text-body">Hi, {user.name.split(' ')[0]}</span>
+        {user.roles.includes('BUSINESS_OWNER') && (
+          <Link
+            href={ROUTES.dashboard}
+            onClick={onNavigate}
+            className="inline-flex h-9 items-center justify-center rounded-full bg-accent-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-650"
+          >
+            Dashboard
+          </Link>
+        )}
         <Button variant="ghost" size="sm" onClick={() => void logout()}>
           Sign out
         </Button>

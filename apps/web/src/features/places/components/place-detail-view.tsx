@@ -2,6 +2,7 @@ import type { PlaceDetail } from '@platform/contracts';
 import { Badge, VerifiedBadge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { PlaceReviews } from '@/features/reviews/components/place-reviews';
+import { EnquiryForm } from './enquiry-form';
 import { formatPrice } from '@/utils/format-price';
 
 const DAY_LABELS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -63,12 +64,24 @@ export function PlaceDetailView({ place }: { place: PlaceDetail }) {
         >
           Open in Google Maps
         </a>
+        {place.acceptsEnquiries && (
+          <a
+            href="#enquiry"
+            className="inline-flex h-11 w-fit items-center justify-center rounded-md border border-control px-5 text-sm font-medium text-ink transition-colors hover:bg-subtle"
+          >
+            Send an enquiry
+          </a>
+        )}
       </div>
 
       {place.description && (
         <Card className="p-6">
           <p className="whitespace-pre-line text-body">{place.description}</p>
         </Card>
+      )}
+
+      {place.acceptsEnquiries && (
+        <EnquiryForm placeId={place.id} placeSlug={place.slug} placeName={place.name} />
       )}
 
       {place.categories.length > 1 && (

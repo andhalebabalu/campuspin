@@ -11,6 +11,7 @@ import {
   type PlaceSubmission,
   type PriceUnit,
 } from '@platform/contracts';
+import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 import { z } from 'zod';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +19,11 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FormAlert } from '@/components/ui/form-alert';
 import { Input } from '@/components/ui/input';
+import { ImageUploader } from '@/components/shared/image-uploader';
+import { MapPicker } from '@/components/shared/map-picker';
+import { ROUTES } from '@/constants/routes';
 import { firstFieldErrors, flattenZodErrors } from '@/lib/forms/errors';
+import { businessService } from '@/services/business.service';
 import { categoriesService } from '@/services/categories.service';
 import { submissionsService } from '@/services/submissions.service';
 import { UNIT_LABELS } from '@/utils/format-price';
@@ -34,7 +39,7 @@ interface FormValues {
   priceAmount: string;
   priceUnit: PriceUnit | '';
   description: string;
-  imageUrl: string;
+  imageUrls: string[];
 }
 
 const INITIAL: FormValues = {
@@ -48,8 +53,17 @@ const INITIAL: FormValues = {
   priceAmount: '',
   priceUnit: '',
   description: '',
-  imageUrl: '',
+  imageUrls: [],
 };
+
+/** Up to this many photos from the form (the API allows more; five is plenty for a first look). */
+const MAX_FORM_IMAGES = 5;
+
+/**
+ * `student`: "suggest a place" (`POST /place-submissions`). `business`: an owner listing their own
+ * place (`POST /business/listings`). Same fields, same duplicate check, same staff review.
+ */
+export type SuggestPlaceVariant = 'student' | 'business';
 
 function toDuplicateCheckInput(values: FormValues) {
   return {
@@ -74,7 +88,7 @@ function toCreateInput(values: FormValues, confirmDifferent: boolean) {
     priceAmount: values.priceAmount ? Number(values.priceAmount) : undefined,
     priceUnit: values.priceUnit || undefined,
     description: values.description || undefined,
-    images: values.imageUrl ? [{ imageUrl: values.imageUrl }] : [],
+    images: values.imageUrls.map((imageUrl) => ({ imageUrl })),
     confirmDifferent,
   };
 }
@@ -87,7 +101,8 @@ function candidatesFromDetails(details: Record<string, unknown> | undefined): Du
 const selectClass =
   'h-11 rounded-md border bg-surface px-3.5 text-base text-ink disabled:text-muted';
 
-export function SuggestPlaceForm() {
+export function SuggestPlaceForm({ variant = 'student' }: { variant?: SuggestPlaceVariant }) {
+  const isBusiness = variant === 'business';
   const [categories, setCategories] = useState<CategoryGroup[] | null>(null);
   const [categoriesError, setCategoriesError] = useState(false);
 
@@ -96,6 +111,7 @@ export function SuggestPlaceForm() {
   const [formError, setFormError] = useState<{ message: string; requestId?: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<PlaceSubmission | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [checking, setChecking] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
@@ -128,7 +144,7 @@ export function SuggestPlaceForm() {
     setCheckError(null);
     const parsed = duplicateCheckRequestSchema.safeParse(toDuplicateCheckInput(values));
     if (!parsed.success) {
-      setCheckError('Enter a name, category and coordinates first.');
+      setCheckError('Enter a name, pick a category and drop the pin on the map first.');
       return;
     }
     setChecking(true);
@@ -156,7 +172,9 @@ export function SuggestPlaceForm() {
     setErrors({});
     setSubmitting(true);
     try {
-      const result = await submissionsService.create(parsed.data);
+      const result = isBusiness
+        ? await businessService.createListing(parsed.data)
+        : await submissionsService.create(parsed.data);
       setSubmitted(result.data);
     } catch (error) {
       if (error instanceof ApiClientError) {
@@ -180,6 +198,7 @@ export function SuggestPlaceForm() {
     return (
       <SuccessPanel
         submission={submitted}
+        variant={variant}
         onSuggestAnother={() => {
           setSubmitted(null);
           setValues(INITIAL);
@@ -252,23 +271,27 @@ export function SuggestPlaceForm() {
           error={errors.city}
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            label="Latitude"
-            type="number"
-            step="any"
-            value={values.latitude}
-            onChange={(event) => update('latitude', event.target.value)}
-            error={errors.latitude}
-            hint="From Google Maps"
-          />
-          <Input
-            label="Longitude"
-            type="number"
-            step="any"
-            value={values.longitude}
-            onChange={(event) => update('longitude', event.target.value)}
-            error={errors.longitude}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium text-ink">Location on the map</span>
+          <MapPicker
+            value={
+              values.latitude !== '' && values.longitude !== ''
+                ? { latitude: Number(values.latitude), longitude: Number(values.longitude) }
+                : null
+            }
+            onChange={(point) => {
+              update('latitude', String(point.latitude));
+              update('longitude', String(point.longitude));
+            }}
+            onAddressFound={(found) => {
+              // Fill only what the user has not typed themselves.
+              setValues((current) => ({
+                ...current,
+                address: current.address || found.street,
+                city: current.city || found.city,
+              }));
+            }}
+            error={errors.latitude ?? errors.longitude}
           />
         </div>
 
@@ -307,12 +330,13 @@ export function SuggestPlaceForm() {
           </div>
         </div>
 
-        <Input
-          label="Photo URL (optional)"
-          value={values.imageUrl}
-          onChange={(event) => update('imageUrl', event.target.value)}
+        <ImageUploader
+          label="Photos (optional)"
+          value={values.imageUrls}
+          onChange={(urls) => update('imageUrls', urls)}
+          max={MAX_FORM_IMAGES}
+          onBusyChange={setUploading}
           error={errors['images.0.imageUrl']}
-          placeholder="https://…"
         />
 
         <div className="flex flex-col gap-1.5">
@@ -360,15 +384,25 @@ export function SuggestPlaceForm() {
                   onChange={(event) => setConfirmDifferent(event.target.checked)}
                   className="mt-0.5"
                 />
-                Yes, this is a different place — I want to suggest it anyway
+                Yes, this is a different place — I want to {isBusiness ? 'list' : 'suggest'} it
+                anyway
               </label>
             )}
           </div>
         )}
       </div>
 
-      <Button type="submit" loading={submitting} disabled={blockedCandidate && !confirmDifferent} fullWidth>
-        Submit suggestion
+      <Button
+        type="submit"
+        loading={submitting}
+        disabled={uploading || (blockedCandidate && !confirmDifferent)}
+        fullWidth
+      >
+        {uploading
+          ? 'Waiting for photos…'
+          : isBusiness
+            ? 'Submit listing for review'
+            : 'Submit suggestion'}
       </Button>
     </form>
   );
@@ -390,11 +424,37 @@ function CandidateCard({ candidate }: { candidate: DuplicateCandidate }) {
 
 function SuccessPanel({
   submission,
+  variant,
   onSuggestAnother,
 }: {
   submission: PlaceSubmission;
+  variant: SuggestPlaceVariant;
   onSuggestAnother: () => void;
 }) {
+  if (variant === 'business') {
+    return (
+      <Card className="flex flex-col items-start gap-4 p-6">
+        <Badge tone="accent">Under review</Badge>
+        <h2 className="text-xl font-semibold text-ink">Listing submitted</h2>
+        <p className="text-body">
+          <span className="font-medium text-ink">{submission.name}</span> goes live as soon as our
+          team approves it. You can follow its status on your dashboard.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={ROUTES.dashboard}
+            className="inline-flex h-11 items-center justify-center rounded-md bg-action px-5 text-sm font-medium text-white transition-colors hover:bg-action-hover"
+          >
+            Back to dashboard
+          </Link>
+          <Button variant="secondary" onClick={onSuggestAnother}>
+            List another place
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="flex flex-col items-start gap-4 p-6">
       <Badge tone="success">Submitted</Badge>

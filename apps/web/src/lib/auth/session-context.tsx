@@ -10,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { refreshSession } from '@/lib/api/client';
 import { authService } from '@/services/auth.service';
 import { tokenStore } from './token-store';
 
@@ -21,14 +22,15 @@ interface SessionState {
 }
 
 interface SessionContextValue extends SessionState {
-  login: (credentials: LoginRequest) => Promise<void>;
+  /** Signs in and resolves with the signed-in user (e.g. to pick where to go next by role). */
+  login: (credentials: LoginRequest) => Promise<AuthUser>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-/** Stores the new tokens and fetches the user they belong to. */
+/** Stores the new tokens (after login) and fetches the user they belong to. */
 async function establishSession(accessToken: string, refreshToken: string): Promise<AuthUser> {
   tokenStore.setAccessToken(accessToken);
   tokenStore.setRefreshToken(refreshToken);
@@ -44,26 +46,25 @@ function clearSession(): void {
 /**
  * Bootstraps the session once per app load from the refresh token in `localStorage` (the access
  * token itself is never persisted), and exposes login/register/logout to the rest of the app.
- * There is deliberately no per-request "401 -> silent refresh -> retry" interceptor yet: every page
- * built in this phase either needs no session (public browsing) or only reads it for display, so
- * that additional plumbing is left for the phase that adds the first session-gated page.
+ * While signed in, the API client rotates the access token shortly before it expires (see
+ * `lib/api/client.ts`), so long-lived pages such as the business dashboard keep working.
  */
 export function SessionProvider({ children }: { children: ReactNode }) {
-  // Lazy initial state (rather than an effect) so the "no stored session" case never needs a
-  // synchronous setState from inside an effect: there is simply nothing to bootstrap.
-  const [state, setState] = useState<SessionState>(() => ({
-    status: tokenStore.getStoredRefreshToken() ? 'loading' : 'unauthenticated',
-    user: null,
-  }));
+  // Always 'loading' first, on the server AND in the browser: the server cannot see localStorage,
+  // so deciding from it here made the first client render differ from the server HTML (a
+  // hydration error for every signed-in visitor). The effect settles it right after hydration.
+  const [state, setState] = useState<SessionState>({ status: 'loading', user: null });
 
   useEffect(() => {
-    const storedRefreshToken = tokenStore.getStoredRefreshToken();
-    if (!storedRefreshToken) return;
-
     let cancelled = false;
-    authService
-      .refresh(storedRefreshToken)
-      .then((result) => establishSession(result.data.accessToken, result.data.refreshToken))
+    // Through the app-wide single-flight refresh: Strict Mode runs this effect twice in
+    // development, and two refreshes with the same token would look like theft to the server.
+    refreshSession()
+      .then(async (accessToken) => {
+        // No stored session (or a dead one): simply signed out.
+        if (!accessToken) throw new Error('No session to restore');
+        return (await authService.me()).data;
+      })
       .then((user) => {
         if (!cancelled) setState({ status: 'authenticated', user });
       })
@@ -80,6 +81,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const result = await authService.login(credentials);
     const user = await establishSession(result.data.accessToken, result.data.refreshToken);
     setState({ status: 'authenticated', user });
+    return user;
   }, []);
 
   const register = useCallback(async (data: RegisterRequest) => {

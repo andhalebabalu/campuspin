@@ -131,7 +131,7 @@ export function BusinessSection() {
               </li>
             ))}
           </ul>
-          <Link href={ROUTES.suggestPlace} className={`${CTA_CLASSES} w-fit`}>
+          <Link href={ROUTES.registerBusiness} className={`${CTA_CLASSES} w-fit`}>
             List your business
             <Icon name="arrowRight" className="size-4" />
           </Link>

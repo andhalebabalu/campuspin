@@ -8,7 +8,11 @@ export const ROUTES = {
   suggestPlace: '/suggest-a-place',
   login: '/login',
   register: '/register',
+  /** Sign-up with the business account type preselected. */
+  registerBusiness: '/register?type=business',
   verifyEmail: '/verify-email',
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
+  dashboard: '/dashboard',
+  dashboardNewListing: '/dashboard/listings/new',
 } as const;

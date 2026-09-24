@@ -1,7 +1,7 @@
 'use client';
 
 import { ApiClientError } from '@platform/api-client';
-import { loginRequestSchema } from '@platform/contracts';
+import { loginRequestSchema, type RoleKey } from '@platform/contracts';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
@@ -18,6 +18,23 @@ interface LoginValues {
 }
 
 const INITIAL: LoginValues = { email: '', password: '' };
+
+/**
+ * `?next=` only ever leads to a page on this site: a path, never `//other.site` or `/\other.site`
+ * (both of which a browser treats as another origin), so the login page cannot be used to bounce
+ * people to a phishing page.
+ */
+function safeNext(next: string | undefined): string | null {
+  if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\')) {
+    return null;
+  }
+  return next;
+}
+
+/** Where to land after signing in when no `next` was given. */
+function homeFor(roles: readonly RoleKey[]): string {
+  return roles.includes('BUSINESS_OWNER') ? ROUTES.dashboard : ROUTES.home;
+}
 
 export function LoginForm({ next }: { next?: string }) {
   const router = useRouter();
@@ -41,8 +58,8 @@ export function LoginForm({ next }: { next?: string }) {
     setErrors({});
     setSubmitting(true);
     try {
-      await login(parsed.data);
-      router.push(next && next.startsWith('/') ? next : ROUTES.home);
+      const user = await login(parsed.data);
+      router.push(safeNext(next) ?? homeFor(user.roles));
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.code === 'EMAIL_NOT_VERIFIED') {
