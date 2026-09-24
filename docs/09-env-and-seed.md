@@ -38,6 +38,7 @@ Rules: **never commit real values**; only the `.env.example` files are tracked. 
 | `CLOUDINARY_API_KEY` | ✔ | cloudinary | | |
 | `CLOUDINARY_API_SECRET` | ✔ | cloudinary | | |
 | `CLOUDINARY_FOLDER_PREFIX` | | | `dev/`, `staging/`, `prod/` | isolates environments |
+| `UPLOAD_DIR` | | | `uploads` | **implemented (Phase 10)**: folder for local-disk image storage (relative to `apps/api`, git-ignored), served at `${API_BASE_URL}/uploads/`. The 5 MB limit is a constant in contracts for now |
 | `UPLOAD_MAX_BYTES` | | | `5242880` | 5 MB image limit |
 | `UPLOAD_MAX_PIXELS` | | | `8000` | longest edge |
 | `THROTTLE_LIMIT`, `THROTTLE_TTL_SECONDS` | | | `120` / `60` | per-IP requests per window (implemented) |

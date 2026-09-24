@@ -242,6 +242,10 @@ Original design:
 
 ### 2.7 Businesses, listings, leads
 
+> **Phase 10 status (implemented, narrower than the table below):** a business signs up with `POST /auth/register` `{ accountType: "BUSINESS", businessName }` (BUSINESS_OWNER role + business profile in one write); there is no `POST /businesses`. The dashboard lives under `/business/*`, `BUSINESS_OWNER` only, always scoped to the caller's own business (another business's id answers 404):
+> `GET /business/dashboard` (profile + listing/enquiry/review stats) · `PATCH /business/profile` · `GET /business/listings` (every status, with enquiry counts and the staff-review outcome) · `POST /business/listings` (same body and duplicate check as `POST /place-submissions`; the PENDING place is linked to the business and goes live only when staff approve it) · `GET /business/enquiries?status=&placeId=&page=` · `PATCH /business/enquiries/:id` `{ status }` · `GET /business/reviews?placeId=&page=`.
+> Students send enquiries with `POST /places/:idOrSlug/enquiries` `{ message, contactPhone?, consent: true }` (STUDENT role; place must be ACTIVE and managed by a business, shown as `acceptsEnquiries` on place detail; one open NEW/SEEN enquiry per student per place; 10/hour). Lead statuses: NEW, SEEN, CONTACTED, CLOSED. Not built: drafts, owner edits of live listings, owner review replies, analytics, team members, public business profile.
+
 | Method | Path | Access | Notes |
 |---|---|---|---|
 | POST | `/businesses` | Role: BUSINESS_OWNER | Create profile; creator becomes `OWNER`. |
@@ -291,6 +295,8 @@ Original design:
 | POST | `/admin/reports/:id/dismiss` | Perm: `report.review` | |
 
 ### 2.11 Uploads
+
+> **Phase 10 status:** `POST /uploads/images` (any signed-in user) takes multipart `file` only (no `purpose`, no media-asset table): JPEG/PNG/WebP up to 5 MB, the type sniffed from the bytes (the name and declared type are ignored), stored on local disk under a random UUID name (`UPLOAD_DIR`, behind an `ImageStorage` interface so Cloudinary can replace it) and served at `${API_BASE_URL}/uploads/<file>`. Returns `{ url, contentType, sizeBytes }`; the URL goes into an `imageUrl` field. 30 uploads / 10 min. No `DELETE`, no resizing, and EXIF metadata is not stripped yet; orphaned files (uploaded, never saved) are not cleaned up.
 
 | Method | Path | Access | Notes |
 |---|---|---|---|

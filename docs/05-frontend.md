@@ -141,6 +141,8 @@ Each route folder includes `loading.tsx` (skeleton that matches the layout), `er
 
 ### 6.4 Business dashboard: `/business/*` (sidebar per spec §27)
 
+> **Phase 10 status:** built as `/dashboard` (one page with tabs: Listings · Enquiries · Reviews · Business profile, plus stat cards) and `/dashboard/listings/new` (the suggest-a-place form in its `business` variant). Both are gated by `BusinessGate` (UX only; the API enforces). `/register` now asks "student or business" first (`/register?type=business` skips the question; the landing's "List your business" links there); a business owner lands on `/dashboard` after login, and the navbar shows a Dashboard button. Place detail shows an "Ask {place}" enquiry form when `acceptsEnquiries`. Location is picked on a Leaflet + OpenStreetMap map (`components/shared/map-picker.tsx`: click/drag pin, Nominatim search, "use my location", reverse-geocoded address autofill) and photos are uploaded directly (`components/shared/image-uploader.tsx`); both replace the old latitude/longitude and photo-URL inputs in suggest-a-place too. The API client now refreshes the access token shortly before it expires, through one app-wide single-flight `refreshSession()` (also used by the session bootstrap, which fixes a dev-only sign-out caused by React Strict Mode refreshing twice).
+
 | Route | Screen |
 |---|---|
 | `/business/onboarding` | Create business profile |
