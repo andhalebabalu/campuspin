@@ -9,6 +9,7 @@ import { DatabaseModule } from './infra/database/database.module.js';
 import { EmailModule } from './infra/email/email.module.js';
 import { LoggingModule } from './infra/logging/logging.module.js';
 import { StorageModule } from './infra/storage/storage.module.js';
+import { AdminModule } from './modules/admin/admin.module.js';
 import { AuditModule } from './modules/audit/audit.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { BusinessModule } from './modules/business/business.module.js';
@@ -47,6 +48,7 @@ import { UploadsModule } from './modules/uploads/uploads.module.js';
     ReviewsModule,
     BusinessModule,
     UploadsModule,
+    AdminModule,
     HealthModule,
   ],
   providers: [

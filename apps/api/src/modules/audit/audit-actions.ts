@@ -70,6 +70,13 @@ export const AUDIT_ACTIONS = [
   'BUSINESS_PROFILE_UPDATED',
   'LEAD_CREATED',
   'LEAD_STATUS_CHANGED',
+  // Staff administration (Phase 11). Every one carries the acting staff member and, where given,
+  // the reason.
+  'USER_SUSPENDED',
+  'USER_REACTIVATED',
+  'USER_ROLES_CHANGED',
+  'BUSINESS_VERIFIED',
+  'BUSINESS_UNVERIFIED',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

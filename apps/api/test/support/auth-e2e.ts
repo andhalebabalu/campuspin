@@ -88,6 +88,7 @@ export interface AuthTestContext {
   get: (url: string) => request.Test;
   post: (url: string) => request.Test;
   patch: (url: string) => request.Test;
+  put: (url: string) => request.Test;
   delete: (url: string) => request.Test;
   close: () => Promise<void>;
 }
@@ -120,6 +121,7 @@ export async function createAuthTestContext(
     get: (url) => tag(request(server).get(url)),
     post: (url) => tag(request(server).post(url)),
     patch: (url) => tag(request(server).patch(url)),
+    put: (url) => tag(request(server).put(url)),
     delete: (url) => tag(request(server).delete(url)),
     close: async () => {
       await app.close();
