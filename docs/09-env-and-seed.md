@@ -30,7 +30,7 @@ Rules: **never commit real values**; only the `.env.example` files are tracked. 
 | `EMAIL_VERIFICATION_EXPIRES_IN` | | | `24h` | **Implemented (Phase 3)** |
 | `PASSWORD_RESET_EXPIRES_IN` | | | `1h` | **Implemented (Phase 3)** |
 | `EMAIL_PROVIDER` | | ✔ | `console` (dev) / `memory` (tests); `smtp` later | provider selection. `console` prints emails **including their one-time links** to the API log, so the API refuses to start in production with it (no production provider exists yet) |
-| `EMAIL_FROM`, `APP_NAME` | | | `LINK <no-reply@localhost.test>`, `LINK` | sender and product name in emails (a real sender needs SPF/DKIM/DMARC) |
+| `EMAIL_FROM`, `APP_NAME` | | | `CampusPin <no-reply@localhost.test>`, `CampusPin` | sender and product name in emails (a real sender needs SPF/DKIM/DMARC) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` | | smtp | | transport (not needed in development: the console provider logs emails) |
 | `SMTP_USER`, `SMTP_PASSWORD` | ✔ | smtp | | credentials |
 | `STORAGE_PROVIDER` | | ✔ | `memory` test / `cloudinary` | provider selection |
@@ -61,7 +61,7 @@ Rules: **never commit real values**; only the `.env.example` files are tracked. 
 | `NEXT_PUBLIC_SITE_URL` | | `http://localhost:3000` | canonical/OG URLs, sitemap |
 | `NEXT_PUBLIC_API_URL` | | `http://localhost:3001/api/v1` | browser API base (implemented) |
 | `API_INTERNAL_URL` | | `http://localhost:3001/api/v1` | server-side fetches (SSR/ISR), added with the SSR pages |
-| `NEXT_PUBLIC_BRAND_NAME` | | `LINK` | brand fallback (single source in `brand.ts`) |
+| `NEXT_PUBLIC_BRAND_NAME` | | `CampusPin` | brand fallback (single source in `brand.ts`) |
 | `NEXT_PUBLIC_DEFAULT_LOCALE` | | `en` | i18n |
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | | | image loader |
 | `NEXT_PUBLIC_MAP_STYLE_URL` | | | MapLibre style (domain-restricted public key) |

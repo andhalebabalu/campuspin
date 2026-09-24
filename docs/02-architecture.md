@@ -323,6 +323,21 @@ stateDiagram-v2
 - **Aggregates** (`rating_avg`, `rating_count`, `rating_score`, `rating_stats` JSON with histogram and dimension averages) are recomputed **in the same transaction** as any review create/edit/hide.
 - Published immediately (post-moderation, D3). Owners can **reply once** (`review_replies`) and can **report** a review, but can never hide or delete one. Staff hide/remove; removed content is retained for legal hold and audit.
 
+> **Implemented in Phase 9, narrowed:** one review per student per place (the `(placeId, userId)`
+> unique index; `409 ALREADY_REVIEWED`), overall 1–5 plus optional per-dimension ratings taken from
+> the place's categories, text ≤ 2,000 chars, published immediately. The author may edit or withdraw
+> (delete) their review only while it is visible (`PUBLISHED`/`REPORTED`); staff hide (reversible),
+> restore and remove (final, row kept). The owner or a member of the business that manages a place
+> cannot review it. **Aggregates:** only `ratingAverage`/`ratingCount` are stored (the columns the
+> Phase 2 schema has); the histogram and per-dimension averages are computed on read by
+> `GET /places/:idOrSlug/reviews/summary`, and `rating_score` is computed where it is used (the
+> Bayesian "top rated" sort and the relevance blend — prior 3.5 stars worth 5 reviews, see
+> `place-rules.ts`). The stored pair is recomputed in the same transaction as every review write,
+> after locking the place row (`SELECT … FOR UPDATE`) so simultaneous reviews of one place cannot
+> produce a stale count. **Not built:** review photos (no upload abstraction, no review-image table),
+> owner replies (no `review_replies` table; business owners arrive in Phase 12's scope), reporting a
+> review (Reports), notifications, and a stored `rating_stats` JSON.
+
 ### 5.10 Reports and moderation
 
 - One `reports` table: `target_type` (`PLACE`, `REVIEW`, `MARKETPLACE_LISTING`, `USER`, `COMMUNITY_POST`), `target_id`, `reason` (spec §16 list), `details`, `status` (`PENDING → IN_REVIEW → RESOLVED / DISMISSED`), assignee, resolver, note.

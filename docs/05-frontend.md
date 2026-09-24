@@ -100,12 +100,12 @@ Each route folder includes `loading.tsx` (skeleton that matches the layout), `er
 
 | Route | Screen | Idx | Ph |
 |---|---|---|---|
-| `/` | Home: hero, ecosystem visual, College → Discover → Connect → Explore, popular colleges, category strip, "Suggest a Place" and "List your business" bands | ✔ | 1 |
+| `/` | Home (**built**, `features/landing`): hero with live college/place counts and an illustrated campus map whose pins link into search; campus search (keyword + college picker → `/search?q=&college=`) with quick-category chips; How it works; 12 category tiles (each a leaf category slug → `/search?category=`); map discovery with a real featured place; community + marketplace previews marked *Coming soon* (Phase 2/3, no fake listings); business band with a dashboard mock labelled *Sample preview*; Why us; CTA band. Every fetch fails soft, so the page renders with the API down | ✔ | 1 |
 | `/colleges` | College picker: search, popular, recently selected, nearby (opt-in geolocation), cards with logo / city / place count / popular categories | ✔ | 1 |
 | `/colleges/[collegeSlug]` | College hub "Everything around {College}": search, category shortcuts, Nearby, Popular, Highly rated, Recently added, Offers, Saved | ✔ | 1 |
 | `/colleges/[collegeSlug]/[categorySlug]` | Category listing: search, filters (data-driven), sort, grid/list, distance, price, rating, verified | ✔ | 1 |
-| `/places/[placeSlug]` | Place detail: gallery, badges, rating, distance, price, description, amenities, hours + open-now, contact (login-gated), Save, Report, Reviews, **Open in Google Maps**, Claim / Suggest edit | ✔ | 1 |
-| `/search` | Global search: grouped results (places, colleges, categories, businesses) | noindex | 1 |
+| `/places/[placeSlug]` | Place detail: gallery, badges, rating, distance, price, description, amenities, hours + open-now, contact (login-gated), Save, Report, Reviews, **Open in Google Maps**, Claim / Suggest edit. *Reviews delivered in Phase 9: summary with histogram and dimension averages, sortable list with "show more", and a signed-in student's write / edit / withdraw, fetched client-side so changes show at once* | ✔ | 1 |
+| `/search` | Global search: grouped results (places, colleges, categories, businesses). **Built so far:** place search with `q`, `category` (leaf slug), `college` (slug), price, verified and sort, all synced to the URL (`searchHref()` in `features/search/lib/search-filters.ts` builds every link into it); an unknown category/college slug shows an inline "not found" instead of an error page | noindex | 1 |
 | `/for-business` | Business landing: value, how claiming works, CTA to register | ✔ | 1 |
 | `/about`, `/contact`, `/help`, `/terms`, `/privacy`, `/community-guidelines`, `/grievance` | Static + legal (grievance officer contact) | ✔ | 1 |
 | `/cities/[citySlug]` | City hub for expansion | ✔ | 1b |

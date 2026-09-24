@@ -1,10 +1,10 @@
-# Student Ecosystem Platform (working name: LINK)
+# CampusPin: Student Ecosystem Platform
 
 Everything a student needs around their college: rooms, PGs, hostels, messes, libraries, gyms, laundry, transport and more, discoverable by college, verified by staff, contributed to by students and maintained by business owners.
 
-> **Status: Phases 1–7 complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory; the category catalogue; a Next.js frontend foundation with real auth, college-directory, place and search pages; the place directory; and full-text place search). The rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
+> **Status: Phases 1–9 complete** (project setup; the XAMPP MySQL + Prisma database; authentication, JWT and role-based access; the college directory; the category catalogue; a Next.js frontend foundation with real auth, college-directory, place, search, suggest-a-place and review pages; the place directory; full-text place search; student submissions with duplicate detection; and reviews with ratings, moderation and "top rated" search). The rest of the product features arrive in the following phases (see [Roadmap](#roadmap)).
 
-Launch market: Ahilyanagar, Maharashtra. The working brand name `LINK` lives in one config value and can change without touching the architecture.
+Launch market: Ahilyanagar, Maharashtra. The brand name **CampusPin** ("Discover. Connect. Experience.") lives in one config value (`NEXT_PUBLIC_BRAND_NAME`) plus the logo file at `apps/web/public/logo.png`, so either can change without touching the architecture.
 
 ---
 
@@ -239,7 +239,7 @@ Open `http://localhost:3000`. The **System status** card calls the API health en
 | `EMAIL_VERIFICATION_EXPIRES_IN` / `PASSWORD_RESET_EXPIRES_IN` | `24h` / `1h` | Lifetime of the emailed links |
 | `AUTH_RATE_LIMIT` / `AUTH_RATE_LIMIT_TTL_SECONDS` | `20` / `60` | Stricter per-IP limit on the sensitive auth routes |
 | `EMAIL_PROVIDER` | `console` | `console` prints emails (with their links) in the API log: **development only**; `memory` is for automated tests |
-| `EMAIL_FROM` / `APP_NAME` | `LINK <no-reply@localhost.test>` / `LINK` | Sender and product name used in emails |
+| `EMAIL_FROM` / `APP_NAME` | `CampusPin <no-reply@localhost.test>` / `CampusPin` | Sender and product name used in emails |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | `admin@localhost.test` / `ChangeMe123!` | Optional. The **demo** admin created by `npm run db:seed`. Development only; the seed refuses to create it in production |
 
 The API validates these at startup and stops with a readable message if something is missing or malformed.
@@ -250,7 +250,7 @@ The API validates these at startup and stops with a readable message if somethin
 |---|---|---|
 | `NEXT_PUBLIC_API_URL` | `http://localhost:3001/api/v1` | Base URL of the API (**public**: embedded in the browser bundle) |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Canonical URL / metadata base |
-| `NEXT_PUBLIC_BRAND_NAME` | `LINK` | Working brand name |
+| `NEXT_PUBLIC_BRAND_NAME` | `CampusPin` | Brand name |
 
 Never put secrets in `NEXT_PUBLIC_*` variables. Real `.env` files are git-ignored; only the `.env.example` files are committed.
 
@@ -586,9 +586,59 @@ curl -X POST http://localhost:3001/api/v1/place-submissions -H "Authorization: B
   -d "{\"name\":\"My New Mess\",\"categoryId\":\"$MESS\",\"address\":\"Station Road\",\"city\":\"Ahilyanagar\",\"latitude\":19.1,\"longitude\":74.75}"
 ```
 
+## Reviews
+
+Anyone can read a place's reviews. A signed-in **STUDENT** can post one review per place (overall 1–5 stars, optional per-dimension stars such as Cleanliness / Safety for a PG, and an optional comment of up to 2,000 characters), then edit or withdraw it. Staff moderate behind `reviews.moderate` (MODERATOR, ADMIN, SUPER_ADMIN). No schema migration was needed: the `reviews` / `review_ratings` tables have existed since Phase 2.
+
+**Public (no account)**
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/places/:idOrSlug/reviews` | Published reviews of an active place, paginated; `sort` = `recent` (default), `highest`, `lowest`. Authors appear as a display name only ("Asha K.") |
+| GET | `/places/:idOrSlug/reviews/summary` | Average and count, a 5→1 star histogram, and every rating dimension a reviewer of this place may rate, with its average so far |
+
+**Authenticated (Bearer token)**
+
+| Method | Path | What it does |
+|---|---|---|
+| POST | `/places/:idOrSlug/reviews` | STUDENT role only. Published at once and counted in the place rating in the same transaction. A second review of the same place is `409 ALREADY_REVIEWED`; the owner or a member of the business that manages the place gets `403` |
+| GET | `/me/reviews` | The caller's own reviews with their moderation status and note; `?placeId=` answers "have I reviewed this place?" |
+| PATCH | `/reviews/:id` | The author only (anyone else gets `404`). `comment: null` clears the comment; `dimensionRatings` replaces the whole set |
+| DELETE | `/reviews/:id` | The author withdraws (deletes) their review and gets the place's new rating back; they may review the place again afterwards |
+
+**Staff (Bearer token with `reviews.moderate`)**
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/admin/reviews` | The moderation queue; filter by `status`, `placeId`, `userId`; sort `newest` / `oldest` |
+| GET | `/admin/reviews/:id` | One review |
+| POST | `/admin/reviews/:id/hide` | Off the page and out of the rating, reversible; `reason` required (the author sees it) |
+| POST | `/admin/reviews/:id/restore` | Back on the page and in the rating; optional `reason` |
+| POST | `/admin/reviews/:id/remove` | Final: never shown or counted again and cannot be restored; the row is kept for legal hold and audit; `reason` required |
+
+**Rules worth knowing**
+
+- **The stored rating stays right under concurrency.** `places.ratingAverage` / `ratingCount` are recomputed (not incremented) from the place's visible reviews in the same transaction as every create, edit, withdraw, hide, restore and remove. That transaction first locks the place row (`SELECT … FOR UPDATE`), so two students posting at the same moment are serialised instead of each writing a count that misses the other (`reviews/place-rating.ts`; tested with five simultaneous posts). The recompute is raw SQL, so it reads the latest committed reviews and leaves the place's `updatedAt` alone.
+- **Visible = `PUBLISHED` or `REPORTED`.** `REPORTED` belongs to the Reports phase and is never set yet; when it is, a reported review stays visible and counted until staff act.
+- **The author can change a review only while it is visible.** A hidden or removed review is under moderation: editing could slip new text past the moderator's decision and withdrawing would destroy what they acted on, so both answer `409`. A removed review also keeps its (place, user) slot, so its author cannot post a fresh one to get around the removal.
+- **Moderation is idempotent:** hiding a hidden review, restoring a published one or removing a removed one is a harmless `200` no-op and is not audited. Two moderators acting at once cannot both win: the write is conditional on the status that was read.
+- **Dimensions come from the place's categories** (Phase 5's rating dimensions). Rating one from another category is a `400`. The histogram and per-dimension averages are computed on read; there is no stored `rating_stats` JSON.
+- **Search uses ratings now:** `GET /places?minRating=4` (unrated places never match) and `sort=rating` ("top rated": a Bayesian average with a prior of 3.5 stars worth 5 reviews, so one 5★ review scores 3.75 and forty 4.6★ reviews score 4.48; unrated places sort last). `sort=relevance` finally gets its designed `0.2 × rating` term.
+- **Audit:** `REVIEW_CREATED`, `REVIEW_UPDATED`, `REVIEW_WITHDRAWN` (the audit row is what records that a withdrawn review existed), `REVIEW_HIDDEN`, `REVIEW_RESTORED`, `REVIEW_REMOVED`, each in the same transaction as the change.
+- **Limits of this phase:** no review photos (no upload abstraction or review-image table), no owner replies (no `review_replies` table; business owners are a later phase), no reporting a review (the Reports phase), no notifications. See [02 §5.9](docs/02-architecture.md#59-reviews).
+
+**Try it locally** (with the API running and a verified student signed in; `$TOKEN` as in the submissions example above):
+
+```bash
+curl "http://localhost:3001/api/v1/places/demo-boys-pg-e/reviews/summary"
+curl -X POST http://localhost:3001/api/v1/places/demo-boys-pg-e/reviews -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -d '{"rating":4,"comment":"Clean rooms, strict warden."}'
+curl "http://localhost:3001/api/v1/places?sort=rating&minRating=4"
+```
+
 ## Frontend foundation
 
-Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly), and Phases 6, 7 and 8 continued it alongside the place directory, place search and student submissions. It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist. The marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
+Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly), and Phases 6, 7, 8 and 9 continued it alongside the place directory, place search, student submissions and reviews. It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist. The marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
 
 **Pages**
 
@@ -599,14 +649,14 @@ Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-
 | `/forgot-password`, `/reset-password` | Request a reset link, then set a new password with its token |
 | `/colleges` | Server-rendered first page of results (SEO, fast paint) handed off to client-side search, sort and paging that keep the URL in sync |
 | `/colleges/[collegeSlug]` | Server-rendered college detail: gallery, description, website, and (Phase 6) a real, working list of the places serving it — search, sort (nearest/cheapest/name/newest) and paging |
-| `/places/[placeSlug]` | Server-rendered place detail (Phase 6): gallery, price, categories, amenities, hours, description and an **Open in Google Maps** link (the place's own link if staff set one, otherwise built from its coordinates) |
-| `/search` | (Phase 7) A keyword search over places, ranked by real MySQL full-text relevance, that doubles as a plain price-range / verified-only filter browser when no keyword is given. URL-synced, like `/colleges` |
+| `/places/[placeSlug]` | Server-rendered place detail (Phase 6): gallery, price, categories, amenities, hours, description and an **Open in Google Maps** link (the place's own link if staff set one, otherwise built from its coordinates). (Phase 9) A **Reviews** section: a rating summary with a star histogram and per-dimension averages, the review list (sort, "show more"), and for a signed-in student a star-rating form, then their own review with Edit / Withdraw and any moderation note |
+| `/search` | (Phase 7) A keyword search over places, ranked by real MySQL full-text relevance, that doubles as a plain price-range / verified-only filter browser when no keyword is given. URL-synced, like `/colleges`. (Phase 9) A "Rating: 4★ and up" filter and a "Top rated" sort |
 | `/suggest-a-place` | (Phase 8) The first page that genuinely **needs** a session, not just reads one: signed out, it shows a "sign in to continue" prompt (`?next=` brings the visitor straight back after login); signed in, a form to suggest a new place, with a "check for duplicates" step and a 409 from the server itself surfacing the same candidates if skipped |
 
 **Plumbing**
 
 - `lib/auth/token-store.ts` + `lib/auth/session-context.tsx`: the access token lives in memory only, the refresh token in `localStorage`; `SessionProvider` bootstraps a session on load via `POST /auth/refresh` and exposes `login`/`register`/`logout` to the rest of the app. The Navbar reads it to switch between "Sign in / Register" and "Hi, {name} · Sign out".
-- `services/auth.service.ts`, `services/colleges.service.ts`, `services/places.service.ts`, `services/categories.service.ts`, `services/submissions.service.ts`: thin wrappers over `@platform/api-client`, typed end to end by `@platform/contracts` — the same schemas the API validates with.
+- `services/auth.service.ts`, `services/colleges.service.ts`, `services/places.service.ts`, `services/categories.service.ts`, `services/submissions.service.ts`, `services/reviews.service.ts`: thin wrappers over `@platform/api-client`, typed end to end by `@platform/contracts` — the same schemas the API validates with.
 - `components/ui`: `Button`, `Input`, `Card`, `Badge` (now with a `danger` tone, for a duplicate-check candidate scored `block`), `FormAlert` — enough of the [06](docs/06-design-system.md) component spec to build the pages above on the real tokens, not a redesign of the whole system.
 - `utils/format-price.ts`: "₹3,000 / month", a range, or "Price on request" — the one place this formatting rule lives, shared by the place card and its detail page.
 - `features/search/lib/search-filters.ts`: `hasFilters`/`effectiveSort`, shared between the server page (the first, SSR'd page of results) and the client component (every search after that), so "what counts as a search" and "relevance needs a query, else fall back to name" are each defined exactly once.
@@ -623,6 +673,8 @@ Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-
 - **The college-embedded place list is not URL-synced**, unlike `/colleges` and `/search`: it is a section of a larger page, not a page of its own, so its search/sort/page live in component state only.
 - **`/search`'s keyword and price fields commit on submit, not as you type:** unlike `/colleges`' debounced search, this page waits for Enter or a "Search" click before fetching — standard for a dedicated search page, and it sidesteps debouncing three fields (query, min price, max price) independently. The sort dropdown and the verified checkbox still apply immediately.
 - **A React Hooks lint rule (`react-hooks/set-state-in-effect`) flags a data-fetching `useEffect` that has *two or more* separate `if (...) { return; }` guards before its "do the fetch" body**, even when neither guard calls `setState` — found while building `/search`'s effect (skip-on-first-render, then skip-if-nothing-to-search), fixed by merging both guards into one `if` block. `/colleges`' simpler effect (only one guard) was never affected. Worth remembering before adding a third guard to either effect.
+- **Reviews are fetched in the browser, not with the place page.** The place page is cached for 5 minutes (`revalidate: 300`); the Reviews section loads its summary and list with `cache: 'no-store'`, so a review someone just posted, edited or withdrew shows at once. The small "★ 4.2 (18 reviews)" line at the top of the page comes from the cached page and can lag behind by up to those 5 minutes.
+- **The star picker is native radio buttons** (`features/reviews/components/stars.tsx`), so arrow keys and screen readers work without extra ARIA, and every star rating is also given as text.
 - Images (`logoUrl`, `coverImageUrl`, gallery) use plain `<img>`, not `next/image`, since no remote-image domains are configured yet.
 
 **Try it locally** (with the API running, `npm run dev -w @platform/web` or the root `npm run dev`):
@@ -641,7 +693,7 @@ open http://localhost:3000/suggest-a-place   # signed out: a "sign in to continu
 npm test               # unit tests: contracts, api-client, API helpers (no database)
 npm run test:e2e       # API end-to-end over HTTP: envelope, errors, validation, CORS, headers, rate limit, Swagger
 npm run test:db        # REAL database: connection, migration, all tables, relations, constraints, seed, purge, health API
-npm run test:e2e:db    # REAL database, over HTTP: authentication (register -> ... -> logout, reset, roles, permissions, rate limit), the college directory (public browse, staff CRUD, proximity, audit), the category catalogue (public tree, staff CRUD, attributes, rating dimensions, amenities, audit), the place directory (public browse, staff CRUD, categories/amenities/hours/prices, college proximity, audit) and student submissions (duplicate-check, create + server-side block, ownership-scoped reads, staff approve/reject/mark-duplicate, audit)
+npm run test:e2e:db    # REAL database, over HTTP: authentication (register -> ... -> logout, reset, roles, permissions, rate limit), the college directory (public browse, staff CRUD, proximity, audit), the category catalogue (public tree, staff CRUD, attributes, rating dimensions, amenities, audit), the place directory (public browse, staff CRUD, categories/amenities/hours/prices, college proximity, audit) student submissions (duplicate-check, create + server-side block, ownership-scoped reads, staff approve/reject/mark-duplicate, audit) and reviews (post/edit/withdraw, one per place, business-owner block, simultaneous posts, hide/restore/remove, rating-aware search, audit)
 npm run typecheck && npm run lint
 ```
 
@@ -657,7 +709,7 @@ npm run typecheck && npm run lint
 | `EADDRINUSE :3001` / `:3000` | Another process uses the port. Stop it, or change `PORT` / the `-p` flag |
 | Browser shows a CORS error | Add the web origin to `CORS_ORIGINS` in `apps/api/.env` and restart the API |
 | Web page says "Could not reach the server" | The API is not running, or `NEXT_PUBLIC_API_URL` is wrong. Restart the web app after editing `.env.local` |
-| `Cannot find module '@platform/contracts'` | Run `npm run build:packages` |
+| `Cannot find module '@platform/contracts'` | Run `npm run build:packages`. If it persists after the project folder was moved or renamed, the workspace links in `node_modules/@platform` still point at the old folder: run `npm install` once to recreate them |
 | Port 3306 busy when starting XAMPP MySQL | Another MySQL/MariaDB is running; stop it or change XAMPP's MySQL port (then update `DATABASE_URL`) |
 | `Can't reach database server` / `ECONNREFUSED` from a `db:*` command | MySQL is not running: start it in the XAMPP Control Panel |
 | `Unknown database 'link_platform'` | Run `npm run db:create`, then `npm run db:migrate` |
@@ -691,8 +743,9 @@ npm run typecheck && npm run lint
 | Phase 6 | 9, 17–18 (slice) | Places: public directory, staff management, categories/amenities/hours/prices, college proximity; frontend: a public place-detail page and a working college hub | ✅ done |
 | Phase 7 | 10 (Places-scoped), 17–18 (slice) | Full-text place search (MySQL `FULLTEXT`, relevance ranking), price/verified filters; frontend: a working `/search` page | ✅ done |
 | Phase 8 | 11 (narrowed), 17–19 (slice) | Student submissions + duplicate detection (name/geo/category/address/phone scoring), staff approve/reject/mark-duplicate; frontend: a working "Suggest a place" flow | ✅ done |
-| next | — | 10's remaining scope (cross-entity `/search`, autocomplete, analytics) and 11's remaining scope (contributions, request-changes loop, abuse quotas) fold into whichever later phase needs them | |
-| 12–16 | Business owner, claims, reviews, reports, saved places | |
+| Phase 9 | 14 (narrowed), 10 (rating), 17–19 (slice) | Reviews: one per student per place, dimension ratings, edit/withdraw, staff hide/restore/remove, a concurrency-safe place rating; search gains `minRating` and "top rated"; frontend: a Reviews section on the place page | ✅ done |
+| next | — | 10's remaining scope (cross-entity `/search`, autocomplete, analytics), 11's (contributions, request-changes loop, abuse quotas) and 14's (review photos, owner replies) fold into whichever later phase needs them | |
+| 12–16 | Business owner, claims, reports, saved places | |
 | 17–21 | Public website, student discovery, business + admin dashboards (foundation slice delivered early) | |
 | 22–23 | Integration testing, performance + security review | |
 

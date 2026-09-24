@@ -201,6 +201,18 @@ Original design:
 | POST | `/places` | Perm: `place.create` | **Staff only.** Creates directly; `201`. |
 | PATCH | `/places/:id` | Perm: `place.update` or Own | Replace-by-collection semantics for `prices[]`, `hours[]`, `amenityKeys[]`, `attributes{}`, `imageIds[]`. Owner edits return `{ applied[], queuedForReview[] }` per D2. |
 
+> **Implemented in Phase 9 (reviews):** `GET /places/:idOrSlug/reviews` (public; `sort` =
+> `recent`/`highest`/`lowest`; authors shown as a display name such as "Asha K."), a new
+> `GET /places/:idOrSlug/reviews/summary` (average, count, 5→1 histogram, the rateable dimensions with
+> their averages), `POST /places/:idOrSlug/reviews` (role STUDENT; `201`; `409 ALREADY_REVIEWED`;
+> `403` for the managing business's owner or members), `PATCH`/`DELETE /reviews/:id` (own only, a 404
+> for anyone else; `409` while hidden or removed; `DELETE` returns the place's new rating) and
+> `GET /me/reviews` (with `?placeId=`). Staff: `GET /admin/reviews` (filter `status`, `placeId`,
+> `userId`), `GET /admin/reviews/:id`, `POST /admin/reviews/:id/(hide, restore, remove)` behind
+> `reviews.moderate`. On `GET /places`, `minRating` and `sort=rating` now exist (the `rating` sort is
+> Bayesian; unrated places last). Schemas are in `@platform/contracts` (`reviews.ts`), with examples in
+> Swagger. **Not built:** `/reviews/:id/reply`, `/reviews/:id/report`, review photos.
+
 ### 2.6 Suggestions (submissions)
 
 | Method | Path | Access | Notes |

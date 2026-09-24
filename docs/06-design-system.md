@@ -70,6 +70,10 @@ Semantic indirection is what makes rebranding (the name and colours may change) 
 | neutral-300 border on white | 1.63 | **decorative only**, never the sole boundary of an input |
 | amber-400 star fill on white | ~2.15 | decorative; the numeric rating is always shown as text |
 
+> **Implemented (rebrand to CampusPin):** the user supplied a finished logo (navy "Campus" + green "Pin", a red-orange map pin dotting the "i", tagline "Discover. Connect. Experience.") and the product's real name, replacing the original "LINK" working name above. `primary-*` (was cobalt, hue ~230°) became a navy scale sampled directly from the logo's own pixels — hue 213°, saturation 90% held constant, lightness ramped from 96.7% (50) down to 20.4% (900, which is the logo's exact navy) — and `accent-*` (was amber) became a green scale similarly sampled (hue 129°), with `accent-400` (`#2C963C`) landing almost exactly on the logo's green. Every other token (`ink`, `neutral`, `success`, `danger`, `control`) is untouched: `success`/`danger` carry state meaning, not brand meaning, so they were deliberately left alone even though the new `accent` green now sits close to `success` green. New verified contrast: white on primary-600 (`#0B63CF`) 5.68 (AA), white on primary-700 (`#084590`) 9.27 (AAA), primary-700 on primary-50 8.52 (AAA), accent-700 (`#0F5712`) on accent-50 8.05 (AAA), focus ring primary-500 (`#187BF3`) on white 4.06 (≥ 3:1 required). The logo lives at `apps/web/public/logo.png` (Navbar) with `app/icon.png`/`app/apple-icon.png` cropped from its graduation-cap "C" mark (favicon).
+
+> **Added for the landing page:** `accent-600` (`#1F7A2E`, 5.4:1 on white) and `accent-650` (its hover) — the green for *text* and for white-on-green CTA buttons, because `accent-400` is only ~3.8:1 on white (icons and fills only). Four **category tints** — `amber`, `violet`, `rose`, `teal`, each a `50` chip background + `600` glyph — used **only** for category icon chips (never text, actions or state), so the category grid reads at a glance without adding a second brand accent. `--animate-float` (6 s, 6 px) drifts the map pins and is neutralised by the reduced-motion rule. Icons come from `components/ui/icon.tsx` (inline 24px stroke set, no dependency).
+
 **Rules:** never rely on colour alone (open/closed = text + icon; verified = icon + label); no more than one accent per view; gradients only as a single subtle tint in the hero, never on cards or buttons.
 
 ## 2. Typography
@@ -142,11 +146,11 @@ Built on Radix primitives + `class-variance-authority` + `tailwind-merge`; every
 
 ## 5. Key screen wireframes (structure, not final visuals)
 
-**Home hero:** the ecosystem is shown as a **node graph**, the LINK metaphor. A college node sits at the centre with category nodes (bed, utensils, book, dumbbell, shirt, pill, bike, printer…) connected by thin lines. It is pure SVG/CSS (no heavy image), with a gentle ≤ 8 px float that is disabled for reduced motion.
+**Home hero:** the ecosystem is shown as a **node graph** — a college node sits at the centre with category nodes (bed, utensils, book, dumbbell, shirt, pill, bike, printer…) connected by thin lines, echoing the logo's own map-pin mark. It is pure SVG/CSS (no heavy image), with a gentle ≤ 8 px float that is disabled for reduced motion.
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│ LINK   Colleges  For business             Suggest   Sign in   │
+│ CampusPin   Colleges  For business         Suggest   Sign in  │
 ├───────────────────────────────────────────────────────────────┤
 │  Everything You Need                 ┌─ ecosystem graph ────┐ │
 │  Around Your College.                │   ○bed   ○mess       │ │
@@ -206,4 +210,4 @@ Tokens are plain CSS variables today (Tailwind `@theme`). When the mobile app st
 
 ## 8. Brand handling
 
-The name, tagline and logo come from one `brand.ts` config plus a `Logo` component, so a rename touches one file. Working name **LINK**; tagline "Connecting Students with Everything Around Them." Photography: no stock images of real businesses; seed content uses neutral illustrated placeholders and is labelled as demo ([09](09-env-and-seed.md)).
+The name, tagline and logo come from one `brand.ts` config plus a `Logo` component, so a rename touches one file. Brand **CampusPin**; tagline "Discover. Connect. Experience." (renamed from the original working name "LINK" — see the "Implemented" note under §1 for the palette that came with it). Photography: no stock images of real businesses; seed content uses neutral illustrated placeholders and is labelled as demo ([09](09-env-and-seed.md)).
