@@ -49,10 +49,20 @@ export class PasswordResetService {
 
     const rawToken = generateOpaqueToken();
     const now = new Date();
+    // Found with a plain read and deleted by primary key, never by the `userId` index: see
+    // EmailVerificationService.issueAndSend (an index-range delete gap-locks and can deadlock).
+    const stale = await this.prisma.passwordResetToken.findMany({
+      where: { userId: user.id, OR: [{ usedAt: null }, { expiresAt: { lt: now } }] },
+      select: { id: true },
+    });
     await this.prisma.$transaction([
-      this.prisma.passwordResetToken.deleteMany({
-        where: { userId: user.id, OR: [{ usedAt: null }, { expiresAt: { lt: now } }] },
-      }),
+      ...(stale.length > 0
+        ? [
+            this.prisma.passwordResetToken.deleteMany({
+              where: { id: { in: stale.map((token) => token.id) } },
+            }),
+          ]
+        : []),
       this.prisma.passwordResetToken.create({
         data: {
           userId: user.id,

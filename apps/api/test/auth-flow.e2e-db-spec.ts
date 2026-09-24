@@ -109,6 +109,22 @@ describe('Authentication flow (e2e, real database)', () => {
       expect(await ctx.db.user.count({ where: { email } })).toBe(1);
     });
 
+    it('registers many different people at the same moment without a deadlock', async () => {
+      // Regression: the verification-token housekeeping used to gap-lock the `userId` index, so
+      // concurrent sign-ups deadlocked each other's token insert and one of them answered 500.
+      const emails = Array.from({ length: 8 }, (_, index) => testEmail(`burst${index}`));
+      const responses = await Promise.all(
+        emails.map((email) =>
+          ctx.post(`${API}/register`).send({ name: 'Burst User', email, password: STRONG_PASSWORD }),
+        ),
+      );
+
+      expect(responses.map((res) => res.status)).toEqual(emails.map(() => 201));
+      expect(
+        await ctx.db.emailVerificationToken.count({ where: { user: { email: { in: emails } } } }),
+      ).toBe(emails.length);
+    });
+
     it('never trusts roles sent by the client', async () => {
       const email = testEmail('roles');
       await ctx

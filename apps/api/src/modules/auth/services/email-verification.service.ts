@@ -45,11 +45,22 @@ export class EmailVerificationService {
   async issueAndSend(user: Recipient): Promise<void> {
     const rawToken = generateOpaqueToken();
     const now = new Date();
+    // Housekeeping: superseded links, and anything of this user's that has already expired. They
+    // are found with a plain (non-locking) read and deleted by primary key: a `deleteMany` on the
+    // `userId` index takes an InnoDB gap lock even when nothing matches, and two sign-ups landing
+    // in the same gap then deadlock on each other's insert.
+    const stale = await this.prisma.emailVerificationToken.findMany({
+      where: { userId: user.id, OR: [{ usedAt: null }, { expiresAt: { lt: now } }] },
+      select: { id: true },
+    });
     await this.prisma.$transaction([
-      // Housekeeping: superseded links, and anything of this user's that has already expired.
-      this.prisma.emailVerificationToken.deleteMany({
-        where: { userId: user.id, OR: [{ usedAt: null }, { expiresAt: { lt: now } }] },
-      }),
+      ...(stale.length > 0
+        ? [
+            this.prisma.emailVerificationToken.deleteMany({
+              where: { id: { in: stale.map((token) => token.id) } },
+            }),
+          ]
+        : []),
       this.prisma.emailVerificationToken.create({
         data: {
           userId: user.id,
