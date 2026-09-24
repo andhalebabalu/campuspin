@@ -76,6 +76,11 @@ export const envSchema = z
     EMAIL_PROVIDER: z.enum(['console', 'memory']).default('console'),
     EMAIL_FROM: z.string().trim().min(3).max(200).default('CampusPin <no-reply@localhost.test>'),
     APP_NAME: z.string().trim().min(1).max(60).default('CampusPin'),
+
+    // ── Uploads (Phase 10) ──────────────────────────────────────────────────────────────────────
+    // Uploaded images are written here (a relative path is resolved from the API's working
+    // directory) and served at `${API_BASE_URL}/uploads/<file>`.
+    UPLOAD_DIR: z.string().trim().min(1).default('uploads'),
   })
   .check((ctx) => {
     const { JWT_ACCESS_SECRET: access, JWT_REFRESH_SECRET: refresh } = ctx.value;

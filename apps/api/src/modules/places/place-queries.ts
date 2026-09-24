@@ -69,6 +69,8 @@ export const DETAIL_SELECT = {
   amenities: AMENITIES_SELECT,
   hours: HOURS_SELECT,
   priceOptions: PRICE_OPTIONS_SELECT,
+  // Only whether it is set reaches the response (`acceptsEnquiries`), never the id itself.
+  businessProfileId: true,
 } satisfies Prisma.PlaceSelect;
 
 export const ADMIN_SELECT = {

@@ -86,7 +86,9 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     };
     const token = await options.getAccessToken?.();
     if (token) headers.Authorization = `Bearer ${token}`;
-    if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
+    // A FormData body (file uploads) is sent as-is: fetch sets the multipart Content-Type, boundary included.
+    const isFormData = typeof FormData !== 'undefined' && opts.body instanceof FormData;
+    if (opts.body !== undefined && !isFormData) headers['Content-Type'] = 'application/json';
 
     // Portable timeout + caller cancellation (AbortSignal.any is not available everywhere).
     const controller = new AbortController();
@@ -105,7 +107,12 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
         ...opts.init,
         method,
         headers,
-        body: opts.body === undefined ? null : JSON.stringify(opts.body),
+        body:
+          opts.body === undefined
+            ? null
+            : isFormData
+              ? (opts.body as FormData)
+              : JSON.stringify(opts.body),
         signal: controller.signal,
       });
     } catch (cause) {

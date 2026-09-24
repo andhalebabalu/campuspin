@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { priceUnitSchema } from './categories.js';
 import { paginationQuerySchema } from './pagination.js';
-import { httpUrlField, multiLineField, singleLineField, uuidSchema } from './text.js';
+import { httpUrlField, multiLineField, phoneSchema, singleLineField, uuidSchema } from './text.js';
 
 /**
  * Student submissions: "suggest a new place" (`POST /place-submissions`), the duplicate-detection
@@ -51,12 +51,6 @@ const longitude = z.number().min(-180).max(180).meta({ example: 74.75 });
 const isNullIsland = (lat: number | undefined, lng: number | undefined): boolean =>
   lat === 0 && lng === 0;
 const NULL_ISLAND_MESSAGE = 'Coordinates 0, 0 are not a real location';
-
-const phoneSchema = z
-  .string()
-  .trim()
-  .regex(/^[0-9+()\-.\s]{6,20}$/, 'Enter a valid phone number')
-  .meta({ example: '+91 98765 43210' });
 
 // ── Duplicate check ──────────────────────────────────────────────────────────────────────────────
 

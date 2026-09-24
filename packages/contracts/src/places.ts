@@ -8,6 +8,7 @@ import {
   httpUrlField,
   idOrSlugField,
   multiLineField,
+  phoneSchema,
   singleLineField,
   uuidSchema,
 } from './text.js';
@@ -63,12 +64,6 @@ const longitude = z.number().min(-180).max(180).meta({ example: 74.75 });
 const isNullIsland = (lat: number | undefined, lng: number | undefined): boolean =>
   lat === 0 && lng === 0;
 const NULL_ISLAND_MESSAGE = 'Coordinates 0, 0 are not a real location';
-
-const phoneSchema = z
-  .string()
-  .trim()
-  .regex(/^[0-9+()\-.\s]{6,20}$/, 'Enter a valid phone number')
-  .meta({ example: '+91 98765 43210' });
 
 const HH_MM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const timeOfDaySchema = z.string().regex(HH_MM, 'Use 24-hour HH:mm, e.g. 09:30').meta({
@@ -258,6 +253,8 @@ export const placeDetailSchema = placeCardSchema.omit({ distanceMeters: true }).
   hours: z.array(placeHourSchema),
   priceOptions: z.array(placePriceOptionSchema),
   images: z.array(placeImageSchema),
+  /** A business manages this place, so students can send it an enquiry. */
+  acceptsEnquiries: z.boolean(),
 });
 export type PlaceDetail = z.infer<typeof placeDetailSchema>;
 

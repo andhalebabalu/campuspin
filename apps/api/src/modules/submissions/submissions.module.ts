@@ -17,5 +17,7 @@ import { SubmissionsService } from './submissions.service.js';
   imports: [CollegesModule, AuthModule],
   controllers: [SubmissionsController, AdminSubmissionsController],
   providers: [SubmissionsService, AdminSubmissionsService, DuplicateDetectionService],
+  // The business dashboard creates owners' listings through the same moderated pipeline.
+  exports: [SubmissionsService],
 })
 export class SubmissionsModule {}

@@ -85,6 +85,7 @@ export interface DetailRow extends CardRow {
   amenities: AmenityRow[];
   hours: HourRow[];
   priceOptions: PriceOptionRow[];
+  businessProfileId: string | null;
 }
 
 export interface AdminRow extends DetailRow {
@@ -141,9 +142,12 @@ const toImage = (row: ImageRow): PlaceImage => ({
 });
 
 /** Ordered `isCover` first, then `sortOrder`: the first image (if any) is the one to show as cover. */
-const coverImageUrl = (images: readonly ImageRow[]): string | null => images[0]?.imageUrl ?? null;
+export const coverImageUrl = (images: readonly ImageRow[]): string | null =>
+  images[0]?.imageUrl ?? null;
 
-const primaryCategoryOf = (categories: readonly CategoryRow[]): PlaceCard['primaryCategory'] => {
+export const primaryCategoryOf = (
+  categories: readonly CategoryRow[],
+): PlaceCard['primaryCategory'] => {
   const primary = categories.find((row) => row.isPrimary) ?? categories[0];
   return primary
     ? {
@@ -203,6 +207,7 @@ export function toPlaceDetail(row: DetailRow): PlaceDetail {
     hours: row.hours.map(toHour),
     priceOptions: row.priceOptions.map(toPriceOption),
     images: row.images.map(toImage),
+    acceptsEnquiries: row.businessProfileId !== null,
   };
 }
 
@@ -231,6 +236,7 @@ export function toAdminListItem(row: AdminRow): AdminPlaceListItem {
     googleMapsUrl: row.googleMapsUrl,
     latitude: row.latitude,
     longitude: row.longitude,
+    acceptsEnquiries: row.businessProfileId !== null,
     status: row.status,
     verificationStatus: row.verificationStatus,
     lastVerifiedAt: row.lastVerifiedAt ? row.lastVerifiedAt.toISOString() : null,

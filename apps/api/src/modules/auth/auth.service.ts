@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import type {
+  AccountType,
   AuthUser,
   ForgotPasswordRequest,
   LoginRequest,
@@ -11,11 +12,13 @@ import type {
   RegisterResponse,
   ResendVerificationRequest,
   ResetPasswordRequest,
+  RoleKey,
   VerifyEmailRequest,
 } from '@platform/contracts';
 import { AppException } from '../../common/http/app-exception.js';
 import type { ClientContext } from '../../common/http/request-client.decorator.js';
 import { hashPassword, verifyPassword } from '../../common/security/password-hasher.js';
+import { pickFreeSlug, randomizedSlug, slugRoot } from '../../common/utils/slug.js';
 import { fingerprint } from '../../common/security/token-hash.js';
 import { PrismaService } from '../../infra/database/prisma.service.js';
 import { isUniqueConstraintError } from '../../infra/database/prisma-errors.js';
@@ -28,8 +31,16 @@ import { RbacService } from './services/rbac.service.js';
 import { SessionService } from './services/session.service.js';
 import { TokenService } from './services/token.service.js';
 
-/** The role every self-registered account gets. Seeded by `db:seed:reference`. */
-const DEFAULT_ROLE_KEY = 'STUDENT';
+/**
+ * The one role a self-registered account gets, by the account type chosen at sign-up. Seeded by
+ * `db:seed:reference`. Staff roles are never self-service.
+ */
+const ROLE_FOR_ACCOUNT_TYPE: Readonly<Record<AccountType, RoleKey>> = {
+  STUDENT: 'STUDENT',
+  BUSINESS: 'BUSINESS_OWNER',
+};
+
+const BUSINESS_SLUG_OPTIONS = { reservedWords: [], fallback: 'business' } as const;
 
 @Injectable()
 export class AuthService {
@@ -54,14 +65,13 @@ export class AuthService {
     });
     if (existing) throw this.emailTaken();
 
+    const roleKey = ROLE_FOR_ACCOUNT_TYPE[dto.accountType];
     const role = await this.prisma.role.findUnique({
-      where: { key: DEFAULT_ROLE_KEY },
+      where: { key: roleKey },
       select: { id: true },
     });
     if (!role) {
-      this.logger.error(
-        `The default role ${DEFAULT_ROLE_KEY} does not exist. Run "npm run db:seed:reference".`,
-      );
+      this.logger.error(`The role ${roleKey} does not exist. Run "npm run db:seed:reference".`);
       throw new AppException(
         'SERVICE_UNAVAILABLE',
         'Registration is temporarily unavailable',
@@ -70,22 +80,40 @@ export class AuthService {
     }
 
     const passwordHash = await hashPassword(dto.password);
+    const businessName = dto.accountType === 'BUSINESS' ? dto.businessName : undefined;
+    let businessSlug = businessName ? await this.freeBusinessSlug(businessName) : undefined;
     let user;
-    try {
-      // One nested create: the user and the STUDENT role are written together or not at all.
-      user = await this.prisma.user.create({
-        data: {
-          name: dto.name,
-          email: dto.email,
-          passwordHash,
-          userRoles: { create: { roleId: role.id } },
-        },
-        select: ACCOUNT_SELECT,
-      });
-    } catch (error) {
-      // Two simultaneous registrations can both pass the check above; the unique index decides.
-      if (isUniqueConstraintError(error)) throw this.emailTaken();
-      throw error;
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        // One nested create: the user, their role and (for a business) the business profile are
+        // written together or not at all.
+        user = await this.prisma.user.create({
+          data: {
+            name: dto.name,
+            email: dto.email,
+            passwordHash,
+            userRoles: { create: { roleId: role.id } },
+            ...(businessName && businessSlug
+              ? {
+                  ownedBusinesses: {
+                    create: { businessName, slug: businessSlug, email: dto.email },
+                  },
+                }
+              : {}),
+          },
+          select: ACCOUNT_SELECT,
+        });
+        break;
+      } catch (error) {
+        if (!isUniqueConstraintError(error)) throw error;
+        // Two simultaneous registrations can both pass the email check above; the unique index
+        // decides. Otherwise it was the business slug, taken in the meantime: retry with a new one.
+        if (!businessName || attempt >= 2) throw this.emailTaken();
+        if ((await this.prisma.user.count({ where: { email: dto.email } })) > 0) {
+          throw this.emailTaken();
+        }
+        businessSlug = randomizedSlug(slugRoot(businessName, BUSINESS_SLUG_OPTIONS));
+      }
     }
 
     await this.audit.record({
@@ -93,6 +121,7 @@ export class AuthService {
       actorId: user.id,
       entityType: 'User',
       entityId: user.id,
+      metadata: { accountType: dto.accountType },
       client,
     });
     await this.emailVerification.issueAndSend(user);
@@ -258,6 +287,15 @@ export class AuthService {
 
   resetPassword(dto: ResetPasswordRequest, client: ClientContext): Promise<void> {
     return this.passwordReset.reset(dto.token, dto.newPassword, client);
+  }
+
+  private async freeBusinessSlug(businessName: string): Promise<string> {
+    const root = slugRoot(businessName, BUSINESS_SLUG_OPTIONS);
+    const rows = await this.prisma.businessProfile.findMany({
+      where: { slug: { startsWith: root } },
+      select: { slug: true },
+    });
+    return pickFreeSlug(root, new Set(rows.map((row) => row.slug)));
   }
 
   private emailTaken(): AppException {

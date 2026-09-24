@@ -101,6 +101,14 @@ enum ClaimStatus {
   CANCELLED
 }
 
+// An enquiry's progress in the business's inbox.
+enum LeadStatus {
+  NEW
+  SEEN
+  CONTACTED
+  CLOSED
+}
+
 enum ReviewStatus {
   PUBLISHED
   HIDDEN
@@ -220,7 +228,8 @@ model User {
   reviewReports         ReviewReport[]      @relation("ReviewReportReportedBy")
   handledReviewReports  ReviewReport[]      @relation("ReviewReportReviewedBy")
   savedPlaces           SavedPlace[]
-  reports               Report[]            @relation("ReportReporter")
+  leads                 Lead[]              @relation("LeadSender")
+  reports              Report[]            @relation("ReportReporter")
   resolvedReports       Report[]            @relation("ReportResolvedBy")
   notifications         Notification[]
   auditLogs             AuditLog[]
@@ -587,7 +596,8 @@ model Place {
   claims          PlaceClaim[]
   contributions   PlaceContribution[]
   reviews         Review[]
-  createdFrom     PlaceSubmission[]     @relation("SubmissionResultingPlace")
+  leads           Lead[]
+  createdFrom    PlaceSubmission[]     @relation("SubmissionResultingPlace")
   duplicatesOf    PlaceSubmission[]     @relation("SubmissionDuplicateOfPlace")
 
   @@index([status, city])
@@ -733,6 +743,7 @@ model BusinessProfile {
   members BusinessMember[]
   places  Place[]
   claims  PlaceClaim[]
+  leads   Lead[]
 
   @@index([ownerId])
   @@index([status, verificationStatus])
@@ -946,6 +957,34 @@ model ReviewReport {
   @@index([status, createdAt])
   @@index([reviewId])
   @@map("review_reports")
+}
+
+// A student's enquiry to the business that manages a place ("Is a double room free from July?").
+// Only places with a business can receive one: nobody would read it otherwise.
+model Lead {
+  id                String     @id @default(uuid(7)) @db.Char(36)
+  placeId           String     @db.Char(36)
+  // Place.businessProfileId when the enquiry was sent (denormalised): the business's inbox is keyed
+  // on it, and an enquiry stays with the business it was sent to even if the place changes hands.
+  businessProfileId String     @db.Char(36)
+  userId            String     @db.Char(36)
+  message           String     @db.Text
+  // The number the student wants to be called back on; the business also sees their name and email.
+  contactPhone      String?    @db.VarChar(20)
+  // When the student agreed to share their contact details with this business.
+  consentAt         DateTime
+  status            LeadStatus @default(NEW)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  place           Place           @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  user            User            @relation("LeadSender", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([placeId, status, createdAt])
+  @@index([businessProfileId, createdAt])
+  @@index([userId])
+  @@map("leads")
 }
 
 model SavedPlace {

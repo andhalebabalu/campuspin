@@ -65,6 +65,8 @@ export class SubmissionsService {
     dto: CreateSubmissionRequest,
     actor: AuthenticatedUser,
     client: ClientContext,
+    /** Set when a business owner lists their own place: the place is linked to that business. */
+    options: { businessProfileId?: string } = {},
   ): Promise<PlaceSubmission> {
     const category = await this.loadAndValidateCategory(dto.categoryId);
     if (dto.collegeId) await this.assertCollegeExists(dto.collegeId);
@@ -76,7 +78,10 @@ export class SubmissionsService {
 
     const priceSummary =
       dto.priceAmount !== undefined && dto.priceUnit !== undefined
-        ? summarizePrices([{ amount: dto.priceAmount, unit: dto.priceUnit }], category.defaultPriceUnit)
+        ? summarizePrices(
+            [{ amount: dto.priceAmount, unit: dto.priceUnit }],
+            category.defaultPriceUnit,
+          )
         : { priceMin: null, priceMax: null, priceUnit: null };
 
     let slug = await this.freeSlug(dto.name);
@@ -98,6 +103,7 @@ export class SubmissionsService {
               status: 'PENDING',
               ...priceSummary,
               createdById: actor.id,
+              businessProfileId: options.businessProfileId ?? null,
               categories: { create: [{ categoryId: dto.categoryId, isPrimary: true }] },
               priceOptions:
                 dto.priceAmount !== undefined && dto.priceUnit !== undefined
@@ -163,6 +169,9 @@ export class SubmissionsService {
                 resultingPlaceId: place.id,
                 duplicateCandidateCount: candidates.length,
                 confirmedDifferent: dto.confirmDifferent,
+                ...(options.businessProfileId
+                  ? { businessProfileId: options.businessProfileId }
+                  : {}),
               },
               client,
             },
@@ -192,7 +201,8 @@ export class SubmissionsService {
     if (!row) throw AppException.notFound('Submission not found');
     if (row.submittedById !== actor.id) {
       const granted = await this.rbac.permissionsForRoles(actor.roles);
-      if (!granted.includes('submissions.review')) throw AppException.notFound('Submission not found');
+      if (!granted.includes('submissions.review'))
+        throw AppException.notFound('Submission not found');
     }
     return toPlaceSubmission(row);
   }
@@ -204,7 +214,9 @@ export class SubmissionsService {
     });
     if (!category) throw AppException.validation({ categoryId: ['Category does not exist'] });
     if (category.parentId === null) {
-      throw AppException.validation({ categoryId: ['This is a group; pick one of its categories'] });
+      throw AppException.validation({
+        categoryId: ['This is a group; pick one of its categories'],
+      });
     }
     if (category.status !== 'ACTIVE') {
       throw AppException.validation({ categoryId: ['Category is not active'] });

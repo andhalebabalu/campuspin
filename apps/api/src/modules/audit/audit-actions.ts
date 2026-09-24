@@ -65,6 +65,11 @@ export const AUDIT_ACTIONS = [
   'REVIEW_HIDDEN',
   'REVIEW_RESTORED',
   'REVIEW_REMOVED',
+  // Business owners (Phase 10). Owner listings are recorded as SUBMISSION_CREATED (with the
+  // businessProfileId in metadata), since they go through the same staff review.
+  'BUSINESS_PROFILE_UPDATED',
+  'LEAD_CREATED',
+  'LEAD_STATUS_CHANGED',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

@@ -5,6 +5,7 @@ import { Logger } from 'nestjs-pino';
 import type { NextFunction, Request, Response } from 'express';
 import { noStoreFor } from './common/http/no-store.middleware.js';
 import type { AppConfig } from './infra/config/app-config.js';
+import { UPLOADS_ROUTE } from './infra/storage/image-storage.js';
 import { SWAGGER_PATH, setupSwagger } from './swagger.js';
 
 /**
@@ -56,6 +57,15 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): vo
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Client', 'X-App-Version', 'X-Request-Id'],
     exposedHeaders: ['X-Request-Id', 'Retry-After'],
     maxAge: 600,
+  });
+  // Uploaded images (local-disk storage). File names are random and immutable, so they can be
+  // cached for good; Helmet's `nosniff` (applied above) stops a browser second-guessing the type.
+  app.useStaticAssets(config.uploadDir, {
+    prefix: `${UPLOADS_ROUTE}/`,
+    index: false,
+    dotfiles: 'deny',
+    immutable: true,
+    maxAge: '365d',
   });
   app.useBodyParser('json', { limit: '1mb' });
   app.setGlobalPrefix('api');

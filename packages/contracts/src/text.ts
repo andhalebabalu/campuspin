@@ -113,3 +113,10 @@ export function machineKeyField(label: string, max: number, example: string) {
     )
     .meta({ example });
 }
+
+/** A phone number as people type it: digits with optional `+`, spaces, dashes, dots and brackets. */
+export const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^[0-9+()\-.\s]{6,20}$/, 'Enter a valid phone number')
+  .meta({ example: '+91 98765 43210' });

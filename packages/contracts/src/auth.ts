@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { permissionKeySchema, roleKeySchema } from './rbac.js';
+import { singleLineField } from './text.js';
 
 /**
  * Authentication contracts: request bodies, response data and the password policy. The API
@@ -184,8 +185,25 @@ const emailTokenSchema = z
 
 // ── Requests ─────────────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Who is signing up. `STUDENT` gets the STUDENT role; `BUSINESS` gets BUSINESS_OWNER plus a business
+ * profile named `businessName`. Only these two are self-service: staff roles are never chosen here.
+ */
+export const ACCOUNT_TYPES = ['STUDENT', 'BUSINESS'] as const;
+export type AccountType = (typeof ACCOUNT_TYPES)[number];
+export const accountTypeSchema = z.enum(ACCOUNT_TYPES);
+
 export const registerRequestSchema = z
-  .object({ name: nameSchema, email: emailSchema, password: passwordSchema })
+  .object({
+    name: nameSchema,
+    email: emailSchema,
+    password: passwordSchema,
+    accountType: accountTypeSchema.default('STUDENT'),
+    /** Required for a `BUSINESS` account, ignored for a `STUDENT` one. */
+    businessName: singleLineField('Business name', 200)
+      .optional()
+      .meta({ example: 'Sai Krupa Mess' }),
+  })
   .check((ctx) => {
     if (passwordContainsEmailName(ctx.value.password, ctx.value.email)) {
       ctx.issues.push({
@@ -193,6 +211,14 @@ export const registerRequestSchema = z
         message: 'The password must not contain the name part of your email',
         input: ctx.value.password,
         path: ['password'],
+      });
+    }
+    if (ctx.value.accountType === 'BUSINESS' && !ctx.value.businessName) {
+      ctx.issues.push({
+        code: 'custom',
+        message: 'Enter your business name',
+        input: ctx.value.businessName,
+        path: ['businessName'],
       });
     }
   });

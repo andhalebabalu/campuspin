@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { type Env, envSchema } from './env.schema.js';
 import { parseDatabaseUrl } from '../database/database-url.js';
 
@@ -48,6 +49,8 @@ export class AppConfig {
     readonly usesDevelopmentSecrets: boolean;
   };
   readonly email: { readonly provider: Env['EMAIL_PROVIDER']; readonly from: string };
+  /** Absolute directory uploaded files are stored in (local-disk storage). */
+  readonly uploadDir: string;
   private readonly suppliedSecrets: { readonly access?: string; readonly refresh?: string };
 
   private constructor(env: Env) {
@@ -80,6 +83,7 @@ export class AppConfig {
         env.JWT_ACCESS_SECRET === undefined || env.JWT_REFRESH_SECRET === undefined,
     };
     this.email = { provider: env.EMAIL_PROVIDER, from: env.EMAIL_FROM };
+    this.uploadDir = path.resolve(env.UPLOAD_DIR);
   }
 
   /**
