@@ -38,6 +38,7 @@
     "db:migrate:status": "npm run db:migrate:status -w @platform/api",
     "db:seed": "npm run db:seed -w @platform/api",
     "db:seed:reference": "npm run db:seed:reference -w @platform/api",
+    "db:import:ahmednagar": "npm run db:import:ahmednagar -w @platform/api",
     "db:purge-demo": "npm run db:purge-demo -w @platform/api",
     "db:studio": "npm run db:studio -w @platform/api"
   },

@@ -339,6 +339,21 @@ NestJS  ->  PrismaService  ->  Prisma Client  ->  @prisma/adapter-mariadb  ->  X
 
 Every demo row is clearly labelled `Sample ... (Demo)`, has no phone or e-mail, and is flagged `isDemo`, so it cannot be mistaken for a real business. The demo coordinates are made-up points, not real addresses.
 
+### Real Ahmednagar district data
+
+`npm run db:import:ahmednagar` adds **real** colleges and nearby places for Ahmednagar (Ahilyanagar) district from the snapshot in `apps/api/prisma/data/ahmednagar/` (needs `db:seed:reference` first; safe to re-run, never overwrites a row staff have edited; allowed in production because `isDemo` is false):
+
+| Data | Rows | Source |
+|---|---|---|
+| Colleges | 200 | Directorate of Higher Education, Maharashtra: [aided](https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf) and [non-aided 2022-23](https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf) college lists (arts, science, commerce, education, law, …); State CET Cell 2025-26 institute lists for Engineering, Pharmacy and BCA/BBA/BMS |
+| Places within 2 km of a college | 221 | OpenStreetMap (© OpenStreetMap contributors, ODbL): 176 medical, 15 restaurants, 12 bus stands, 7 hostels, 7 grocery, 2 cafes, 1 library, 1 gym |
+| College ↔ place links | 5,416 | calculated from both locations (5 km college radius) |
+
+- **Everything is live but not verified:** `ACTIVE`, `verificationStatus: PENDING`, so no verified badge until staff check a row. Each description says which official list or OSM it came from.
+- **College locations:** 5 come from a matching OpenStreetMap campus; 39 are placed at their village or town and 156 at their taluka headquarters, because the official lists give an address but no coordinates. Those descriptions say **"Map location is APPROXIMATE"**; staff should correct them (`PATCH /admin/colleges/:id`), and distances to places are only as good as that point.
+- **Not covered:** messes, PGs, reading rooms, xerox shops and most libraries are barely on OpenStreetMap, and copying them from Google Maps or Justdial would break those sites' terms (and this project's own rule). They are left to students ("Suggest a place") and staff. Polytechnics, MBA/MCA institutes, medical/nursing colleges and agricultural colleges are not in the lists used. No prices, hours or phone numbers were invented.
+- The footer carries the required "© OpenStreetMap contributors" credit.
+
 ### Viewing the data: phpMyAdmin and Prisma Studio
 
 - **phpMyAdmin (recommended on XAMPP).** Start Apache and MySQL, open `http://localhost/phpmyadmin`, choose `link_platform`. It lists every table with its row count and lets you browse the data.

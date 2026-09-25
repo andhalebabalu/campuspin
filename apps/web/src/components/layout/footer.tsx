@@ -66,6 +66,18 @@ export function Footer() {
           <span>
             © {new Date().getFullYear()} {BRAND.name}. All rights reserved.
           </span>
+          {/* Required by the ODbL: imported college locations and nearby places come from OSM. */}
+          <span>
+            Place and map data ©{' '}
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-ink"
+            >
+              OpenStreetMap contributors
+            </a>
+          </span>
           <span>{BRAND.tagline}</span>
         </div>
       </div>
