@@ -1,5 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import type { CollegeCard, CollegeDetail, ListCollegesQuery } from '@platform/contracts';
+import {
+  COLLEGE_MANAGEMENT,
+  COLLEGE_MANAGEMENT_LABELS,
+  COLLEGE_STREAMS,
+  COLLEGE_STREAM_LABELS,
+  type CollegeCard,
+  type CollegeDetail,
+  type CollegeFacets,
+  type CollegeManagement,
+  type CollegeNearby,
+  type CollegeStream,
+  type ListCollegesQuery,
+} from '@platform/contracts';
 import { AppException } from '../../common/http/app-exception.js';
 import { Paginated, pageWindow } from '../../common/http/paginated.js';
 import type { Prisma } from '../../generated/prisma/client.js';
@@ -12,7 +24,7 @@ import {
   idOrSlugFilter,
   searchFilter,
 } from './college-queries.js';
-import { metersFrom, sortCards } from './college-rules.js';
+import { collegeProfile, metersFrom, sortCards, summarizeNearby } from './college-rules.js';
 
 /**
  * The public college directory. Only ACTIVE colleges exist here: drafts and deactivated colleges
@@ -32,6 +44,49 @@ export class CollegesService {
       row: CardRow & { latitude: number; longitude: number },
       counts: Map<string, number>,
     ) => toCollegeCard(row, counts.get(row.id) ?? 0, metersFrom(point, row));
+
+    // Streams and management are derived from each college's name and description, so they can only
+    // be filtered after reading: every match is read, filtered, ordered and then cut into a page (a
+    // directory has hundreds of colleges, not millions).
+    if (query.stream.length > 0 || query.management.length > 0) {
+      const rows = await this.prisma.college.findMany({
+        where,
+        select: { ...CARD_SELECT, latitude: true, longitude: true, createdAt: true },
+      });
+      const counts = await countActivePlaces(
+        this.prisma,
+        rows.map((row) => row.id),
+      );
+      const created = new Map(rows.map((row) => [row.id, row.createdAt.getTime()]));
+      const matching = rows
+        .map((row) => card(row, counts))
+        .filter(
+          (college) =>
+            (query.stream.length === 0 ||
+              college.streams.some((stream) => query.stream.includes(stream))) &&
+            (query.management.length === 0 ||
+              (college.management !== null && query.management.includes(college.management))),
+        );
+      const ordered =
+        query.sort === 'nearest' || query.sort === 'popular'
+          ? sortCards(matching, query.sort)
+          : query.sort === 'newest'
+            ? [...matching].sort(
+                (a, b) =>
+                  (created.get(b.id) ?? 0) - (created.get(a.id) ?? 0) || b.id.localeCompare(a.id),
+              )
+            : [...matching].sort(
+                (a, b) =>
+                  a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }) ||
+                  a.id.localeCompare(b.id),
+              );
+      const { skip, take } = pageWindow(query);
+      return Paginated.of(ordered.slice(skip, skip + take), {
+        page: query.page,
+        limit: query.limit,
+        total: ordered.length,
+      });
+    }
 
     // Name and newest are plain ORDER BYs, so the database can page.
     if (query.sort === 'name' || query.sort === 'newest') {
@@ -90,5 +145,101 @@ export class CollegesService {
 
     const counts = await countActivePlaces(this.prisma, [college.id]);
     return toCollegeDetail(college, counts.get(college.id) ?? 0);
+  }
+
+  /** Counts for the directory's filters and header, over every active college. */
+  async facets(): Promise<CollegeFacets> {
+    const rows = await this.prisma.college.findMany({
+      where: { status: 'ACTIVE' },
+      select: { name: true, description: true, city: true, verificationStatus: true },
+    });
+    const cities = new Map<string, number>();
+    const streams = new Map<CollegeStream, number>(COLLEGE_STREAMS.map((key) => [key, 0]));
+    const management = new Map<CollegeManagement, number>(
+      COLLEGE_MANAGEMENT.map((key) => [key, 0]),
+    );
+    for (const row of rows) {
+      cities.set(row.city, (cities.get(row.city) ?? 0) + 1);
+      const profile = collegeProfile(row.name, row.description);
+      for (const stream of profile.streams) streams.set(stream, (streams.get(stream) ?? 0) + 1);
+      if (profile.management) {
+        management.set(profile.management, (management.get(profile.management) ?? 0) + 1);
+      }
+    }
+    return {
+      total: rows.length,
+      verified: rows.filter((row) => row.verificationStatus === 'VERIFIED').length,
+      cities: [...cities.entries()]
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+      streams: COLLEGE_STREAMS.map((key) => ({
+        key,
+        label: COLLEGE_STREAM_LABELS[key],
+        count: streams.get(key) ?? 0,
+      })),
+      management: COLLEGE_MANAGEMENT.map((key) => ({
+        key,
+        label: COLLEGE_MANAGEMENT_LABELS[key],
+        count: management.get(key) ?? 0,
+      })),
+    };
+  }
+
+  /** What is around the college, by category: the same links the college hub's place list uses. */
+  async nearby(idOrSlug: string): Promise<CollegeNearby> {
+    const college = await this.prisma.college.findFirst({
+      where: { status: 'ACTIVE', ...idOrSlugFilter(idOrSlug) },
+      select: { id: true },
+    });
+    if (!college) throw AppException.notFound('College not found');
+
+    const links = await this.prisma.collegePlace.findMany({
+      where: { collegeId: college.id, mode: { not: 'EXCLUDED' }, place: { status: 'ACTIVE' } },
+      select: {
+        distanceMeters: true,
+        place: {
+          select: {
+            slug: true,
+            name: true,
+            categories: {
+              where: { isPrimary: true },
+              take: 1,
+              select: {
+                category: {
+                  select: {
+                    slug: true,
+                    name: true,
+                    icon: true,
+                    parent: { select: { slug: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    return {
+      categories: summarizeNearby(
+        links.map((link) => {
+          const category = link.place.categories[0]?.category ?? null;
+          return {
+            distanceMeters: link.distanceMeters,
+            place: {
+              slug: link.place.slug,
+              name: link.place.name,
+              category: category
+                ? {
+                    slug: category.slug,
+                    name: category.name,
+                    icon: category.icon,
+                    parentSlug: category.parent?.slug ?? null,
+                  }
+                : null,
+            },
+          };
+        }),
+      ),
+    };
   }
 }

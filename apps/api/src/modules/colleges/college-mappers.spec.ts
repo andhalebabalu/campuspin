@@ -61,6 +61,9 @@ describe('toCollegeCard', () => {
       verified: true,
       placeCount: 14,
       distanceMeters: 850,
+      streams: ['arts-science-commerce'],
+      management: null,
+      courses: null,
     });
   });
 

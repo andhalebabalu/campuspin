@@ -12,6 +12,8 @@ export const CARD_SELECT = {
   logoUrl: true,
   coverImageUrl: true,
   verificationStatus: true,
+  // Read only to derive streams, management and courses for the card; never returned whole.
+  description: true,
 } satisfies Prisma.CollegeSelect;
 
 const IMAGES_SELECT = {

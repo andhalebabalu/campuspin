@@ -42,7 +42,62 @@ export const RESERVED_COLLEGE_SLUGS = [
   'new',
   'me',
   'admin',
+  'facets',
 ] as const;
+
+/**
+ * What a college teaches, as broad streams a student filters by. Derived from the college's name
+ * and its listed courses (there is no stream column): a college can be in several.
+ */
+export const COLLEGE_STREAMS = [
+  'engineering',
+  'pharmacy',
+  'arts-science-commerce',
+  'computer',
+  'management',
+  'education',
+  'law',
+  'other',
+] as const;
+export type CollegeStream = (typeof COLLEGE_STREAMS)[number];
+export const collegeStreamSchema = z.enum(COLLEGE_STREAMS);
+export const COLLEGE_STREAM_LABELS: Readonly<Record<CollegeStream, string>> = {
+  engineering: 'Engineering',
+  pharmacy: 'Pharmacy',
+  'arts-science-commerce': 'Arts, Science & Commerce',
+  computer: 'Computer (BCA)',
+  management: 'Management & Hotel',
+  education: 'Education (B.Ed.)',
+  law: 'Law',
+  other: 'Other',
+};
+
+/** How a college is run, from the official list it came from. */
+export const COLLEGE_MANAGEMENT = ['government', 'aided', 'unaided'] as const;
+export type CollegeManagement = (typeof COLLEGE_MANAGEMENT)[number];
+export const collegeManagementSchema = z.enum(COLLEGE_MANAGEMENT);
+export const COLLEGE_MANAGEMENT_LABELS: Readonly<Record<CollegeManagement, string>> = {
+  government: 'Government',
+  aided: 'Government aided',
+  unaided: 'Private (unaided)',
+};
+
+/** `?stream=engineering,pharmacy`: a comma-separated list, any of which may match. */
+const csvOf = <T extends readonly [string, ...string[]]>(values: T) =>
+  z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .transform((value) =>
+      value
+        ? value
+            .split(',')
+            .map((part) => part.trim())
+            .filter(Boolean)
+        : [],
+    )
+    .pipe(z.array(z.enum(values)).max(values.length));
 
 // ── Field building blocks ────────────────────────────────────────────────────────────────────────
 
@@ -82,6 +137,10 @@ export const listCollegesQuerySchema = paginationQuerySchema
     city: z.string().trim().max(100).optional().meta({ example: 'Ahilyanagar' }),
     lat: z.coerce.number().min(-90).max(90).optional().meta({ example: 19.0952 }),
     lng: z.coerce.number().min(-180).max(180).optional().meta({ example: 74.7496 }),
+    /** Any of these streams (comma-separated). */
+    stream: csvOf(COLLEGE_STREAMS).meta({ example: 'engineering,pharmacy' }),
+    /** Any of these management types (comma-separated). */
+    management: csvOf(COLLEGE_MANAGEMENT).meta({ example: 'aided' }),
     sort: z.enum(COLLEGE_SORTS).default('name'),
   })
   .check((ctx) => {
@@ -135,19 +194,44 @@ export const collegeCardSchema = z.object({
   placeCount: z.number().int().min(0),
   /** Straight-line metres from the given `lat`/`lng`; null when none was given. */
   distanceMeters: z.number().int().min(0).nullable(),
+  /** Broad streams, derived from the name and listed courses. */
+  streams: z.array(collegeStreamSchema),
+  /** Null when the source did not say. */
+  management: collegeManagementSchema.nullable(),
+  /** Courses as the official list names them, when it did. */
+  courses: z.string().nullable(),
 });
 export type CollegeCard = z.infer<typeof collegeCardSchema>;
 
-export const collegeDetailSchema = collegeCardSchema.omit({ distanceMeters: true }).extend({
-  description: z.string().nullable(),
-  address: z.string(),
-  country: z.string(),
-  website: z.string().nullable(),
-  latitude: z.number(),
-  longitude: z.number(),
-  serviceRadiusMeters: z.number().int(),
-  images: z.array(collegeImageSchema),
+/**
+ * `GET /colleges/facets`: counts for the directory's filters and header, over every active college.
+ * A college in several streams counts once in each.
+ */
+export const collegeFacetsSchema = z.object({
+  total: z.number().int().min(0),
+  verified: z.number().int().min(0),
+  cities: z.array(z.object({ name: z.string(), count: z.number().int().min(1) })),
+  streams: z.array(
+    z.object({ key: collegeStreamSchema, label: z.string(), count: z.number().int().min(0) }),
+  ),
+  management: z.array(
+    z.object({ key: collegeManagementSchema, label: z.string(), count: z.number().int().min(0) }),
+  ),
 });
+export type CollegeFacets = z.infer<typeof collegeFacetsSchema>;
+
+export const collegeDetailSchema = collegeCardSchema
+  .omit({ distanceMeters: true, streams: true, management: true, courses: true })
+  .extend({
+    description: z.string().nullable(),
+    address: z.string(),
+    country: z.string(),
+    website: z.string().nullable(),
+    latitude: z.number(),
+    longitude: z.number(),
+    serviceRadiusMeters: z.number().int(),
+    images: z.array(collegeImageSchema),
+  });
 export type CollegeDetail = z.infer<typeof collegeDetailSchema>;
 
 // ── Admin ────────────────────────────────────────────────────────────────────────────────────────
@@ -297,3 +381,29 @@ export const updateCollegeImageRequestSchema = z
     }
   });
 export type UpdateCollegeImageRequest = z.output<typeof updateCollegeImageRequestSchema>;
+
+// ── What is around a college ─────────────────────────────────────────────────────────────────────
+
+/** One category of places serving a college: how many, and how near the nearest and farthest are. */
+export const collegeNearbyCategorySchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  icon: z.string().nullable(),
+  groupSlug: z.string().nullable(),
+  count: z.number().int().min(1),
+  nearestMeters: z.number().int().min(0),
+  farthestMeters: z.number().int().min(0),
+  /** The nearest place in this category, to link to directly. */
+  nearest: z.object({ slug: z.string(), name: z.string() }),
+});
+export type CollegeNearbyCategory = z.infer<typeof collegeNearbyCategorySchema>;
+
+/**
+ * `GET /colleges/:idOrSlug/nearby`: every category that has at least one active place serving the
+ * college (within its service radius, minus any a staff member excluded), nearest first. Categories
+ * with nothing listed yet are simply absent, never reported as "0 m".
+ */
+export const collegeNearbySchema = z.object({
+  categories: z.array(collegeNearbyCategorySchema),
+});
+export type CollegeNearby = z.infer<typeof collegeNearbySchema>;

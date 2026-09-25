@@ -346,8 +346,8 @@ Every demo row is clearly labelled `Sample ... (Demo)`, has no phone or e-mail, 
 | Data | Rows | Source |
 |---|---|---|
 | Colleges | 200 | Directorate of Higher Education, Maharashtra: [aided](https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf) and [non-aided 2022-23](https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf) college lists (arts, science, commerce, education, law, …); State CET Cell 2025-26 institute lists for Engineering, Pharmacy and BCA/BBA/BMS |
-| Places within 2 km of a college | 221 | OpenStreetMap (© OpenStreetMap contributors, ODbL): 176 medical, 15 restaurants, 12 bus stands, 7 hostels, 7 grocery, 2 cafes, 1 library, 1 gym |
-| College ↔ place links | 5,416 | calculated from both locations (5 km college radius) |
+| Places near a college | 156 | OpenStreetMap (© OpenStreetMap contributors, ODbL): 99 medical (hospitals and clinics only within 1 km, medical stores within 2 km), 22 bus stops and stands, 15 restaurants, 7 hostels, 7 grocery, 3 libraries, 2 cafes, 1 gym |
+| College ↔ place links | ~2,900 | calculated from both locations (5 km college radius) |
 
 - **Everything is live but not verified:** `ACTIVE`, `verificationStatus: PENDING`, so no verified badge until staff check a row. Each description says which official list or OSM it came from.
 - **College locations:** 5 come from a matching OpenStreetMap campus; 39 are placed at their village or town and 156 at their taluka headquarters, because the official lists give an address but no coordinates. Those descriptions say **"Map location is APPROXIMATE"**; staff should correct them (`PATCH /admin/colleges/:id`), and distances to places are only as good as that point.

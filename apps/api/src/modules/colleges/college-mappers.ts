@@ -7,6 +7,7 @@ import type {
   CollegeStatus,
   VerificationStatus,
 } from '@platform/contracts';
+import { collegeProfile } from './college-rules.js';
 
 /**
  * Row -> response mapping, written out field by field. A response is built from an explicit list,
@@ -24,6 +25,7 @@ export interface CardRow {
   logoUrl: string | null;
   coverImageUrl: string | null;
   verificationStatus: VerificationStatus;
+  description: string | null;
 }
 
 export interface DetailRow extends CardRow {
@@ -62,6 +64,7 @@ export function toCollegeCard(
     verified: row.verificationStatus === 'VERIFIED',
     placeCount,
     distanceMeters,
+    ...collegeProfile(row.name, row.description),
   };
 }
 

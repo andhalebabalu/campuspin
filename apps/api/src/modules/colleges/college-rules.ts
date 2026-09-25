@@ -1,4 +1,11 @@
-import type { CollegeCard, CollegeStatus, VerificationStatus } from '@platform/contracts';
+import type {
+  CollegeCard,
+  CollegeManagement,
+  CollegeNearbyCategory,
+  CollegeStatus,
+  CollegeStream,
+  VerificationStatus,
+} from '@platform/contracts';
 import { distanceMeters } from '../../common/geo/haversine.js';
 
 /**
@@ -163,4 +170,102 @@ export function planLinks(
       plan.create.push({ placeId: place.id, distanceMeters: meters });
   }
   return plan;
+}
+
+// ── What is around a college ─────────────────────────────────────────────────────────────────────
+
+export interface NearbyLink {
+  distanceMeters: number;
+  place: {
+    slug: string;
+    name: string;
+    category: { slug: string; name: string; icon: string | null; parentSlug: string | null } | null;
+  };
+}
+
+/**
+ * Groups a college's place links by the place's primary category: how many, the nearest and the
+ * farthest, nearest category first (ties by name). A place with no primary category is skipped.
+ */
+export function summarizeNearby(links: readonly NearbyLink[]): CollegeNearbyCategory[] {
+  const groups = new Map<string, CollegeNearbyCategory>();
+  for (const link of [...links].sort((a, b) => a.distanceMeters - b.distanceMeters)) {
+    const category = link.place.category;
+    if (!category) continue;
+    const existing = groups.get(category.slug);
+    if (existing) {
+      existing.count += 1;
+      existing.farthestMeters = Math.max(existing.farthestMeters, link.distanceMeters);
+      continue;
+    }
+    groups.set(category.slug, {
+      slug: category.slug,
+      name: category.name,
+      icon: category.icon,
+      groupSlug: category.parentSlug,
+      count: 1,
+      nearestMeters: link.distanceMeters,
+      farthestMeters: link.distanceMeters,
+      nearest: { slug: link.place.slug, name: link.place.name },
+    });
+  }
+  return [...groups.values()].sort(
+    (a, b) => a.nearestMeters - b.nearestMeters || a.name.localeCompare(b.name),
+  );
+}
+
+// ── Streams and management (derived: there are no such columns) ─────────────────────────────────
+
+export interface CollegeProfile {
+  streams: CollegeStream[];
+  management: CollegeManagement | null;
+  courses: string | null;
+}
+
+const STREAM_RULES: ReadonlyArray<[CollegeStream, RegExp]> = [
+  ['pharmacy', /pharmac|\bpharm\b|d\.? ?pharm|b\.? ?pharm/],
+  [
+    'engineering',
+    /engineering|polytechnic|\bb\.? ?tech\b|technical campus|institute of technology/,
+  ],
+  ['law', /\blaw\b/],
+  ['education', /education|b\.? ?ed\b|shikshan ?shastra|d\.? ?el\.? ?ed|physical education/],
+  ['computer', /computer|\bbca\b|information technology/],
+  ['management', /management|hotel|hospitality|catering|\bbba\b|\bbms\b|\bmba\b|business/],
+  [
+    'arts-science-commerce',
+    /\barts?\b|science|commerce|\bcom\b|\bsci\b|mahavidyala|senior college|home science/,
+  ],
+];
+
+/**
+ * A college's streams, how it is run and its listed courses, from its name and the facts the data
+ * import writes into the description ("Courses: ...", "Type: Aided."). A staff-written description
+ * without those lines still yields streams from the name; nothing matching at all is "other".
+ */
+export function collegeProfile(name: string, description: string | null): CollegeProfile {
+  const text = (description ?? '').split('\n');
+  const courses =
+    text.map((line) => /^Courses: (.+?)\.?$/.exec(line.trim())?.[1]).find(Boolean) ?? null;
+  const type = text.map((line) => /^Type: (.+?)\.?$/.exec(line.trim())?.[1]).find(Boolean) ?? null;
+
+  const haystack = `${name} ${courses ?? ''}`.toLowerCase();
+  const streams = STREAM_RULES.filter(([, pattern]) => pattern.test(haystack)).map(
+    ([stream]) => stream,
+  );
+  // "Institute of Hotel Management And Catering Technology" is a hotel school, not engineering.
+  const hotelOnly =
+    /hotel|catering|hospitality/.test(haystack) && !/engineering|polytechnic/.test(haystack);
+  const cleaned = hotelOnly ? streams.filter((stream) => stream !== 'engineering') : streams;
+
+  const kind = type?.toLowerCase().replace(/[^a-z]/g, '') ?? '';
+  const management: CollegeManagement | null = kind.startsWith('government')
+    ? 'government'
+    : kind === 'aided' || kind === 'granted'
+      ? 'aided'
+      : kind.includes('unaided') || kind.includes('nonaided')
+        ? 'unaided'
+        : null;
+
+  return { streams: cleaned.length > 0 ? cleaned : ['other'], management, courses };
 }

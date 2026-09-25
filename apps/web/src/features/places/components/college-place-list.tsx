@@ -24,6 +24,11 @@ export interface CollegePlaceListProps {
   collegeSlug: string;
   initialPlaces: PlaceCardData[];
   initialMeta: PageMeta;
+  /** Category filter, controlled by the parent (so other sections can set it); '' for all. */
+  categorySlug?: string;
+  /** Categories to offer as filter chips; none shows no chips. */
+  categories?: ReadonlyArray<{ slug: string; name: string; count: number }>;
+  onCategoryChange?: (slug: string) => void;
 }
 
 /**
@@ -35,6 +40,9 @@ export function CollegePlaceList({
   collegeSlug,
   initialPlaces,
   initialMeta,
+  categorySlug = '',
+  categories = [],
+  onCategoryChange,
 }: CollegePlaceListProps) {
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
@@ -47,7 +55,7 @@ export function CollegePlaceList({
   const [retryCount, setRetryCount] = useState(0);
 
   const isFirstRun = useRef(true);
-  const prevFilters = useRef({ q: '', sort: 'nearest' as Sort });
+  const prevFilters = useRef({ q: '', sort: 'nearest' as Sort, categorySlug: '' });
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQ(q), 300);
@@ -61,8 +69,10 @@ export function CollegePlaceList({
     }
 
     const filtersChanged =
-      prevFilters.current.q !== debouncedQ || prevFilters.current.sort !== sort;
-    prevFilters.current = { q: debouncedQ, sort };
+      prevFilters.current.q !== debouncedQ ||
+      prevFilters.current.sort !== sort ||
+      prevFilters.current.categorySlug !== categorySlug;
+    prevFilters.current = { q: debouncedQ, sort, categorySlug };
     if (filtersChanged && page !== 1) {
       setPage(1);
       return;
@@ -75,6 +85,7 @@ export function CollegePlaceList({
 
     const params: PlaceListParams = { collegeSlug, sort, page: effectivePage };
     if (debouncedQ) params.q = debouncedQ;
+    if (categorySlug) params.categorySlug = categorySlug;
 
     placesService
       .list(params, controller.signal)
@@ -101,7 +112,7 @@ export function CollegePlaceList({
       });
 
     return () => controller.abort();
-  }, [collegeSlug, debouncedQ, sort, page, retryCount]);
+  }, [collegeSlug, debouncedQ, sort, categorySlug, page, retryCount]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -128,6 +139,32 @@ export function CollegePlaceList({
           </select>
         </label>
       </div>
+
+      {categories.length > 0 && (
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
+          {[{ slug: '', name: 'All', count: 0 }, ...categories].map((category) => {
+            const active = category.slug === categorySlug;
+            return (
+              <button
+                key={category.slug || 'all'}
+                type="button"
+                aria-pressed={active}
+                onClick={() => onCategoryChange?.(category.slug)}
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                  active
+                    ? 'border-action bg-action text-white'
+                    : 'border-line bg-surface text-body hover:border-control hover:text-ink'
+                }`}
+              >
+                {category.name}
+                {category.count > 0 && (
+                  <span className={active ? 'text-white/80' : 'text-muted'}> {category.count}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {status === 'error' && error ? (
         <ErrorState

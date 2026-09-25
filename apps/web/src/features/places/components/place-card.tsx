@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { VerifiedBadge } from '@/components/ui/badge';
 import { ROUTES } from '@/constants/routes';
+import { categoryImage } from '@/utils/category-image';
 import { formatPrice } from '@/utils/format-price';
 
 function initials(name: string): string {
@@ -16,6 +17,7 @@ function initials(name: string): string {
 }
 
 export function PlaceCard({ place }: { place: PlaceCardData }) {
+  const fallback = categoryImage(place.primaryCategory?.slug);
   return (
     <Link href={ROUTES.placeDetail(place.slug)} className="block">
       <Card hover className="flex h-full flex-col overflow-hidden">
@@ -28,6 +30,14 @@ export function PlaceCard({ place }: { place: PlaceCardData }) {
               className="size-full object-cover"
               loading="lazy"
             />
+          ) : fallback ? (
+            <div className="relative size-full">
+              {/* eslint-disable-next-line @next/next/no-img-element -- local stock photo. */}
+              <img src={fallback} alt="" className="size-full object-cover" loading="lazy" />
+              <span className="absolute bottom-2 left-2 rounded-full bg-ink/70 px-2 py-0.5 text-[11px] font-medium text-white">
+                Illustrative photo
+              </span>
+            </div>
           ) : (
             <div className="flex size-full items-center justify-center text-2xl font-bold text-neutral-400">
               {initials(place.name)}

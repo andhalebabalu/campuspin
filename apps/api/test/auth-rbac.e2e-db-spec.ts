@@ -169,6 +169,7 @@ describe('Access control (e2e, real database)', () => {
       'GET /api/v1/colleges',
       'GET /api/v1/colleges/facets',
       'GET /api/v1/colleges/{idOrSlug}',
+      'GET /api/v1/colleges/{idOrSlug}/nearby',
       'GET /api/v1/health',
       'GET /api/v1/health/database',
       'GET /api/v1/places',

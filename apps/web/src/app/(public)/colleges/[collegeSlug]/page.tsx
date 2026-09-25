@@ -46,12 +46,20 @@ export default async function CollegeDetailPage({ params }: { params: Promise<Pa
   const result = await loadCollege(collegeSlug);
   if (!result) notFound();
 
-  const places = await placesService.list({ collegeSlug, sort: 'nearest' });
+  const [places, nearby] = await Promise.all([
+    placesService.list({ collegeSlug, sort: 'nearest' }),
+    // A convenience for the amenity summary: the page still works if it fails.
+    collegesService.nearby(collegeSlug).then(
+      (response) => response.data.categories,
+      () => [],
+    ),
+  ]);
 
   return (
-    <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
       <CollegeDetailView
         college={result.data}
+        nearby={nearby}
         initialPlaces={places.data}
         initialMeta={
           places.meta ?? { page: 1, limit: 20, total: places.data.length, totalPages: 1 }

@@ -40,7 +40,9 @@ interface OpenApiDocument {
 
 const PUBLIC = [
   ['get', '/api/v1/colleges', 'Colleges'],
+  ['get', '/api/v1/colleges/facets', 'Colleges'],
   ['get', '/api/v1/colleges/{idOrSlug}', 'Colleges'],
+  ['get', '/api/v1/colleges/{idOrSlug}/nearby', 'Colleges'],
 ] as const;
 
 /** [method, path, request-body properties, success status] */
@@ -73,7 +75,7 @@ describe('Swagger documentation of the college API (e2e)', () => {
     await app.close();
   });
 
-  it('documents exactly the 2 public and 11 admin college routes', () => {
+  it('documents exactly the 4 public and 11 admin college routes', () => {
     const documented = Object.entries(doc.paths)
       .filter(([path]) => path.includes('/colleges'))
       .flatMap(([path, operations]) =>
@@ -107,9 +109,11 @@ describe('Swagger documentation of the college API (e2e)', () => {
         'lat',
         'limit',
         'lng',
+        'management',
         'page',
         'q',
         'sort',
+        'stream',
       ]);
       expect(parameters.limit?.schema).toMatchObject({
         type: 'integer',

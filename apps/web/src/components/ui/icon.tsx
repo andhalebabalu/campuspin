@@ -51,18 +51,14 @@ const GLYPHS = {
       <path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 2v2M12 2v2" />
     </>
   ),
-  dumbbell: (
-    <path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11M3.5 12h3M17.5 12h3" />
-  ),
+  dumbbell: <path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11M3.5 12h3M17.5 12h3" />,
   medical: (
     <>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 8v8M8 12h8" />
     </>
   ),
-  shirt: (
-    <path d="M9 3 4 5.5 2.5 10l3 1.2V21h13v-9.8l3-1.2L20 5.5 15 3a3 3 0 0 1-6 0Z" />
-  ),
+  shirt: <path d="M9 3 4 5.5 2.5 10l3 1.2V21h13v-9.8l3-1.2L20 5.5 15 3a3 3 0 0 1-6 0Z" />,
   printer: (
     <>
       <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
@@ -95,9 +91,7 @@ const GLYPHS = {
       <path d="M2 20a7 7 0 0 1 14 0M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.5A7 7 0 0 1 22 20" />
     </>
   ),
-  star: (
-    <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9L12 3Z" />
-  ),
+  star: <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9L12 3Z" />,
   shield: (
     <>
       <path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10Z" />
@@ -175,6 +169,58 @@ const GLYPHS = {
   ),
   heart: (
     <path d="M12 20s-8-4.6-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15.4 12 20 12 20Z" />
+  ),
+  bus: (
+    <>
+      <rect x="4" y="3" width="16" height="15" rx="2" />
+      <path d="M4 11h16M8 18v3m8-3v3" />
+      <circle cx="8" cy="14.5" r="1" />
+      <circle cx="16" cy="14.5" r="1" />
+    </>
+  ),
+  auto: (
+    <>
+      <path d="M3 16V9a4 4 0 0 1 4-4h6l5 5v6H3Z" />
+      <path d="M13 5v5h5M3 11h10" />
+      <circle cx="7" cy="17.5" r="2" />
+      <circle cx="17" cy="17.5" r="2" />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+    </>
+  ),
+  link: (
+    <>
+      <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+      <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+    </>
+  ),
+  navigation: <path d="m3 11 18-8-8 18-2-8-8-2Z" />,
+  graduation: (
+    <>
+      <path d="m2 9 10-5 10 5-10 5L2 9Z" />
+      <path d="M6 11v5c3 2 9 2 12 0v-5M22 9v6" />
+    </>
+  ),
+  info: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5M12 8h.01" />
+    </>
+  ),
+  image: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <circle cx="9" cy="10" r="2" />
+      <path d="m21 16-5-5-9 9" />
+    </>
+  ),
+  arrowLeft: <path d="M19 12H5m6-6-6 6 6 6" />,
+  external: (
+    <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
   ),
 } satisfies Record<string, ReactNode>;
 

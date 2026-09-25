@@ -9,6 +9,8 @@ import {
   diffFields,
   metersFrom,
   planLinks,
+  collegeProfile,
+  summarizeNearby,
   planStatusChange,
   planVerificationChange,
   sortCards,
@@ -102,6 +104,9 @@ const card = (over: Partial<CollegeCard> & { id: string; name: string }): Colleg
   verified: false,
   placeCount: 0,
   distanceMeters: null,
+  streams: ['other'],
+  management: null,
+  courses: null,
   ...over,
 });
 
@@ -299,5 +304,80 @@ describe('planLinks', () => {
       expect(again.refreshOverrides).toEqual([]);
       expect(again.remove).toEqual([]);
     }
+  });
+});
+
+describe('summarizeNearby', () => {
+  const link = (meters: number, slug: string, category: string | null) => ({
+    distanceMeters: meters,
+    place: {
+      slug,
+      name: slug.toUpperCase(),
+      category: category
+        ? { slug: category, name: category, icon: null, parentSlug: 'group' }
+        : null,
+    },
+  });
+
+  it('groups by category with count, nearest and farthest, nearest category first', () => {
+    const summary = summarizeNearby([
+      link(900, 'far-bus', 'bus'),
+      link(300, 'mess-a', 'mess'),
+      link(120, 'near-bus', 'bus'),
+      link(700, 'mess-b', 'mess'),
+    ]);
+    expect(summary).toEqual([
+      {
+        slug: 'bus',
+        name: 'bus',
+        icon: null,
+        groupSlug: 'group',
+        count: 2,
+        nearestMeters: 120,
+        farthestMeters: 900,
+        nearest: { slug: 'near-bus', name: 'NEAR-BUS' },
+      },
+      expect.objectContaining({ slug: 'mess', count: 2, nearestMeters: 300, farthestMeters: 700 }),
+    ]);
+  });
+
+  it('skips places without a primary category and returns nothing for no links', () => {
+    expect(summarizeNearby([link(10, 'odd', null)])).toEqual([]);
+    expect(summarizeNearby([])).toEqual([]);
+  });
+});
+
+describe('collegeProfile', () => {
+  it.each([
+    ['Sanjivani College of Engineering, Kopargaon', null, ['engineering']],
+    ['Amrutvahini College of Pharmacy, Sangamner', null, ['pharmacy']],
+    ['New Arts, Commerce & Science College, Parner', null, ['arts-science-commerce']],
+    ['Gokhale Education Society College of Education', null, ['education']],
+    ['C. D. Deshmukh Law College', null, ['law']],
+    [
+      'A. J. M. V. P. S., Institute Of Hotel Management And Catering Technology',
+      null,
+      ['management'],
+    ],
+    ['Shri Dnyaneshwar Mahavidyalaya, Newasa', null, ['arts-science-commerce']],
+    [
+      'Adsul Computer and Management Institute',
+      'Courses: BCA/BBA/BMS.',
+      ['computer', 'management'],
+    ],
+    ['Xavier Institute of Natural Resource', null, ['other']],
+  ] as const)('%s -> %j', (name, description, streams) => {
+    expect(collegeProfile(name, description).streams).toEqual(streams);
+  });
+
+  it('reads the management type and courses the import wrote', () => {
+    expect(collegeProfile('X College', 'Courses: Pharmacy.\nType: Un-Aided.')).toEqual({
+      streams: ['pharmacy'],
+      management: 'unaided',
+      courses: 'Pharmacy',
+    });
+    expect(collegeProfile('Y Arts College', 'Type: Aided.').management).toBe('aided');
+    expect(collegeProfile('Z Arts College', 'Type: Non-Aided.').management).toBe('unaided');
+    expect(collegeProfile('Z Arts College', null).management).toBeNull();
   });
 });
