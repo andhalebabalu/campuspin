@@ -50,7 +50,13 @@ describe('paginationQuerySchema', () => {
 
 describe('listCollegesQuerySchema', () => {
   it('has safe defaults', () => {
-    expect(listCollegesQuerySchema.parse({})).toEqual({ page: 1, limit: 20, sort: 'name' });
+    expect(listCollegesQuerySchema.parse({})).toEqual({
+      page: 1,
+      limit: 20,
+      sort: 'name',
+      stream: [],
+      management: [],
+    });
   });
 
   it('coerces and trims', () => {
@@ -452,13 +458,18 @@ describe('response schemas', () => {
     verified: true,
     placeCount: 14,
     distanceMeters: 850,
+    streams: ['arts-science-commerce'],
+    management: 'aided',
+    courses: null,
   };
 
   it('describe a card, a detail and an admin view', () => {
     expect(collegeCardSchema.safeParse(card).success).toBe(true);
     expect(collegeCardSchema.safeParse({ ...card, distanceMeters: null }).success).toBe(true);
     const rest = Object.fromEntries(
-      Object.entries(card).filter(([key]) => key !== 'distanceMeters'),
+      Object.entries(card).filter(
+        ([key]) => !['distanceMeters', 'streams', 'management', 'courses'].includes(key),
+      ),
     );
     const detail = {
       ...rest,
@@ -545,5 +556,15 @@ describe('documented examples', () => {
         altText: example(addCollegeImageRequestSchema.shape.altText),
       }).success,
     ).toBe(true);
+  });
+});
+
+describe('listCollegesQuerySchema stream and management filters', () => {
+  it('splits comma-separated values and rejects unknown ones', () => {
+    expect(
+      listCollegesQuerySchema.parse({ stream: 'engineering,pharmacy', management: 'aided' }),
+    ).toMatchObject({ stream: ['engineering', 'pharmacy'], management: ['aided'] });
+    expect(listCollegesQuerySchema.safeParse({ stream: 'medicine' }).success).toBe(false);
+    expect(listCollegesQuerySchema.safeParse({ management: 'private' }).success).toBe(false);
   });
 });
