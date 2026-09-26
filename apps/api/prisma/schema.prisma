@@ -269,6 +269,10 @@ model User {
   communityReactions           CommunityReaction[]
   blocking                     UserBlock[]           @relation("UserBlockBlocker")
   blockedBy                    UserBlock[]           @relation("UserBlockBlocked")
+  marketplaceListings          MarketplaceListing[]
+  buyerConversations           Conversation[]        @relation("ConversationBuyer")
+  sellerConversations          Conversation[]        @relation("ConversationSeller")
+  conversationMessages         ConversationMessage[]
   auditLogs                    AuditLog[]
   settings                     UserSettings?
   studentVerifications         StudentVerification[] @relation("StudentVerificationUser")
@@ -448,6 +452,7 @@ model College {
   emailDomains         CollegeEmailDomain[]
   studentVerifications StudentVerification[]
   communityPosts       CommunityPost[]
+  marketplaceListings  MarketplaceListing[]
 
   @@index([status])
   @@index([city, status])
@@ -1311,4 +1316,126 @@ model UserBlock {
   @@id([blockerId, blockedId])
   @@index([blockedId])
   @@map("user_blocks")
+}
+
+enum ListingCategory {
+  BOOKS
+  NOTES
+  ELECTRONICS
+  FURNITURE
+  CYCLES
+  HOSTEL_ESSENTIALS
+  CLOTHING
+  SPORTS
+  STATIONERY
+  OTHER
+}
+
+enum ListingCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+}
+
+enum ListingVisibility {
+  MY_COLLEGE
+  NEARBY_COLLEGES
+  CITY
+}
+
+// HIDDEN is a moderator's reversible hold; REMOVED is final. EXPIRED is also derived from
+// expiresAt when reading, so a listing never shows past its end date even before a sweep.
+enum ListingStatus {
+  ACTIVE
+  RESERVED
+  SOLD
+  EXPIRED
+  HIDDEN
+  REMOVED
+}
+
+// Something a verified student sells. collegeId is the seller's verified college when listed (never
+// taken from the request); its city and coordinates decide who sees the listing.
+model MarketplaceListing {
+  id             String            @id @default(uuid(7)) @db.Char(36)
+  sellerId       String            @db.Char(36)
+  collegeId      String            @db.Char(36)
+  title          String            @db.VarChar(120)
+  description    String            @db.Text
+  category       ListingCategory
+  condition      ListingCondition
+  // Whole rupees; 0 = free.
+  price          Int
+  negotiable     Boolean           @default(false)
+  quantity       Int               @default(1)
+  // A pickup point in words ("Main gate"), never an address or a phone number.
+  location       String?           @db.VarChar(120)
+  visibility     ListingVisibility @default(NEARBY_COLLEGES)
+  status         ListingStatus     @default(ACTIVE)
+  moderationNote String?           @db.VarChar(500)
+  expiresAt      DateTime
+  soldAt         DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  seller        User                      @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  college       College                   @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  images        MarketplaceListingImage[]
+  conversations Conversation[]
+
+  @@index([status, collegeId, expiresAt])
+  @@index([sellerId, status])
+  @@index([status, price])
+  @@map("marketplace_listings")
+}
+
+// Photos of a listing: URLs of files stored by the uploads endpoint, in display order.
+model MarketplaceListingImage {
+  id        String   @id @default(uuid(7)) @db.Char(36)
+  listingId String   @db.Char(36)
+  imageUrl  String   @db.VarChar(500)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  listing MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId, sortOrder])
+  @@map("marketplace_listing_images")
+}
+
+// One buyer talking to one seller about one listing.
+model Conversation {
+  id               String    @id @default(uuid(7)) @db.Char(36)
+  listingId        String    @db.Char(36)
+  buyerId          String    @db.Char(36)
+  sellerId         String    @db.Char(36)
+  lastMessageAt    DateTime
+  buyerLastReadAt  DateTime?
+  sellerLastReadAt DateTime?
+  createdAt        DateTime  @default(now())
+
+  listing  MarketplaceListing    @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer    User                  @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller   User                  @relation("ConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  messages ConversationMessage[]
+
+  @@unique([listingId, buyerId])
+  @@index([buyerId, lastMessageAt])
+  @@index([sellerId, lastMessageAt])
+  @@map("conversations")
+}
+
+model ConversationMessage {
+  id             String   @id @default(uuid(7)) @db.Char(36)
+  conversationId String   @db.Char(36)
+  senderId       String   @db.Char(36)
+  body           String   @db.Text
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, id])
+  @@map("conversation_messages")
 }

@@ -25,6 +25,7 @@ import { ReviewsModule } from './modules/reviews/reviews.module.js';
 import { StudentsModule } from './modules/students/students.module.js';
 import { SafetyModule } from './modules/safety/safety.module.js';
 import { CommunityModule } from './modules/community/community.module.js';
+import { MarketplaceModule } from './modules/marketplace/marketplace.module.js';
 import { SubmissionsModule } from './modules/submissions/submissions.module.js';
 import { UploadsModule } from './modules/uploads/uploads.module.js';
 
@@ -54,6 +55,7 @@ import { UploadsModule } from './modules/uploads/uploads.module.js';
     StudentsModule,
     SafetyModule,
     CommunityModule,
+    MarketplaceModule,
     BusinessModule,
     UploadsModule,
     AdminModule,

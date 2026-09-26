@@ -7,6 +7,7 @@ export * from './colleges.js';
 export * from './community.js';
 export * from './errors.js';
 export * from './health.js';
+export * from './marketplace.js';
 export * from './members.js';
 export * from './pagination.js';
 export * from './places.js';

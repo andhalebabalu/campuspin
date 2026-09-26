@@ -15,6 +15,9 @@ export const UPLOADS_ROUTE = '/uploads';
 export abstract class ImageStorage {
   /** Stores already-validated image bytes and returns the URL they are publicly served at. */
   abstract save(bytes: Buffer, type: UploadImageType): Promise<string>;
+
+  /** Whether a URL points at a file this storage saved (so a form cannot smuggle in outside URLs). */
+  abstract owns(url: string): boolean;
 }
 
 /**
@@ -37,4 +40,13 @@ export class LocalDiskImageStorage extends ImageStorage {
     await writeFile(path.join(this.directory, name), bytes, { flag: 'wx' });
     return `${this.apiBaseUrl}${UPLOADS_ROUTE}/${name}`;
   }
+
+  owns(url: string): boolean {
+    const prefix = `${this.apiBaseUrl}${UPLOADS_ROUTE}/`;
+    return url.startsWith(prefix) && STORED_NAME.test(url.slice(prefix.length));
+  }
 }
+
+/** `<uuid>.<ext>`, exactly as `save` names files. */
+const STORED_NAME =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$/;

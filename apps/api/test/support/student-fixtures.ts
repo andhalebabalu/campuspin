@@ -40,14 +40,18 @@ export async function makeCollege(
   ctx: AuthTestContext,
   admin: Persona,
   label: string,
-  at: { latitude: number; longitude: number } = { latitude: 19.09, longitude: 74.74 },
+  at: { latitude: number; longitude: number; city?: string } = {
+    latitude: 19.09,
+    longitude: 74.74,
+  },
 ): Promise<string> {
   const response = await as(admin, ctx.post(`${API}/admin/colleges`)).send({
     name: `E2E ${label} College ${randomUUID().slice(0, 8)}`,
     address: 'Test Road, Testville',
-    city: 'Testville',
     state: 'Maharashtra',
-    ...at,
+    latitude: at.latitude,
+    longitude: at.longitude,
+    city: at.city ?? 'Testville',
     status: 'ACTIVE',
   });
   if (response.status !== 201) throw new Error(JSON.stringify(response.body));

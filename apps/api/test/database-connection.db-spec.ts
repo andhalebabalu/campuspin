@@ -52,6 +52,10 @@ const EXPECTED_TABLES = [
   'community_comments',
   'community_reactions',
   'user_blocks',
+  'marketplace_listings',
+  'marketplace_listing_images',
+  'conversations',
+  'conversation_messages',
 ];
 
 describe('Real MySQL database: connection and migration', () => {
@@ -110,7 +114,7 @@ describe('Real MySQL database: connection and migration', () => {
       SELECT COUNT(*) AS n FROM information_schema.CHECK_CONSTRAINTS
       WHERE CONSTRAINT_SCHEMA = DATABASE() AND CONSTRAINT_NAME LIKE 'chk\_%'`;
 
-    expect(Number(row?.n)).toBe(29);
+    expect(Number(row?.n)).toBe(32);
   });
 
   it('uses utf8mb4 so Marathi/Devanagari names can be stored', async () => {

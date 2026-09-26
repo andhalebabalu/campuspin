@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
 import { BRAND } from '@/constants/brand';
+import { isStaff } from '@/features/admin/lib/access';
 import { useSession } from '@/lib/auth/session-context';
+import { MessagesLink } from './messages-link';
 import { NotificationBell } from './notification-bell';
 
 const NAV_LINKS = [
@@ -28,6 +30,7 @@ function AccountActions({ onNavigate }: { onNavigate?: () => void }) {
   if (status === 'authenticated' && user) {
     return (
       <div className="flex items-center gap-3">
+        {user.student.verified && <MessagesLink onNavigate={onNavigate} />}
         <NotificationBell onNavigate={onNavigate} />
         <Link
           href={ROUTES.me}
@@ -41,6 +44,15 @@ function AccountActions({ onNavigate }: { onNavigate?: () => void }) {
             </span>
           )}
         </Link>
+        {isStaff(user) && (
+          <Link
+            href={ROUTES.admin}
+            onClick={onNavigate}
+            className="inline-flex h-9 items-center justify-center rounded-full bg-primary-800 px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-900"
+          >
+            Admin
+          </Link>
+        )}
         {user.roles.includes('BUSINESS_OWNER') && (
           <Link
             href={ROUTES.dashboard}
