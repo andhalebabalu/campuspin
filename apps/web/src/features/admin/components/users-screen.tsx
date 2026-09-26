@@ -40,13 +40,15 @@ const STAFF: ReadonlySet<RoleKey> = new Set(['ADMIN', 'SUPER_ADMIN']);
 export function UsersScreen({
   initialStatus,
   initialRole,
+  initialQuery = '',
 }: {
   initialStatus: UserStatus | '';
   initialRole: RoleKey | '';
+  initialQuery?: string;
 }) {
   const { user: me } = useSession();
-  const [qInput, setQInput] = useState('');
-  const [q, setQ] = useState('');
+  const [qInput, setQInput] = useState(initialQuery);
+  const [q, setQ] = useState(initialQuery);
   const [status, setStatus] = useState<UserStatus | ''>(initialStatus);
   const [role, setRole] = useState<RoleKey | ''>(initialRole);
   const [page, setPage] = useState(1);

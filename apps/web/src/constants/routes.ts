@@ -19,6 +19,7 @@ export const ROUTES = {
   meVerification: '/me/verification',
   meSettings: '/me/settings',
   meNotifications: '/me/notifications',
+  feed: '/feed',
   community: '/community',
   communityPost: (id: string) => `/community/posts/${id}`,
   communityNew: '/community/new',

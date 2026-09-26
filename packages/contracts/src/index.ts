@@ -9,6 +9,7 @@ export * from './errors.js';
 export * from './health.js';
 export * from './marketplace.js';
 export * from './members.js';
+export * from './moderation.js';
 export * from './pagination.js';
 export * from './places.js';
 export * from './rbac.js';

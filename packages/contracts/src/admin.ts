@@ -25,12 +25,17 @@ export const adminDashboardSchema = z.object({
     suspendedUsers: z.number().int(),
     /** ID-photo student verifications waiting for a decision. */
     pendingStudentVerifications: z.number().int(),
+    /** Member reports on posts, comments, listings and members still open. */
+    openReports: z.number().int(),
   }),
   totals: z.object({
     users: z.number().int(),
     students: z.number().int(),
     /** Accounts holding a current Verified Student badge. */
     verifiedStudents: z.number().int(),
+    /** Marketplace listings currently up (active or reserved, not expired). */
+    activeListings: z.number().int(),
+    communityPostsLast7Days: z.number().int(),
     businesses: z.number().int(),
     livePlaces: z.number().int(),
     activeColleges: z.number().int(),

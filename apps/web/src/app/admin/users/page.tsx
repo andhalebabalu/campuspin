@@ -10,11 +10,12 @@ export default async function AdminUsersPage({
 }: {
   searchParams: AdminSearchParams;
 }) {
-  const { status, role } = await searchParams;
+  const { status, role, q } = await searchParams;
   return (
     <UsersScreen
       initialStatus={pickParam(USER_STATUSES, status)}
       initialRole={pickParam(ROLE_KEYS, role)}
+      initialQuery={typeof q === 'string' ? q.slice(0, 100) : ''}
     />
   );
 }

@@ -240,6 +240,9 @@ Open `http://localhost:3000`. The **System status** card calls the API health en
 | `AUTH_RATE_LIMIT` / `AUTH_RATE_LIMIT_TTL_SECONDS` | `20` / `60` | Stricter per-IP limit on the sensitive auth routes |
 | `EMAIL_PROVIDER` | `console` | `console` prints emails (with their links) in the API log: **development only**; `memory` is for automated tests |
 | `EMAIL_FROM` / `APP_NAME` | `CampusPin <no-reply@localhost.test>` / `CampusPin` | Sender and product name used in emails |
+| `PRIVATE_UPLOAD_DIR` | `private-uploads` | Where student ID photos are stored. Never served; must not be inside `UPLOAD_DIR` |
+| `STUDENT_VERIFICATION_VALID_DAYS` | `365` | How long a student verification lasts |
+| `MARKETPLACE_NEARBY_KM` | `10` | The radius around a college that counts as "nearby" in the marketplace |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | `admin@localhost.test` / `ChangeMe123!` | Optional. The **demo** admin created by `npm run db:seed`. Development only; the seed refuses to create it in production |
 
 The API validates these at startup and stops with a readable message if something is missing or malformed.
@@ -651,6 +654,94 @@ curl -X POST http://localhost:3001/api/v1/places/demo-boys-pg-e/reviews -H "Auth
 curl "http://localhost:3001/api/v1/places?sort=rating&minRating=4"
 ```
 
+## Verified students, community and marketplace
+
+There are three levels of access: **public** (anyone), **account** (signed in) and **verified student** (signed in and verified for one college). `StudentAccessService` always reads verified status fresh from the database. It never comes from the token or the request. The college of every post and listing is copied from the member's verified college, so a request can never claim another college.
+
+**Student verification** (`/me/student-verification`)
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/me/student-verification` | Returns my state (`UNVERIFIED`, `PENDING`, `VERIFIED` or `EXPIRED`), my badge, the pending request (college email masked) and the last decision |
+| POST | `/me/student-verification/email` | Sends a 6-digit code to a college email. The domain must be one of the college's configured domains (or a subdomain of one). One mailbox verifies one account |
+| POST | `/me/student-verification/email/confirm` | Confirms the code (valid for 15 minutes, 5 attempts) |
+| POST | `/me/student-verification/document` | Uploads an ID photo (multipart; JPEG, PNG or WebP). It is stored in **private** storage (`PRIVATE_UPLOAD_DIR`, never served), reviewed by staff, and deleted after the decision |
+| DELETE | `/me/student-verification` | Withdraws a pending request |
+
+Staff with `verifications.review` work from `/admin/student-verifications`:
+
+- List requests.
+- View an ID photo at `/:id/document`. It is streamed with `Cache-Control: no-store`, and each view is audited as `STUDENT_DOCUMENT_VIEWED`.
+- `approve`, `reject` (reason required) or `request-reverification` (removes the badge).
+
+College email domains are managed at `/admin/colleges/:collegeId/email-domains`. A verification lasts `STUDENT_VERIFICATION_VALID_DAYS`.
+
+**Privacy.** Members see each other only as `First L.` with a "Verified Student · College" badge (`MemberSummary`). Email, phone, date of birth, ID numbers and ID photos are never returned to other members.
+
+`GET/PATCH /me/profile` and `/me/settings` hold the profile and these switches:
+
+- who sees my course and year (`PUBLIC`, `STUDENTS` or `PRIVATE`);
+- whether my community activity shows on my profile;
+- whether buyers may message me;
+- one switch per notification category.
+
+`GET /members/:id` returns another member's profile and follows their choices.
+
+**Notifications** (`/me/notifications`, `unread-count`, `read-all`, `:id/read`) use the existing `notifications` table. A notice is written only if its category is switched on; account notices are always sent. Events and jobs posted in a community notify that college's verified students, capped at 1,000 per post. Marketplace chat sends one notification per unread stretch.
+
+**Community** (`/community/posts`)
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| GET | `/community/posts` | anyone | Cursor-paginated feed (`cursor`, `limit`). `scope=college` shows my college (verified students only). `scope=public` shows public posts from every college, or one with `collegeId`. Without `scope`: my college if I am verified, otherwise public. Filters: `category`, `authorId` |
+| GET | `/community/posts/:id`, `/:id/comments` | anyone | A college-only post returns `404` outside its college |
+| POST / PATCH / DELETE | `/community/posts[/:id]` | verified students (edit and delete: author only) | Categories: `DISCUSSION`, `QUESTION`, `ANNOUNCEMENT`, `EVENT` (start time required), `STUDY`, `JOB`, `LOST_FOUND`, `STUDENT_UPDATE`. Visibility: `COLLEGE_ONLY` (default) or `PUBLIC`. Limit: 10 posts an hour |
+| POST | `/community/posts/:id/comments` | verified students who can see the post | Comments, or replies one level deep with `parentId` |
+| PUT / DELETE | `/community/posts/:id/reaction` | verified students | One reaction per member: `LIKE`, `HELPFUL` or `CELEBRATE` |
+| POST | `/community/posts/:id/report`, `/community/comments/:id/report` | signed in | Reasons: `SPAM`, `HARASSMENT`, `INAPPROPRIATE`, `WRONG_INFO`, `OTHER`. Reporting again returns the open report |
+| GET / POST / DELETE | `/me/blocks[/:userId]` | signed in | Blocks work both ways: posts, comments, listings and messages disappear for both members |
+
+**Marketplace** (verified students only)
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/marketplace/listings` | Browse listings. `scope`: `my_college`, `nearby` (default) or `city`. Filters: `q`, `category`, `condition`, `minPrice`, `maxPrice`. `sort`: `newest`, `price_asc` or `price_desc`. Each card has `distanceKm` from my college |
+| GET / POST / PATCH / DELETE | `/marketplace/listings[/:id]` | A listing has a title, description, category, condition, price in whole rupees (0 = free), negotiable flag, quantity, pickup point and up to 6 photos. Photos must be URLs from `POST /uploads/images`. Visibility: `MY_COLLEGE`, `NEARBY_COLLEGES` (default) or `CITY`. Limit: 20 listings a day |
+| POST | `/marketplace/listings/:id/actions` | Seller actions: `reserve`, `unreserve`, `sold`, `renew`. Listings expire after 30 days unless renewed |
+| POST | `/marketplace/listings/:id/report` | Reasons: `SCAM`, `FAKE_LISTING`, `PROHIBITED_ITEM`, `SPAM`, `HARASSMENT`, `WRONG_INFO`, `OTHER` |
+| POST | `/marketplace/listings/:id/conversations` | Messages the seller. There is one conversation per buyer per listing |
+| GET | `/me/listings`, `/me/conversations`, `/me/conversations/unread-count` | My listings and conversations |
+| GET / POST | `/me/conversations/:id/messages` | Messages, newest first, cursor-paginated. Only the buyer and the seller can read or write them |
+| POST | `/me/conversations/:id/read`, `/:id/report` | Marks a conversation read; reports the other member |
+
+Who sees a listing:
+
+- Students of the seller's college always see it.
+- `NEARBY_COLLEGES` adds every college within `MARKETPLACE_NEARBY_KM` of the seller's college. The distance is the Haversine distance between the two colleges' coordinates, so the rule works the same in both directions.
+- `CITY` adds the rest of the college's city.
+
+Phone numbers are never shown. Buyers and sellers talk in the app.
+
+**Moderation** (staff)
+
+| Method | Path | Permission | What it does |
+|---|---|---|---|
+| GET | `/admin/reports` | any staff role (each sees only the reports they may act on) | Reports on posts, comments, listings and members, each with a summary of the reported content |
+| POST | `/admin/reports/:id/resolve` | as above | Applies `action` (`NONE`, `HIDE` or `REMOVE`) to the content with a note, closes every open report on it, and notifies the author |
+| POST | `/admin/reports/:id/dismiss` | as above | Closes one report and leaves the content as it is |
+| GET / POST | `/admin/community/posts[/:id/hide\|restore\|remove]`, `/admin/community/comments/:id/remove` | `community.moderate` | Posts from every college. Filter: `reported=true` |
+| GET / POST | `/admin/marketplace/listings[/:id/hide\|restore\|remove]` | `marketplace.moderate` | All listings. Filter: `reported=true` |
+
+Hiding can be undone, and the author sees the reason. Removing is final. Every action is audited (`COMMUNITY_POST_HIDDEN`, `LISTING_REMOVED`, `REPORT_RESOLVED`, …). The three new permissions go to MODERATOR, and so to ADMIN and SUPER_ADMIN. Run `npm run db:seed` to add them to an existing database.
+
+**Web pages:**
+
+- `/me`: profile, verification, privacy and notifications.
+- `/feed`: a verified student's home, with upcoming events, college posts and listings nearby.
+- Community: `/community`, `/community/new`, `/community/posts/:id`, `/members/:id`.
+- Marketplace: `/marketplace`, `/marketplace/new`, `/marketplace/:id`, `/marketplace/mine`, `/messages`.
+- Admin panel at `/admin`: verifications, reports, community and marketplace, plus the earlier screens.
+
 ## Frontend foundation
 
 Phase 5 built the first slice of `apps/web`, ahead of the master spec's backend-first order (the user asked for this explicitly), and Phases 6, 7, 8 and 9 continued it alongside the place directory, place search, student submissions and reviews. It is a **foundation**, not the final product design from [05](docs/05-frontend.md)/[06](docs/06-design-system.md): a working app shell, a small hand-rolled set of design-system primitives on the real tokens, and real pages wired to the APIs that already exist. The marketing home page and the rest of the ~60-screen inventory arrive with their own phases.
@@ -759,6 +850,7 @@ npm run typecheck && npm run lint
 | Phase 7 | 10 (Places-scoped), 17–18 (slice) | Full-text place search (MySQL `FULLTEXT`, relevance ranking), price/verified filters; frontend: a working `/search` page | ✅ done |
 | Phase 8 | 11 (narrowed), 17–19 (slice) | Student submissions + duplicate detection (name/geo/category/address/phone scoring), staff approve/reject/mark-duplicate; frontend: a working "Suggest a place" flow | ✅ done |
 | Phase 9 | 14 (narrowed), 10 (rating), 17–19 (slice) | Reviews: one per student per place, dimension ratings, edit/withdraw, staff hide/restore/remove, a concurrency-safe place rating; search gains `minRating` and "top rated"; frontend: a Reviews section on the place page | ✅ done |
+| Phase 11 | 15–16 (reports), student community | Verified students (college email or reviewed ID photo), privacy settings, notifications, college communities, a cross-college marketplace with chat, reports, blocks and moderation, and the admin panel pages | ✅ done |
 | next | — | 10's remaining scope (cross-entity `/search`, autocomplete, analytics), 11's (contributions, request-changes loop, abuse quotas) and 14's (review photos, owner replies) fold into whichever later phase needs them | |
 | 12–16 | Business owner, claims, reports, saved places | |
 | 17–21 | Public website, student discovery, business + admin dashboards (foundation slice delivered early) | |

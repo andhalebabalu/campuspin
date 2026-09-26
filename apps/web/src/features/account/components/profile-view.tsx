@@ -53,6 +53,12 @@ export function ProfileView() {
 
   const links: Array<{ href: string; label: string; hint: string; icon: IconName }> = [
     {
+      href: ROUTES.feed,
+      label: 'My feed',
+      hint: 'Events, posts and listings near you',
+      icon: 'grid',
+    },
+    {
       href: ROUTES.meVerification,
       label: 'Student verification',
       hint: profile.student.verified ? 'Verified' : 'Get your Verified Student badge',

@@ -1,5 +1,8 @@
 import {
   adminAmenitySchema,
+  adminCommunityPostSchema,
+  adminListingSchema,
+  adminReportSchema,
   adminBusinessSchema,
   adminCategoryGroupSchema,
   adminCategorySchema,
@@ -16,6 +19,9 @@ import {
   type AddCollegeImageRequest,
   type AddPlaceImageRequest,
   type AdminListBusinessesQuery,
+  type AdminListCommunityPostsQuery,
+  type AdminListListingsQuery,
+  type AdminListReportsQuery,
   type AdminListCollegesQuery,
   type AdminListPlacesQuery,
   type AdminListReviewsQuery,
@@ -28,6 +34,7 @@ import {
   type CreateCategoryRequest,
   type CreateCollegeRequest,
   type CreatePlaceRequest,
+  type ReportAction,
   type RoleKey,
   type UpdateAmenityRequest,
   type UpdateCategoryRequest,
@@ -285,5 +292,45 @@ export const adminService = {
   removeCollegeEmailDomain: (collegeId: string, domainId: string) =>
     apiClient.delete(`/admin/colleges/${id(collegeId)}/email-domains/${id(domainId)}`, {
       schema: z.array(collegeEmailDomainSchema),
+    }),
+
+  // ── Reports and moderation ─────────────────────────────────────────────────────────────────────
+  reports: (query: Query<AdminListReportsQuery>, signal?: AbortSignal) =>
+    apiClient.get('/admin/reports', {
+      query: { ...query },
+      schema: z.array(adminReportSchema),
+      signal,
+    }),
+  resolveReport: (reportId: string, action: ReportAction, note: string) =>
+    apiClient.post(`/admin/reports/${id(reportId)}/resolve`, {
+      body: { action, note },
+      schema: adminReportSchema,
+    }),
+  dismissReport: (reportId: string, note?: string) =>
+    apiClient.post(`/admin/reports/${id(reportId)}/dismiss`, {
+      body: note ? { note } : {},
+      schema: adminReportSchema,
+    }),
+  communityPosts: (query: Query<AdminListCommunityPostsQuery>, signal?: AbortSignal) =>
+    apiClient.get('/admin/community/posts', {
+      query: { ...query },
+      schema: z.array(adminCommunityPostSchema),
+      signal,
+    }),
+  communityPostAction: (postId: string, action: 'hide' | 'restore' | 'remove', reason?: string) =>
+    apiClient.post(`/admin/community/posts/${id(postId)}/${action}`, {
+      body: withReason(reason),
+      schema: adminCommunityPostSchema,
+    }),
+  marketplaceListings: (query: Query<AdminListListingsQuery>, signal?: AbortSignal) =>
+    apiClient.get('/admin/marketplace/listings', {
+      query: { ...query },
+      schema: z.array(adminListingSchema),
+      signal,
+    }),
+  listingAction: (listingId: string, action: 'hide' | 'restore' | 'remove', reason?: string) =>
+    apiClient.post(`/admin/marketplace/listings/${id(listingId)}/${action}`, {
+      body: withReason(reason),
+      schema: adminListingSchema,
     }),
 };

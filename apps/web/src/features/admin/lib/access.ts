@@ -33,6 +33,19 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
     icon: 'graduation',
     permission: 'verifications.review',
   },
+  { href: ROUTES.adminReports, label: 'Reports', icon: 'shield' },
+  {
+    href: ROUTES.adminCommunity,
+    label: 'Community',
+    icon: 'chats',
+    permission: 'community.moderate',
+  },
+  {
+    href: ROUTES.adminMarketplace,
+    label: 'Marketplace',
+    icon: 'tag',
+    permission: 'marketplace.moderate',
+  },
   {
     href: ROUTES.adminSubmissions,
     label: 'Submissions',
@@ -46,6 +59,12 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
     label: 'Colleges',
     icon: 'building',
     permission: 'colleges.manage',
+  },
+  {
+    href: ROUTES.adminCategories,
+    label: 'Categories',
+    icon: 'tag',
+    permission: 'categories.manage',
   },
   { href: ROUTES.adminUsers, label: 'Users', icon: 'users', permission: 'users.read' },
   {

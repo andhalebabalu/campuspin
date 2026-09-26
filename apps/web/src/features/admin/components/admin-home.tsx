@@ -58,6 +58,14 @@ export function AdminHome() {
   const queues = (
     [
       {
+        label: 'Open reports',
+        detail: 'Flagged posts, comments, listings and members',
+        count: data.queues.openReports,
+        href: `${ROUTES.adminReports}?status=PENDING`,
+        icon: 'shield',
+        permission: 'community.moderate' as const,
+      },
+      {
         label: 'Student verifications',
         detail: 'ID photos waiting for a decision',
         count: data.queues.pendingStudentVerifications,
@@ -104,6 +112,8 @@ export function AdminHome() {
     ['Users', data.totals.users],
     ['Students', data.totals.students],
     ['Verified students', data.totals.verifiedStudents],
+    ['Active listings', data.totals.activeListings],
+    ['Community posts (7 days)', data.totals.communityPostsLast7Days],
     ['Businesses', data.totals.businesses],
     ['Live places', data.totals.livePlaces],
     ['Active colleges', data.totals.activeColleges],
