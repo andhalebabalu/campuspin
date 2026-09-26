@@ -532,7 +532,7 @@ function NewCategoryForm({
         aria-label={placeholder}
         className={INPUT}
       />
-      <Button type="submit" size="sm" variant="secondary">
+      <Button type="submit" size="sm" variant="secondary" className="shrink-0 whitespace-nowrap">
         + Add
       </Button>
     </form>

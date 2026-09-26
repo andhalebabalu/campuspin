@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { FormAlert } from '@/components/ui/form-alert';
 import { Input } from '@/components/ui/input';
 import { ROUTES } from '@/constants/routes';
+import { isStaff } from '@/features/admin/lib/access';
 import { flattenZodErrors } from '@/lib/forms/errors';
 import { useSession } from '@/lib/auth/session-context';
 
@@ -33,6 +34,7 @@ function safeNext(next: string | undefined): string | null {
 
 /** Where to land after signing in when no `next` was given. */
 function homeFor(roles: readonly RoleKey[]): string {
+  if (isStaff({ roles: [...roles] })) return ROUTES.admin;
   return roles.includes('BUSINESS_OWNER') ? ROUTES.dashboard : ROUTES.home;
 }
 
