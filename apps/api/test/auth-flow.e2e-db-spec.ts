@@ -289,6 +289,8 @@ describe('Authentication flow (e2e, real database)', () => {
         emailVerified: true,
         roles: ['STUDENT'],
         permissions: ['categories.read', 'colleges.read', 'places.read'],
+        college: null,
+        student: { verified: false, college: null, verifiedUntil: null },
       });
       expect(JSON.stringify(response.body)).not.toMatch(/passwordHash|argon2/i);
 

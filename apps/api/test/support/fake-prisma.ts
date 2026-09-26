@@ -94,7 +94,13 @@ export class FakeTable {
 class UserTable extends FakeTable {
   constructor(private readonly roles: FakeTable) {
     super({
-      defaults: () => ({ status: 'ACTIVE', emailVerifiedAt: null, lastLoginAt: null, roleIds: [] }),
+      defaults: () => ({
+        status: 'ACTIVE',
+        emailVerifiedAt: null,
+        lastLoginAt: null,
+        roleIds: [],
+        studentVerifiedUntil: null,
+      }),
       unique: ['email'],
     });
   }
@@ -110,6 +116,9 @@ class UserTable extends FakeTable {
     const roleIds = row.roleIds as string[];
     return {
       ...row,
+      // No colleges in the fake: a member here is never a verified student.
+      college: null,
+      verifiedCollege: null,
       userRoles: roleIds.map((id) => ({
         role: { key: this.roles.rows.find((role) => role.id === id)?.key },
       })),

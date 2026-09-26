@@ -76,3 +76,17 @@ export const apiClient = createApiClient({
   defaultHeaders: DEFAULT_HEADERS,
   getAccessToken: currentAccessToken,
 });
+
+/**
+ * A private file (such as a student's ID photo) as a blob. It needs the bearer token, so it cannot be
+ * an `<img src>`; the JSON client does not handle binary bodies.
+ */
+export async function fetchPrivateBlob(path: string): Promise<Blob> {
+  const token = await currentAccessToken();
+  const response = await fetch(`${env.NEXT_PUBLIC_API_URL}${path}`, {
+    headers: { ...DEFAULT_HEADERS, ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    cache: 'no-store',
+  });
+  if (!response.ok) throw new Error('Could not load the file.');
+  return response.blob();
+}

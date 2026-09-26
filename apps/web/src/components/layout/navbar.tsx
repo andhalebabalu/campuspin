@@ -8,11 +8,13 @@ import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
 import { BRAND } from '@/constants/brand';
 import { useSession } from '@/lib/auth/session-context';
+import { NotificationBell } from './notification-bell';
 
 const NAV_LINKS = [
   { href: ROUTES.search, label: 'Discover' },
   { href: ROUTES.colleges, label: 'Colleges' },
-  { href: `${ROUTES.home}#how-it-works`, label: 'How it works' },
+  { href: ROUTES.community, label: 'Community' },
+  { href: ROUTES.marketplace, label: 'Marketplace' },
   { href: `${ROUTES.home}#for-businesses`, label: 'For businesses' },
   { href: ROUTES.suggestPlace, label: 'Suggest a place' },
 ];
@@ -26,7 +28,19 @@ function AccountActions({ onNavigate }: { onNavigate?: () => void }) {
   if (status === 'authenticated' && user) {
     return (
       <div className="flex items-center gap-3">
-        <span className="text-sm text-body">Hi, {user.name.split(' ')[0]}</span>
+        <NotificationBell onNavigate={onNavigate} />
+        <Link
+          href={ROUTES.me}
+          onClick={onNavigate}
+          className="flex items-center gap-1.5 text-sm text-body hover:text-ink"
+        >
+          Hi, {user.name.split(' ')[0]}
+          {user.student.verified && (
+            <span title="Verified Student" className="text-success-700">
+              <Icon name="graduation" className="size-4" />
+            </span>
+          )}
+        </Link>
         {user.roles.includes('BUSINESS_OWNER') && (
           <Link
             href={ROUTES.dashboard}

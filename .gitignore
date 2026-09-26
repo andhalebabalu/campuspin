@@ -19,6 +19,7 @@ apps/api/src/generated/
 
 # Uploaded files in local development (see storage abstraction, Phase 5+)
 apps/api/uploads/
+apps/api/private-uploads/
 
 # Logs
 *.log

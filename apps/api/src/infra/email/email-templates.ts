@@ -88,3 +88,28 @@ export function renderPasswordResetEmail(input: {
       'If you did not ask for this, you can ignore this email; your password stays the same.',
   });
 }
+
+/** The one-time code that proves a student can read mail at a college address. */
+export function renderStudentCodeEmail(input: {
+  appName: string;
+  name: string;
+  code: string;
+  collegeName: string;
+  expiresInSeconds: number;
+}): RenderedEmail {
+  const expires = describeDuration(input.expiresInSeconds);
+  const subject = `${input.code} is your ${input.appName} student verification code`;
+  const text =
+    `Hi ${input.name},\n\nYour code to verify that you study at ${input.collegeName} is:\n\n` +
+    `${input.code}\n\nIt expires in ${expires}. Enter it on ${input.appName} to get your Verified ` +
+    `Student badge.\n\nIf you did not ask for this, ignore this email: nothing changes.\n\n- The ${input.appName} team`;
+  const html =
+    `<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;color:#1f2937">` +
+    `<p>Hi ${escapeHtml(input.name)},</p>` +
+    `<p>Your code to verify that you study at <strong>${escapeHtml(input.collegeName)}</strong> is:</p>` +
+    `<p style="font-size:28px;font-weight:bold;letter-spacing:6px">${escapeHtml(input.code)}</p>` +
+    `<p>It expires in ${escapeHtml(expires)}.</p>` +
+    `<p style="color:#6b7280">If you did not ask for this, ignore this email: nothing changes.</p>` +
+    `<p>- The ${escapeHtml(input.appName)} team</p></div>`;
+  return { subject, text, html };
+}

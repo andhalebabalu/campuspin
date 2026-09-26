@@ -16,8 +16,10 @@ export class AdminDashboardService {
       hiddenReviews,
       unverifiedBusinesses,
       suspendedUsers,
+      pendingStudentVerifications,
       users,
       students,
+      verifiedStudents,
       businesses,
       livePlaces,
       activeColleges,
@@ -30,8 +32,12 @@ export class AdminDashboardService {
         where: { status: 'ACTIVE', verificationStatus: { not: 'VERIFIED' } },
       }),
       this.prisma.user.count({ where: { status: 'SUSPENDED' } }),
+      this.prisma.studentVerification.count({ where: { status: 'PENDING', method: 'DOCUMENT' } }),
       this.prisma.user.count(),
       this.prisma.user.count({ where: { userRoles: { some: { role: { key: 'STUDENT' } } } } }),
+      this.prisma.user.count({
+        where: { verifiedCollegeId: { not: null }, studentVerifiedUntil: { gt: new Date() } },
+      }),
       this.prisma.businessProfile.count({ where: { status: 'ACTIVE' } }),
       this.prisma.place.count({ where: { status: 'ACTIVE' } }),
       this.prisma.college.count({ where: { status: 'ACTIVE' } }),
@@ -39,10 +45,17 @@ export class AdminDashboardService {
       this.prisma.lead.count({ where: { createdAt: { gte: weekAgo } } }),
     ]);
     return {
-      queues: { pendingSubmissions, hiddenReviews, unverifiedBusinesses, suspendedUsers },
+      queues: {
+        pendingSubmissions,
+        hiddenReviews,
+        unverifiedBusinesses,
+        suspendedUsers,
+        pendingStudentVerifications,
+      },
       totals: {
         users,
         students,
+        verifiedStudents,
         businesses,
         livePlaces,
         activeColleges,

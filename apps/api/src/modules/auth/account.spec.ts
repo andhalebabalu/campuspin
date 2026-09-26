@@ -7,6 +7,9 @@ const account = (overrides: Partial<Parameters<typeof toAuthUser>[0]> = {}) => (
   status: 'ACTIVE' as const,
   emailVerifiedAt: new Date(),
   userRoles: [{ role: { key: 'STUDENT' } }],
+  college: null,
+  verifiedCollege: null,
+  studentVerifiedUntil: null,
   ...overrides,
 });
 
@@ -40,6 +43,8 @@ describe('toAuthUser', () => {
       emailVerified: true,
       roles: ['STUDENT'],
       permissions: ['places.read'],
+      college: null,
+      student: { verified: false, college: null, verifiedUntil: null },
     });
     expect(toAuthUser(account({ emailVerifiedAt: null }), []).emailVerified).toBe(false);
   });
@@ -48,14 +53,36 @@ describe('toAuthUser', () => {
     const risky = { ...account(), passwordHash: '$argon2id$secret', internal: 'x' };
     const result = toAuthUser(risky, []);
     expect(Object.keys(result).sort()).toEqual([
+      'college',
       'email',
       'emailVerified',
       'id',
       'name',
       'permissions',
       'roles',
+      'student',
     ]);
     expect(JSON.stringify(result)).not.toContain('argon2');
+  });
+
+  it('shows the verified college only while the verification is current', () => {
+    const college = { id: 'c1', slug: 'abc', name: 'ABC College' };
+    const future = new Date(Date.now() + 86_400_000);
+    expect(
+      toAuthUser(account({ verifiedCollege: college, studentVerifiedUntil: future }), []).student,
+    ).toEqual({
+      verified: true,
+      college,
+      verifiedUntil: future.toISOString(),
+    });
+    const past = new Date(Date.now() - 1000);
+    expect(
+      toAuthUser(account({ verifiedCollege: college, studentVerifiedUntil: past }), []).student,
+    ).toEqual({
+      verified: false,
+      college: null,
+      verifiedUntil: null,
+    });
   });
 });
 

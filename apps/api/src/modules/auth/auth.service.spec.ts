@@ -31,6 +31,8 @@ describe('AuthService.register', () => {
         email: 'asha@example.test',
         emailVerified: false,
         roles: ['STUDENT'],
+        college: null,
+        student: { verified: false, college: null, verifiedUntil: null },
       },
     });
     const [stored] = kit.fake.user.rows;
@@ -123,6 +125,8 @@ describe('AuthService.login', () => {
         'reports.manage',
         'places.read',
       ]) as string[],
+      college: null,
+      student: { verified: false, college: null, verifiedUntil: null },
     });
     expect(JSON.stringify(result)).not.toMatch(/argon2|passwordHash/i);
 

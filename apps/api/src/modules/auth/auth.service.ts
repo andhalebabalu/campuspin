@@ -133,6 +133,8 @@ export class AuthService {
         email: user.email,
         emailVerified: false,
         roles: roleKeysOf(user),
+        college: null,
+        student: { verified: false, college: null, verifiedUntil: null },
       },
     };
   }

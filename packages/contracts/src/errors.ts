@@ -31,6 +31,12 @@ export const ERROR_CODES = [
   'DUPLICATE_PLACE_SUSPECTED',
   // Reviews (Phase 9). 409: this user already has a review of this place (edit it instead).
   'ALREADY_REVIEWED',
+  // Student verification (community + marketplace). 403: this needs a verified student account.
+  'STUDENT_VERIFICATION_REQUIRED',
+  // 409: already verified at a college (verify again only once it lapses).
+  'ALREADY_VERIFIED',
+  // 403: the other member has blocked you, or you have blocked them.
+  'BLOCKED',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

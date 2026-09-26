@@ -172,6 +172,27 @@ enum CollegePlaceMode {
   EXCLUDED
 }
 
+// How a student proved they belong to a college.
+enum StudentVerificationMethod {
+  COLLEGE_EMAIL
+  DOCUMENT
+}
+
+// PENDING: code sent / document awaiting review. EXPIRED: lapsed, or staff asked to verify again.
+enum StudentVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+// Who may see a member's profile details (course, year, activity). Never contact details.
+enum ProfileVisibility {
+  PUBLIC
+  STUDENTS
+  PRIVATE
+}
+
 // Why a refresh token stopped being usable. ROTATED means "replaced by its successor during a normal
 // refresh"; presenting a ROTATED token again is the signal that it was stolen (reuse detection).
 enum TokenRevocationReason {
@@ -188,51 +209,62 @@ enum TokenRevocationReason {
 // ════════════════════════════════════════════════════════════════════════════════════════════
 
 model User {
-  id              String     @id @default(uuid(7)) @db.Char(36)
-  name            String     @db.VarChar(120)
+  id                   String     @id @default(uuid(7)) @db.Char(36)
+  name                 String     @db.VarChar(120)
   // Stored lowercase by the application; the column collation is case-insensitive as well.
-  email           String     @unique @db.VarChar(254)
+  email                String     @unique @db.VarChar(254)
   // Argon2id hash. Plain-text passwords are never stored.
-  passwordHash    String     @db.VarChar(255)
+  passwordHash         String     @db.VarChar(255)
   // Null = not verified. The timestamp records when it happened.
-  emailVerifiedAt DateTime?
+  emailVerifiedAt      DateTime?
   // Reserved for phone OTP login later (no schema change needed then).
-  phone           String?    @unique @db.VarChar(20)
-  phoneVerifiedAt DateTime?
-  status          UserStatus @default(ACTIVE)
+  phone                String?    @unique @db.VarChar(20)
+  phoneVerifiedAt      DateTime?
+  status               UserStatus @default(ACTIVE)
   // Student profile: the college they study at (null for business owners and staff).
-  collegeId       String?    @db.Char(36)
-  course          String?    @db.VarChar(120)
-  year            Int?       @db.TinyInt
-  lastLoginAt     DateTime?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  collegeId            String?    @db.Char(36)
+  course               String?    @db.VarChar(120)
+  year                 Int?       @db.TinyInt
+  lastLoginAt          DateTime?
+  // The college this member is a VERIFIED student of (null = not verified). Separate from
+  // `collegeId` above, which is only the college they chose to browse and never grants anything.
+  verifiedCollegeId    String?    @db.Char(36)
+  studentVerifiedAt    DateTime?
+  // Verification lapses after this; the member verifies again to keep student access.
+  studentVerifiedUntil DateTime?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
 
-  college College? @relation("StudentCollege", fields: [collegeId], references: [id], onDelete: SetNull)
+  college         College? @relation("StudentCollege", fields: [collegeId], references: [id], onDelete: SetNull)
+  verifiedCollege College? @relation("VerifiedStudentCollege", fields: [verifiedCollegeId], references: [id], onDelete: SetNull)
 
-  userRoles             UserRole[]          @relation("UserRoleUser")
-  assignedRoles         UserRole[]          @relation("UserRoleAssignedBy")
-  createdColleges       College[]           @relation("CollegeCreatedBy")
-  createdPlaces         Place[]             @relation("PlaceCreatedBy")
-  verifiedPlaces        Place[]             @relation("PlaceVerifiedBy")
-  ownedBusinesses       BusinessProfile[]   @relation("BusinessOwner")
-  businessMemberships   BusinessMember[]
-  requestedClaims       PlaceClaim[]        @relation("ClaimRequestedBy")
-  reviewedClaims        PlaceClaim[]        @relation("ClaimReviewedBy")
-  submissions           PlaceSubmission[]   @relation("SubmissionSubmittedBy")
-  reviewedSubmissions   PlaceSubmission[]   @relation("SubmissionReviewedBy")
-  contributions         PlaceContribution[] @relation("ContributionContributedBy")
-  reviewedContributions PlaceContribution[] @relation("ContributionReviewedBy")
-  reviews               Review[]            @relation("ReviewAuthor")
-  moderatedReviews      Review[]            @relation("ReviewModeratedBy")
-  reviewReports         ReviewReport[]      @relation("ReviewReportReportedBy")
-  handledReviewReports  ReviewReport[]      @relation("ReviewReportReviewedBy")
-  savedPlaces           SavedPlace[]
-  leads                 Lead[]              @relation("LeadSender")
-  reports              Report[]            @relation("ReportReporter")
-  resolvedReports       Report[]            @relation("ReportResolvedBy")
-  notifications         Notification[]
-  auditLogs             AuditLog[]
+  userRoles                    UserRole[]            @relation("UserRoleUser")
+  assignedRoles                UserRole[]            @relation("UserRoleAssignedBy")
+  createdColleges              College[]             @relation("CollegeCreatedBy")
+  createdPlaces                Place[]               @relation("PlaceCreatedBy")
+  verifiedPlaces               Place[]               @relation("PlaceVerifiedBy")
+  ownedBusinesses              BusinessProfile[]     @relation("BusinessOwner")
+  businessMemberships          BusinessMember[]
+  requestedClaims              PlaceClaim[]          @relation("ClaimRequestedBy")
+  reviewedClaims               PlaceClaim[]          @relation("ClaimReviewedBy")
+  submissions                  PlaceSubmission[]     @relation("SubmissionSubmittedBy")
+  reviewedSubmissions          PlaceSubmission[]     @relation("SubmissionReviewedBy")
+  contributions                PlaceContribution[]   @relation("ContributionContributedBy")
+  reviewedContributions        PlaceContribution[]   @relation("ContributionReviewedBy")
+  reviews                      Review[]              @relation("ReviewAuthor")
+  moderatedReviews             Review[]              @relation("ReviewModeratedBy")
+  reviewReports                ReviewReport[]        @relation("ReviewReportReportedBy")
+  handledReviewReports         ReviewReport[]        @relation("ReviewReportReviewedBy")
+  savedPlaces                  SavedPlace[]
+  leads                        Lead[]                @relation("LeadSender")
+  reports                      Report[]              @relation("ReportReporter")
+  resolvedReports              Report[]              @relation("ReportResolvedBy")
+  notifications                Notification[]
+  auditLogs                    AuditLog[]
+  settings                     UserSettings?
+  studentVerifications         StudentVerification[] @relation("StudentVerificationUser")
+  reviewedStudentVerifications StudentVerification[] @relation("StudentVerificationReviewer")
+  addedEmailDomains            CollegeEmailDomain[]
 
   refreshTokens           RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -240,6 +272,7 @@ model User {
 
   @@index([status])
   @@index([collegeId])
+  @@index([verifiedCollegeId])
   @@index([createdAt])
   @@map("users")
 }
@@ -401,6 +434,10 @@ model College {
   images      CollegeImage[]
   places      CollegePlace[]
   submissions PlaceSubmission[]
+
+  verifiedStudents     User[]                @relation("VerifiedStudentCollege")
+  emailDomains         CollegeEmailDomain[]
+  studentVerifications StudentVerification[]
 
   @@index([status])
   @@index([city, status])
@@ -597,7 +634,7 @@ model Place {
   contributions   PlaceContribution[]
   reviews         Review[]
   leads           Lead[]
-  createdFrom    PlaceSubmission[]     @relation("SubmissionResultingPlace")
+  createdFrom     PlaceSubmission[]     @relation("SubmissionResultingPlace")
   duplicatesOf    PlaceSubmission[]     @relation("SubmissionDuplicateOfPlace")
 
   @@index([status, city])
@@ -1073,4 +1110,82 @@ model AuditLog {
   @@index([action, createdAt])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Student verification, member settings
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+// An official email domain of a college ("abccollege.edu.in"). A college email proves affiliation
+// only if its domain is listed here for the college the student chose. One domain, one college.
+model CollegeEmailDomain {
+  id          String   @id @default(uuid(7)) @db.Char(36)
+  collegeId   String   @db.Char(36)
+  // Lowercase, no "@".
+  domain      String   @unique @db.VarChar(253)
+  createdById String?  @db.Char(36)
+  createdAt   DateTime @default(now())
+
+  college   College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([collegeId])
+  @@map("college_email_domains")
+}
+
+// One attempt to prove "I am a student of this college". History is kept: a new attempt is a new
+// row. Only what verification needs is stored; a document is deleted once staff decide.
+model StudentVerification {
+  id               String                    @id @default(uuid(7)) @db.Char(36)
+  userId           String                    @db.Char(36)
+  collegeId        String                    @db.Char(36)
+  method           StudentVerificationMethod
+  status           StudentVerificationStatus @default(PENDING)
+  // COLLEGE_EMAIL: the (lowercase) college address the code was sent to.
+  collegeEmail     String?                   @db.VarChar(254)
+  // Set only while VERIFIED by email, so one college mailbox backs one account at a time.
+  verifiedEmailKey String?                   @unique @db.VarChar(254)
+  // SHA-256 of the one-time code; the code itself is never stored.
+  codeHash         String?                   @db.Char(64)
+  codeExpiresAt    DateTime?
+  codeAttempts     Int                       @default(0)
+  // DOCUMENT: the key of the file in PRIVATE storage (never a public URL). Cleared once decided.
+  documentKey      String?                   @db.VarChar(255)
+  documentType     String?                   @db.VarChar(40)
+  // Shown to the student (why it was rejected / why to verify again). Never shown to others.
+  reviewNote       String?                   @db.VarChar(500)
+  reviewedById     String?                   @db.Char(36)
+  reviewedAt       DateTime?
+  verifiedAt       DateTime?
+  expiresAt        DateTime?
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+
+  user       User    @relation("StudentVerificationUser", fields: [userId], references: [id], onDelete: Cascade)
+  college    College @relation(fields: [collegeId], references: [id], onDelete: Restrict)
+  reviewedBy User?   @relation("StudentVerificationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([collegeId, status])
+  @@index([status, createdAt])
+  @@map("student_verifications")
+}
+
+// A member's privacy and notification choices. The row is created on first change; until then the
+// defaults below apply (private by default: contact details are never public at all).
+model UserSettings {
+  userId                   String            @id @db.Char(36)
+  profileVisibility        ProfileVisibility @default(STUDENTS)
+  showCommunityActivity    Boolean           @default(true)
+  allowMarketplaceMessages Boolean           @default(true)
+  notifyCommunity          Boolean           @default(true)
+  notifyMarketplace        Boolean           @default(true)
+  notifyEvents             Boolean           @default(true)
+  notifyJobs               Boolean           @default(true)
+  notifyMessages           Boolean           @default(true)
+  updatedAt                DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
 }

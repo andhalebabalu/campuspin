@@ -67,6 +67,16 @@ export async function removeAuthTestData(db: PrismaClient): Promise<void> {
       ],
     },
   });
+  // A student verification keeps its college (RESTRICT): remove those of test users and test colleges
+  // before either. (Verifications of a test user would cascade with the user anyway.)
+  await db.studentVerification.deleteMany({
+    where: {
+      OR: [
+        ...(ids.length > 0 ? [{ userId: { in: ids } }] : []),
+        { college: { slug: { startsWith: TEST_COLLEGE_SLUG_PREFIX } } },
+      ],
+    },
+  });
   await db.place.deleteMany({ where: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } });
   await db.college.deleteMany({ where: { slug: { startsWith: TEST_COLLEGE_SLUG_PREFIX } } });
   // A business profile blocks deleting its owner (RESTRICT). Its enquiries cascade with it; its

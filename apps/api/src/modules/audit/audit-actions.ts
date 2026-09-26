@@ -77,6 +77,17 @@ export const AUDIT_ACTIONS = [
   'USER_ROLES_CHANGED',
   'BUSINESS_VERIFIED',
   'BUSINESS_UNVERIFIED',
+  // Student verification, profile and settings (community + marketplace foundation).
+  'STUDENT_VERIFICATION_REQUESTED',
+  'STUDENT_VERIFICATION_CANCELLED',
+  'STUDENT_VERIFIED',
+  'STUDENT_VERIFICATION_REJECTED',
+  'STUDENT_REVERIFICATION_REQUESTED',
+  'STUDENT_DOCUMENT_VIEWED', // staff opened a private ID photo
+  'COLLEGE_EMAIL_DOMAIN_ADDED',
+  'COLLEGE_EMAIL_DOMAIN_REMOVED',
+  'PROFILE_UPDATED',
+  'SETTINGS_UPDATED',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

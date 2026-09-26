@@ -81,6 +81,15 @@ export const envSchema = z
     // Uploaded images are written here (a relative path is resolved from the API's working
     // directory) and served at `${API_BASE_URL}/uploads/<file>`.
     UPLOAD_DIR: z.string().trim().min(1).default('uploads'),
+    // Student ID photos go here: NEVER served (keep it outside UPLOAD_DIR). Only the staff review
+    // endpoint reads a file back, and it is deleted once staff decide.
+    PRIVATE_UPLOAD_DIR: z.string().trim().min(1).default('private-uploads'),
+
+    // ── Students (community + marketplace) ────────────────────────────────────────────────────
+    // How long a student verification lasts before the student verifies again.
+    STUDENT_VERIFICATION_VALID_DAYS: z.coerce.number().int().min(30).max(1500).default(365),
+    // Default marketplace reach for NEARBY_COLLEGES listings, in km.
+    MARKETPLACE_NEARBY_KM: z.coerce.number().min(1).max(100).default(10),
   })
   .check((ctx) => {
     const { JWT_ACCESS_SECRET: access, JWT_REFRESH_SECRET: refresh } = ctx.value;

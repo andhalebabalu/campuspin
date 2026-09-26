@@ -68,6 +68,18 @@ export const PERMISSIONS = {
   'businesses.manage': { resource: 'businesses', description: 'Verify and manage businesses' },
   'analytics.view': { resource: 'analytics', description: 'View platform analytics' },
   'settings.manage': { resource: 'settings', description: 'Change platform settings' },
+  'verifications.review': {
+    resource: 'verifications',
+    description: 'Review student verifications and manage college email domains',
+  },
+  'community.moderate': {
+    resource: 'community',
+    description: 'Remove and restore community posts and comments, handle their reports',
+  },
+  'marketplace.moderate': {
+    resource: 'marketplace',
+    description: 'Remove and restore marketplace listings, handle their reports',
+  },
 } as const satisfies Record<string, { resource: string; description: string }>;
 
 export type PermissionKey = keyof typeof PERMISSIONS;
@@ -88,6 +100,9 @@ export const ROLE_PERMISSIONS: Readonly<Record<RoleKey, readonly PermissionKey[]
     'submissions.review',
     'reviews.moderate',
     'reports.manage',
+    'verifications.review',
+    'community.moderate',
+    'marketplace.moderate',
   ],
   STUDENT: ['colleges.read', 'categories.read', 'places.read'],
   // places.create / places.update are limited to the owner's own listings by a resource policy.

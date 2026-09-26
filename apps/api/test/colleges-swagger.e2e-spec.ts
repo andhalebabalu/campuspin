@@ -77,7 +77,7 @@ describe('Swagger documentation of the college API (e2e)', () => {
 
   it('documents exactly the 4 public and 11 admin college routes', () => {
     const documented = Object.entries(doc.paths)
-      .filter(([path]) => path.includes('/colleges'))
+      .filter(([path]) => path.includes('/colleges') && !path.includes('/email-domains'))
       .flatMap(([path, operations]) =>
         Object.keys(operations).map((method) => `${method} ${path}`),
       );

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { collegeRefSchema, studentBadgeSchema } from './members.js';
 import { permissionKeySchema, roleKeySchema } from './rbac.js';
 import { singleLineField } from './text.js';
 
@@ -264,6 +265,10 @@ export const authUserSchema = z.object({
   emailVerified: z.boolean(),
   roles: z.array(roleKeySchema),
   permissions: z.array(permissionKeySchema),
+  /** The college chosen for browsing (grants nothing). */
+  college: collegeRefSchema.nullable(),
+  /** Verified-student standing: what community and marketplace access depend on. */
+  student: studentBadgeSchema,
 });
 export type AuthUser = z.infer<typeof authUserSchema>;
 

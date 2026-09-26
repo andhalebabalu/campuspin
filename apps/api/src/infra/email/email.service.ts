@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { AppConfig } from '../config/app-config.js';
 import { EmailProvider } from './email-provider.js';
-import { renderPasswordResetEmail, renderVerificationEmail } from './email-templates.js';
+import {
+  renderPasswordResetEmail,
+  renderStudentCodeEmail,
+  renderVerificationEmail,
+} from './email-templates.js';
 
 interface ActionEmailInput {
   to: string;
@@ -39,6 +43,18 @@ export class EmailService {
       url: this.link('reset-password', input.token),
       expiresInSeconds: this.config.auth.passwordResetTtlSeconds,
     });
+    return this.provider.send({ from: this.config.email.from, to: input.to, ...rendered });
+  }
+
+  /** A student verification code sent to a college address. The code is never logged here. */
+  sendStudentCode(input: {
+    to: string;
+    name: string;
+    code: string;
+    collegeName: string;
+    expiresInSeconds: number;
+  }): Promise<void> {
+    const rendered = renderStudentCodeEmail({ appName: this.config.appName, ...input });
     return this.provider.send({ from: this.config.email.from, to: input.to, ...rendered });
   }
 

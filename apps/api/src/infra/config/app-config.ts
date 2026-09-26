@@ -51,6 +51,12 @@ export class AppConfig {
   readonly email: { readonly provider: Env['EMAIL_PROVIDER']; readonly from: string };
   /** Absolute directory uploaded files are stored in (local-disk storage). */
   readonly uploadDir: string;
+  /** Absolute directory for private files (student ID photos). Never served statically. */
+  readonly privateUploadDir: string;
+  readonly students: {
+    readonly verificationValidDays: number;
+    readonly marketplaceNearbyKm: number;
+  };
   private readonly suppliedSecrets: { readonly access?: string; readonly refresh?: string };
 
   private constructor(env: Env) {
@@ -84,6 +90,19 @@ export class AppConfig {
     };
     this.email = { provider: env.EMAIL_PROVIDER, from: env.EMAIL_FROM };
     this.uploadDir = path.resolve(env.UPLOAD_DIR);
+    this.privateUploadDir = path.resolve(env.PRIVATE_UPLOAD_DIR);
+    // Everything under UPLOAD_DIR is served publicly: a private directory inside it would publish
+    // student ID photos. Refuse to start rather than risk it.
+    const inside = path.relative(this.uploadDir, this.privateUploadDir);
+    if (!inside.startsWith('..') && !path.isAbsolute(inside)) {
+      throw new ConfigError(
+        'PRIVATE_UPLOAD_DIR must not be UPLOAD_DIR or inside it (that directory is public).',
+      );
+    }
+    this.students = {
+      verificationValidDays: env.STUDENT_VERIFICATION_VALID_DAYS,
+      marketplaceNearbyKm: env.MARKETPLACE_NEARBY_KM,
+    };
   }
 
   /**

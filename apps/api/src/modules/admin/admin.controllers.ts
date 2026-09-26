@@ -121,10 +121,12 @@ export class AdminDashboardController {
           hiddenReviews: 1,
           unverifiedBusinesses: 4,
           suspendedUsers: 0,
+          pendingStudentVerifications: 2,
         },
         totals: {
           users: 120,
           students: 110,
+          verifiedStudents: 64,
           businesses: 9,
           livePlaces: 235,
           activeColleges: 6,

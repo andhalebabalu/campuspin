@@ -6,6 +6,7 @@ import {
 } from '@platform/contracts';
 import { AppException } from '../../common/http/app-exception.js';
 import type { Prisma } from '../../generated/prisma/client.js';
+import { studentBadge } from '../students/student-rules.js';
 
 /**
  * What the auth flows read about a user. Deliberately has no `passwordHash`: only the login query
@@ -18,6 +19,9 @@ export const ACCOUNT_SELECT = {
   status: true,
   emailVerifiedAt: true,
   userRoles: { select: { role: { select: { key: true } } } },
+  college: { select: { id: true, slug: true, name: true } },
+  verifiedCollege: { select: { id: true, slug: true, name: true } },
+  studentVerifiedUntil: true,
 } satisfies Prisma.UserSelect;
 
 export type Account = Prisma.UserGetPayload<{ select: typeof ACCOUNT_SELECT }>;
@@ -58,5 +62,7 @@ export function toAuthUser(account: Account, permissions: PermissionKey[]): Auth
     emailVerified: account.emailVerifiedAt !== null,
     roles: roleKeysOf(account),
     permissions,
+    college: account.college,
+    student: studentBadge(account),
   };
 }

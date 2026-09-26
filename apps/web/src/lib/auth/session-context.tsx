@@ -26,6 +26,8 @@ interface SessionContextValue extends SessionState {
   login: (credentials: LoginRequest) => Promise<AuthUser>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
+  /** Re-reads the signed-in user (e.g. after student verification changes their badge). */
+  refreshUser: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -98,9 +100,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setState({ status: 'unauthenticated', user: null });
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const me = await authService.me();
+      setState({ status: 'authenticated', user: me.data });
+    } catch {
+      // Keep the current user; a failed re-read is not a sign-out.
+    }
+  }, []);
+
   const value = useMemo<SessionContextValue>(
-    () => ({ ...state, login, register, logout }),
-    [state, login, register, logout],
+    () => ({ ...state, login, register, logout, refreshUser }),
+    [state, login, register, logout, refreshUser],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
