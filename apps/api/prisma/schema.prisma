@@ -118,6 +118,9 @@ enum ReviewStatus {
 
 enum ReportReason {
   WRONG_INFO
+  SCAM
+  PROHIBITED_ITEM
+  HARASSMENT
   BUSINESS_CLOSED
   WRONG_LOCATION
   FAKE_LISTING
@@ -140,6 +143,7 @@ enum ReportTargetType {
   USER
   MARKETPLACE_LISTING
   COMMUNITY_POST
+  COMMUNITY_COMMENT
 }
 
 enum AttributeDataType {
@@ -260,6 +264,11 @@ model User {
   reports                      Report[]              @relation("ReportReporter")
   resolvedReports              Report[]              @relation("ReportResolvedBy")
   notifications                Notification[]
+  communityPosts               CommunityPost[]
+  communityComments            CommunityComment[]
+  communityReactions           CommunityReaction[]
+  blocking                     UserBlock[]           @relation("UserBlockBlocker")
+  blockedBy                    UserBlock[]           @relation("UserBlockBlocked")
   auditLogs                    AuditLog[]
   settings                     UserSettings?
   studentVerifications         StudentVerification[] @relation("StudentVerificationUser")
@@ -438,6 +447,7 @@ model College {
   verifiedStudents     User[]                @relation("VerifiedStudentCollege")
   emailDomains         CollegeEmailDomain[]
   studentVerifications StudentVerification[]
+  communityPosts       CommunityPost[]
 
   @@index([status])
   @@index([city, status])
@@ -1188,4 +1198,117 @@ model UserSettings {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
+}
+
+enum CommunityCategory {
+  DISCUSSION
+  QUESTION
+  ANNOUNCEMENT
+  EVENT
+  STUDY
+  JOB
+  LOST_FOUND
+  STUDENT_UPDATE
+}
+
+enum CommunityVisibility {
+  COLLEGE_ONLY
+  PUBLIC
+}
+
+// ACTIVE is shown; HIDDEN is a moderator's reversible hold; REMOVED is final (by the author or a
+// moderator). Rows are never hard-deleted, so reports and audit entries keep their target.
+enum CommunityContentStatus {
+  ACTIVE
+  HIDDEN
+  REMOVED
+}
+
+enum CommunityReactionType {
+  LIKE
+  HELPFUL
+  CELEBRATE
+}
+
+// A post in one college's community. collegeId is copied from the author's verified college when
+// the post is written and never taken from the request.
+model CommunityPost {
+  id             String                 @id @default(uuid(7)) @db.Char(36)
+  authorId       String                 @db.Char(36)
+  collegeId      String                 @db.Char(36)
+  category       CommunityCategory
+  visibility     CommunityVisibility    @default(COLLEGE_ONLY)
+  title          String                 @db.VarChar(150)
+  body           String                 @db.Text
+  // EVENT posts only.
+  eventStartsAt  DateTime?
+  eventLocation  String?                @db.VarChar(200)
+  status         CommunityContentStatus @default(ACTIVE)
+  moderationNote String?                @db.VarChar(500)
+  commentCount   Int                    @default(0)
+  reactionCount  Int                    @default(0)
+  editedAt       DateTime?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  author    User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  college   College             @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  comments  CommunityComment[]
+  reactions CommunityReaction[]
+
+  @@index([collegeId, status, createdAt])
+  @@index([visibility, status, createdAt])
+  @@index([authorId, createdAt])
+  @@map("community_posts")
+}
+
+// A comment, or a reply to one (one level deep: a reply's parent is always a top-level comment).
+model CommunityComment {
+  id        String                 @id @default(uuid(7)) @db.Char(36)
+  postId    String                 @db.Char(36)
+  authorId  String                 @db.Char(36)
+  parentId  String?                @db.Char(36)
+  body      String                 @db.Text
+  status    CommunityContentStatus @default(ACTIVE)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  post    CommunityPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent  CommunityComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies CommunityComment[] @relation("CommentReplies")
+
+  @@index([postId, status, createdAt])
+  @@index([authorId])
+  @@map("community_comments")
+}
+
+// One reaction per member per post; reacting again changes its type.
+model CommunityReaction {
+  postId    String                @db.Char(36)
+  userId    String                @db.Char(36)
+  type      CommunityReactionType
+  createdAt DateTime              @default(now())
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId])
+  @@index([userId])
+  @@map("community_reactions")
+}
+
+// "I don't want to see or hear from this member." It hides both ways: neither sees the other's
+// posts, comments or listings, and neither can message the other.
+model UserBlock {
+  blockerId String   @db.Char(36)
+  blockedId String   @db.Char(36)
+  createdAt DateTime @default(now())
+
+  blocker User @relation("UserBlockBlocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("UserBlockBlocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("user_blocks")
 }

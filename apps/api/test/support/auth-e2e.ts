@@ -77,6 +77,8 @@ export async function removeAuthTestData(db: PrismaClient): Promise<void> {
       ],
     },
   });
+  // Reports keep their reporter (RESTRICT); community posts, comments and blocks cascade with users.
+  if (ids.length > 0) await db.report.deleteMany({ where: { reporterId: { in: ids } } });
   await db.place.deleteMany({ where: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } });
   await db.college.deleteMany({ where: { slug: { startsWith: TEST_COLLEGE_SLUG_PREFIX } } });
   // A business profile blocks deleting its owner (RESTRICT). Its enquiries cascade with it; its

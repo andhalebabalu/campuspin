@@ -8,16 +8,8 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { Skeleton } from '@/components/shared/skeleton';
 import { Button } from '@/components/ui/button';
+import { timeAgo } from '@/lib/format/time';
 import { notificationsService } from '@/services/notifications.service';
-
-function timeAgo(iso: string): string {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} h ago`;
-  return new Date(iso).toLocaleDateString('en-IN', { dateStyle: 'medium' });
-}
 
 /** The member's notifications, newest first, with "mark all read". */
 export function NotificationsView() {

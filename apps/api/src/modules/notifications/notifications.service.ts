@@ -33,6 +33,9 @@ const SETTING_FOR: Readonly<
 
 type Db = Prisma.TransactionClient | PrismaService;
 
+/** The most members one `notifyMany` call reaches. */
+export const NOTIFY_MANY_MAX = 1000;
+
 /**
  * In-app notifications on the existing `notifications` table. A notification is only written if
  * the member has not switched its category off (no row in `user_settings` = everything on). Email
@@ -64,6 +67,42 @@ export class NotificationsService {
       },
     });
     return true;
+  }
+
+  /**
+   * The same notice to many members (e.g. a new event for a college), skipping those who switched
+   * the category off. Capped so one post can never fan out without bound.
+   */
+  async notifyMany(
+    userIds: readonly string[],
+    input: Omit<NotifyInput, 'userId'>,
+    db: Db = this.prisma,
+  ): Promise<number> {
+    let ids = [...new Set(userIds)].slice(0, NOTIFY_MANY_MAX);
+    if (ids.length === 0) return 0;
+    if (input.category !== 'ACCOUNT') {
+      const field = SETTING_FOR[input.category];
+      const optedOut = await db.userSettings.findMany({
+        where: { userId: { in: ids }, [field]: false },
+        select: { userId: true },
+      });
+      const skip = new Set(optedOut.map((row) => row.userId));
+      ids = ids.filter((id) => !skip.has(id));
+    }
+    if (ids.length === 0) return 0;
+    const data = input.link
+      ? { link: input.link, category: input.category }
+      : { category: input.category };
+    const result = await db.notification.createMany({
+      data: ids.map((userId) => ({
+        userId,
+        type: input.type,
+        title: input.title.slice(0, 200),
+        message: input.message,
+        data,
+      })),
+    });
+    return result.count;
   }
 
   async list(userId: string, query: ListNotificationsQuery): Promise<Paginated<Notification>> {

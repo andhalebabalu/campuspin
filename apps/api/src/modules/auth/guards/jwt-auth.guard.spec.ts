@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import { buildAuthKit, thrown } from '../../../../test/support/auth-unit.js';
 import { httpContext } from '../../../../test/support/execution-context.js';
 import type { AuthenticatedRequest } from '../auth.types.js';
-import { Public } from '../decorators/public.decorator.js';
+import { OptionalAuth, Public } from '../decorators/public.decorator.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 
 class ClosedController {
@@ -14,6 +14,13 @@ class ClosedController {
   @Public()
   openHandler() {
     return 'open';
+  }
+}
+
+class OptionalController {
+  @OptionalAuth()
+  handler() {
+    return 'maybe';
   }
 }
 
@@ -119,5 +126,35 @@ describe('JwtAuthGuard', () => {
   it('ignores non-HTTP contexts', async () => {
     const { guard } = setup();
     expect(await guard.canActivate(httpContext(ClosedController, 'handler', {}, 'rpc'))).toBe(true);
+  });
+
+  describe('@OptionalAuth()', () => {
+    it('runs anonymously without a token', async () => {
+      const { guard } = setup();
+      const request = requestWith();
+      expect(await guard.canActivate(httpContext(OptionalController, 'handler', request))).toBe(
+        true,
+      );
+      expect(request.user).toBeUndefined();
+    });
+
+    it('recognises a valid token', async () => {
+      const { guard, tokens } = setup();
+      const request = requestWith(`Bearer ${await tokens.signAccessToken(USER)}`);
+      expect(await guard.canActivate(httpContext(OptionalController, 'handler', request))).toBe(
+        true,
+      );
+      expect(request.user?.id).toBe(USER.id);
+    });
+
+    it('answers 401 to a bad token instead of silently treating the caller as signed out', async () => {
+      const { guard } = setup();
+      const error = await thrown(
+        Promise.resolve(
+          guard.canActivate(httpContext(OptionalController, 'handler', requestWith('Bearer nope'))),
+        ),
+      );
+      expect(error.getStatus()).toBe(401);
+    });
   });
 });

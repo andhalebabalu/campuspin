@@ -2,7 +2,7 @@ import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/com
 import { Reflector } from '@nestjs/core';
 import { AppException } from '../../../common/http/app-exception.js';
 import type { AuthenticatedRequest } from '../auth.types.js';
-import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
+import { IS_OPTIONAL_AUTH_KEY, IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
 import { TokenService } from '../services/token.service.js';
 
 const BEARER = /^Bearer\s+(\S+)$/i;
@@ -30,7 +30,14 @@ export class JwtAuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const token = BEARER.exec(request.headers.authorization ?? '')?.[1];
-    if (!token) throw AppException.unauthorized();
+    if (!token) {
+      const optional = this.reflector.getAllAndOverride<boolean | undefined>(IS_OPTIONAL_AUTH_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]);
+      if (optional) return true;
+      throw AppException.unauthorized();
+    }
 
     request.user = await this.tokens.verifyAccessToken(token);
     return true;
