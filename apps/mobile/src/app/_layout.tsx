@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { BootScreen } from '@/components/boot-screen';
 import { ToastProvider } from '@/components/ui';
 import { useVisitTracker } from '@/hooks/use-visit-tracker';
 import { queryClient } from '@/lib/query';
@@ -38,7 +39,7 @@ function RootNavigator() {
     if (status !== 'loading') void SplashScreen.hideAsync();
   }, [status]);
 
-  if (status === 'loading') return null;
+  if (status === 'loading') return <BootScreen />;
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas } }}>
@@ -79,7 +80,7 @@ export default function RootLayout() {
   });
 
   // A font that fails to load falls back to the system font rather than blocking the app.
-  if (!fontsLoaded && !fontError) return null;
+  if (!fontsLoaded && !fontError) return <BootScreen />;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
