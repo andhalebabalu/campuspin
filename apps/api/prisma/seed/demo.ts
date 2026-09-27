@@ -28,6 +28,7 @@ export async function seedDemo(db: Db, options: DemoSeedOptions): Promise<void> 
   await seedDemoColleges(db, adminId);
   await seedDemoPlaces(db, adminId);
   await linkDemoPlacesToColleges(db);
+  await seedDemoPromotions(db, adminId);
 }
 
 async function ensureDemoAdmin(
@@ -280,4 +281,77 @@ async function linkDemoPlacesToColleges(db: Db): Promise<void> {
     }),
   );
   await db.collegePlace.createMany({ data: links, skipDuplicates: true });
+}
+
+/**
+ * Sample in-app ads: a splash ad for students and one for businesses (10 s on screen, close button
+ * after 5 s) and a few Featured cards, one of them boosting a demo place. Fixed ids, and existing
+ * rows are never overwritten, so staff edits survive a re-seed.
+ */
+async function seedDemoPromotions(db: Db, adminId: string): Promise<void> {
+  const samples = [
+    {
+      id: '01a0d000-0000-7000-8000-000000000001',
+      placement: 'SPLASH',
+      kind: 'NEW_FEATURE',
+      audience: 'STUDENTS',
+      title: 'Sell your old books in 2 minutes',
+      body: 'The student marketplace is live. Books, cycles, hostel gear: sell to verified students near your college.',
+      ctaLabel: 'Start selling',
+      ctaLink: '/marketplace/new',
+      priority: 10,
+    },
+    {
+      id: '01a0d000-0000-7000-8000-000000000002',
+      placement: 'SPLASH',
+      kind: 'ANNOUNCEMENT',
+      audience: 'BUSINESSES',
+      title: 'Get more student reviews',
+      body: 'Print your review QR code and put it on the counter. Students scan it and rate you in seconds.',
+      ctaLabel: 'Get my QR code',
+      ctaLink: '/dashboard',
+      priority: 10,
+    },
+    {
+      id: '01a0d000-0000-7000-8000-000000000003',
+      placement: 'FEED',
+      kind: 'NEW_FEATURE',
+      audience: 'STUDENTS',
+      title: 'Group chats for your college',
+      body: 'Questions, notes, events and jobs: one chat per topic, only for verified students.',
+      ctaLabel: 'Open chats',
+      ctaLink: '/community',
+      priority: 5,
+    },
+    {
+      id: '01a0d000-0000-7000-8000-000000000004',
+      placement: 'FEED',
+      kind: 'SPONSORED',
+      audience: 'STUDENTS',
+      title: 'Demo Mess A: first week at half price',
+      body: 'Home-style thali near your campus. Show this card at the counter.',
+      ctaLabel: 'View the mess',
+      ctaLink: '/places/demo-mess-a',
+      priority: 3,
+    },
+    {
+      id: '01a0d000-0000-7000-8000-000000000005',
+      placement: 'FEED',
+      kind: 'ANNOUNCEMENT',
+      audience: 'ALL',
+      title: 'CampusPin is now on your phone',
+      body: 'Everything around your campus, in one app. Tell your friends!',
+      ctaLabel: null,
+      ctaLink: null,
+      priority: 1,
+    },
+  ] as const;
+
+  for (const sample of samples) {
+    await db.promotion.upsert({
+      where: { id: sample.id },
+      update: {},
+      create: { ...sample, displaySeconds: 10, skipAfterSeconds: 5, createdById: adminId },
+    });
+  }
 }

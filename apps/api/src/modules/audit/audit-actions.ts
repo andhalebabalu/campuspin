@@ -99,6 +99,10 @@ export const AUDIT_ACTIONS = [
   'LISTING_HIDDEN',
   'LISTING_RESTORED',
   'LISTING_REMOVED',
+  // In-app ads and announcements.
+  'PROMOTION_CREATED',
+  'PROMOTION_UPDATED',
+  'PROMOTION_DELETED',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

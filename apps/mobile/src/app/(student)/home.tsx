@@ -15,6 +15,7 @@ import {
   Skeleton,
   type IconName,
 } from '@/components/ui';
+import { FeaturedSection } from '@/components/featured-section';
 import { EventBox, PostCard } from '@/features/community/post-card';
 import { ListingTile } from '@/features/marketplace/listing-card';
 import { useUnreadMessages, useUnreadNotifications } from '@/hooks/use-unread';
@@ -139,6 +140,7 @@ export default function Home() {
         </View>
 
         <View style={styles.body}>
+          <FeaturedSection />
           {!verified ? (
             <VerifyCard />
           ) : feed.isPending ? (

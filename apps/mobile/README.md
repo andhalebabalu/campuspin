@@ -16,6 +16,10 @@ them to use the web admin panel.
 
 Community and marketplace are for verified students only, the same rule as on the web.
 
+**Ads and announcements** are set by staff in the web admin panel (Admin → Ads & announcements):
+a full-screen ad when the app opens (on screen for a set time, with a close button after a set
+time) and cards in the "Featured" section of the student home and the business dashboard.
+
 ## Run it on your phone (no Android Studio needed)
 
 1. Start the API and the database as usual (see the root README). The API must be on port 3001.

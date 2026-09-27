@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { SplashAd } from '@/components/splash-ad';
 import { makeTabBar, type TabSpec } from '@/components/tab-bar';
 import { useUnreadMessages } from '@/hooks/use-unread';
 
@@ -15,10 +16,13 @@ const StudentTabBar = makeTabBar(TABS, () => ({ market: useUnreadMessages() }));
 /** The student app: five tabs. Detail screens live in (shared) and push over the tabs. */
 export default function StudentLayout() {
   return (
-    <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <StudentTabBar {...props} />}>
-      {TABS.map((tab) => (
-        <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.title }} />
-      ))}
-    </Tabs>
+    <>
+      <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <StudentTabBar {...props} />}>
+        {TABS.map((tab) => (
+          <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.title }} />
+        ))}
+      </Tabs>
+      <SplashAd />
+    </>
   );
 }

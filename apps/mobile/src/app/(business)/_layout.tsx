@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { SplashAd } from '@/components/splash-ad';
 import { makeTabBar, type TabSpec } from '@/components/tab-bar';
 
 const TABS: readonly TabSpec[] = [
@@ -13,10 +14,16 @@ const BusinessTabBar = makeTabBar(TABS);
 /** The business app: dashboard, enquiries, reviews and the account. */
 export default function BusinessLayout() {
   return (
-    <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <BusinessTabBar {...props} />}>
-      {TABS.map((tab) => (
-        <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.title }} />
-      ))}
-    </Tabs>
+    <>
+      <Tabs
+        screenOptions={{ headerShown: false }}
+        tabBar={(props) => <BusinessTabBar {...props} />}
+      >
+        {TABS.map((tab) => (
+          <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.title }} />
+        ))}
+      </Tabs>
+      <SplashAd />
+    </>
   );
 }

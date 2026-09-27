@@ -76,6 +76,10 @@ export const PERMISSIONS = {
     resource: 'community',
     description: 'Remove and restore community posts and comments, handle their reports',
   },
+  'promotions.manage': {
+    resource: 'promotions',
+    description: 'Create and schedule in-app ads and announcements',
+  },
   'marketplace.moderate': {
     resource: 'marketplace',
     description: 'Remove and restore marketplace listings, handle their reports',

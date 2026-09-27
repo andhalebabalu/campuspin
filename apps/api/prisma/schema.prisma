@@ -278,6 +278,7 @@ model User {
   studentVerifications         StudentVerification[] @relation("StudentVerificationUser")
   reviewedStudentVerifications StudentVerification[] @relation("StudentVerificationReviewer")
   addedEmailDomains            CollegeEmailDomain[]
+  createdPromotions            Promotion[]           @relation("PromotionCreatedBy")
 
   refreshTokens           RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -1444,4 +1445,59 @@ model ConversationMessage {
 
   @@index([conversationId, id])
   @@map("conversation_messages")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Promotions (in-app ads and announcements)
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+enum PromotionPlacement {
+  SPLASH // full screen when the app opens
+  FEED // a card in the "Featured" section of the student home and the business dashboard
+}
+
+enum PromotionAudience {
+  ALL
+  STUDENTS
+  BUSINESSES
+}
+
+enum PromotionKind {
+  ANNOUNCEMENT
+  NEW_FEATURE
+  SPONSORED
+}
+
+// What staff show inside the apps: news about CampusPin, or a boosted business. Shown while
+// `active` and inside [startsAt, endsAt) (open ends mean "no limit"); highest priority first.
+model Promotion {
+  id               String             @id @default(uuid(7)) @db.Char(36)
+  placement        PromotionPlacement
+  kind             PromotionKind      @default(ANNOUNCEMENT)
+  audience         PromotionAudience  @default(ALL)
+  title            String             @db.VarChar(80)
+  body             String?            @db.VarChar(300)
+  // A file stored by the uploads endpoint.
+  imageUrl         String?            @db.VarChar(500)
+  ctaLabel         String?            @db.VarChar(30)
+  // An app path ("/places/sai-mess") or an https link.
+  ctaLink          String?            @db.VarChar(500)
+  // SPLASH only: seconds on screen, and after how many the close button appears.
+  displaySeconds   Int                @default(10)
+  skipAfterSeconds Int                @default(5)
+  active           Boolean            @default(true)
+  priority         Int                @default(0)
+  startsAt         DateTime?
+  endsAt           DateTime?
+  // Rough reach, counted when an app shows or opens it; not unique per member.
+  views            Int                @default(0)
+  clicks           Int                @default(0)
+  createdById      String?            @db.Char(36)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  createdBy User? @relation("PromotionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([placement, active, priority])
+  @@map("promotions")
 }

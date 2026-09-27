@@ -18,6 +18,7 @@ import {
   Skeleton,
   type IconName,
 } from '@/components/ui';
+import { FeaturedSection } from '@/components/featured-section';
 import { LISTING_STATUS } from '@/features/business/labels';
 import { useUnreadNotifications } from '@/hooks/use-unread';
 import { useLightStatusBar } from '@/hooks/use-status-bar';
@@ -97,6 +98,7 @@ export default function Dashboard() {
         </View>
 
         <View style={styles.body}>
+          <FeaturedSection />
           {dashboard.isError ? <ErrorState error={dashboard.error} onRetry={refresh} /> : null}
           {stats && stats.listings.underReview > 0 ? (
             <View style={styles.notice}>

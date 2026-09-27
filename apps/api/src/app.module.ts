@@ -20,6 +20,7 @@ import { CategoriesModule } from './modules/categories/categories.module.js';
 import { CollegesModule } from './modules/colleges/colleges.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { PlacesModule } from './modules/places/places.module.js';
+import { PromotionsModule } from './modules/promotions/promotions.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { ReviewsModule } from './modules/reviews/reviews.module.js';
 import { StudentsModule } from './modules/students/students.module.js';
@@ -60,6 +61,7 @@ import { UploadsModule } from './modules/uploads/uploads.module.js';
     ModerationModule,
     BusinessModule,
     UploadsModule,
+    PromotionsModule,
     AdminModule,
     HealthModule,
   ],

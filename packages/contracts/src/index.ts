@@ -12,6 +12,7 @@ export * from './members.js';
 export * from './moderation.js';
 export * from './pagination.js';
 export * from './places.js';
+export * from './promotions.js';
 export * from './rbac.js';
 export * from './reviews.js';
 export * from './safety.js';
