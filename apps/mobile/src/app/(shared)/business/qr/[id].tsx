@@ -21,10 +21,12 @@ export default function ReviewQr() {
       <Screen>
         <View style={styles.stack}>
           <View style={styles.poster}>
-            <View style={styles.brand}>
-              <Image source={require('@/assets/images/brand-mark.png')} style={styles.mark} />
-              <AppText variant="heading">CampusPin</AppText>
-            </View>
+            <Image
+              source={require('@/assets/images/logo-wordmark.png')}
+              style={styles.logo}
+              contentFit="contain"
+              accessibilityLabel="CampusPin"
+            />
             <AppText variant="title" align="center">
               Rate {placeName}
             </AppText>
@@ -60,7 +62,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     ...shadows.md,
   },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  mark: { width: 28, height: 28 },
+  logo: { width: 180, height: 180 * (301 / 1410) },
   qr: { padding: space.md, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line },
 });

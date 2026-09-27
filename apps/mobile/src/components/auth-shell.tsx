@@ -41,13 +41,13 @@ export function AuthShell({
           <View style={styles.glowOne} />
           <View style={styles.glowTwo} />
           <BackButton tone="glass" />
-          <View style={styles.brandRow}>
-            <View style={styles.mark}>
-              <Image source={require('@/assets/images/brand-mark.png')} style={styles.markImage} />
-            </View>
-            <AppText variant="heading" color={colors.surface}>
-              CampusPin
-            </AppText>
+          <View style={styles.logoPill}>
+            <Image
+              source={require('@/assets/images/logo-wordmark.png')}
+              style={styles.logo}
+              contentFit="contain"
+              accessibilityLabel="CampusPin"
+            />
           </View>
           <AppText variant="hero" color={colors.surface} style={styles.title}>
             {title}
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: 'rgba(80,155,246,0.35)',
+    backgroundColor: 'rgba(42,145,60,0.35)',
     top: -90,
     right: -80,
   },
@@ -84,20 +84,19 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     borderRadius: 90,
-    backgroundColor: 'rgba(44,150,60,0.25)',
+    backgroundColor: 'rgba(234,61,36,0.22)',
     bottom: -70,
     left: -50,
   },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.lg },
-  mark: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+  logoPill: {
+    alignSelf: 'flex-start',
+    marginTop: space.lg,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    borderRadius: radius.md,
     backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  markImage: { width: 26, height: 26 },
+  logo: { width: 150, height: 150 * (301 / 1410) },
   title: { marginTop: space.lg },
   card: {
     marginTop: -space.xxxl,

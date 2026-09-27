@@ -108,6 +108,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   chipIdle: { backgroundColor: colors.surface, borderColor: colors.line },
-  chipSelected: { backgroundColor: colors.ink, borderColor: colors.ink },
+  chipSelected: { backgroundColor: colors.brand, borderColor: colors.brand },
   row: { gap: space.sm, paddingHorizontal: space.lg, paddingVertical: space.xs },
 });

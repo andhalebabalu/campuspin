@@ -1,27 +1,35 @@
 import { Platform, type TextStyle, type ViewStyle } from 'react-native';
 
 /**
- * Design tokens, mirroring the web app's (apps/web/src/app/globals.css) so both apps read as one
- * brand. Screens use the semantic names (`colors.ink`, `colors.action`), not raw palette steps.
+ * Design tokens, taken from the CampusPin logo: navy ("Campus", #073066), green ("Pin", #2A913C)
+ * and the red location pin (#EA3D24). Screens use the semantic names (`colors.ink`,
+ * `colors.action`), not raw palette steps.
  */
 export const palette = {
   white: '#ffffff',
-  primary50: '#eff6fe',
-  primary100: '#dbeafd',
-  primary200: '#bad7fb',
-  primary400: '#509bf6',
-  primary500: '#187bf3',
-  primary600: '#0b63cf',
-  primary700: '#084590',
-  primary800: '#052f63',
-  primary900: '#042349',
-  ink900: '#0b1220',
-  ink800: '#111b30',
-  ink700: '#1b2842',
-  accent50: '#edf8ee',
-  accent400: '#2c963c',
+  // Navy: the "Campus" wordmark. primary700 is the logo's own navy.
+  primary50: '#eef3fa',
+  primary100: '#dbe5f3',
+  primary200: '#b9cbe6',
+  primary400: '#4f79b5',
+  primary500: '#1f55a0',
+  primary600: '#0d4185',
+  primary700: '#073066',
+  primary800: '#052852',
+  primary900: '#031d40',
+  ink900: '#0a1a33',
+  ink800: '#112240',
+  ink700: '#1b2c4a',
+  // Green: the "Pin" wordmark. accent400 is the logo's green; accent600 is dark enough for text.
+  accent50: '#ecf7ee',
+  accent100: '#d3eed8',
+  accent400: '#2a913c',
   accent600: '#1f7a2e',
-  accent700: '#0f5712',
+  accent700: '#155f22',
+  // Red: the location pin. For dots, badges and highlights; pin700 is dark enough for text.
+  pin50: '#fdeeeb',
+  pin500: '#ea3d24',
+  pin700: '#c02e18',
   neutral25: '#fafbfc',
   neutral50: '#f4f6f9',
   neutral100: '#ebeef3',
@@ -31,11 +39,6 @@ export const palette = {
   neutral500: '#6b7589',
   neutral600: '#4f586b',
   neutral700: '#3a4255',
-  success50: '#e8f7f0',
-  success600: '#12805c',
-  danger50: '#fef1f0',
-  danger600: '#d92d20',
-  danger700: '#b42318',
   amber50: '#fff4e8',
   amber600: '#d9650b',
   violet50: '#f3effe',
@@ -47,7 +50,7 @@ export const palette = {
 } as const;
 
 export const colors = {
-  canvas: '#f5f7fb',
+  canvas: '#f6f7f9',
   surface: palette.white,
   subtle: palette.neutral50,
   line: palette.neutral200,
@@ -60,20 +63,26 @@ export const colors = {
   actionPressed: palette.primary700,
   actionSoft: palette.primary50,
   primaryBorder: palette.primary200,
+  brand: palette.primary700,
   accent: palette.accent600,
+  accentBright: palette.accent400,
   accentSoft: palette.accent50,
-  success: palette.success600,
-  successSoft: palette.success50,
-  danger: palette.danger600,
-  dangerSoft: palette.danger50,
+  pin: palette.pin500,
+  pinSoft: palette.pin50,
+  success: palette.accent600,
+  successSoft: palette.accent50,
+  danger: palette.pin700,
+  dangerSoft: palette.pin50,
   warning: palette.amber600,
   warningSoft: palette.amber50,
-  overlay: 'rgba(11, 18, 32, 0.45)',
+  overlay: 'rgba(3, 29, 64, 0.5)',
 } as const;
 
-/** The brand gradient used on hero headers and the primary button. */
-export const brandGradient = [palette.primary800, palette.primary600] as const;
+/** Navy, for hero headers and the primary button. */
+export const brandGradient = [palette.primary700, palette.primary500] as const;
 export const heroGradient = [palette.primary900, palette.primary700, palette.primary500] as const;
+/** Green, for "do something good" actions (sell, verified, publish). */
+export const accentGradient = [palette.accent600, palette.accent400] as const;
 
 /** Soft tints for category chips and icon tiles: [background, foreground]. */
 export const tints = {

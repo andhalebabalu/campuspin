@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     height: 19,
     paddingHorizontal: 4,
     borderRadius: 10,
-    backgroundColor: colors.danger,
+    backgroundColor: colors.pin,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,

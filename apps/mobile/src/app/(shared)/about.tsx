@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { AppText, Card, Screen } from '@/components/ui';
 import { env } from '@/lib/env';
-import { colors, radius, space } from '@/theme/tokens';
+import { space } from '@/theme/tokens';
 
 export default function About() {
   return (
@@ -13,10 +13,12 @@ export default function About() {
       <Screen>
         <View style={styles.stack}>
           <View style={styles.brand}>
-            <View style={styles.mark}>
-              <Image source={require('@/assets/images/brand-mark.png')} style={styles.markImage} />
-            </View>
-            <AppText variant="title">CampusPin</AppText>
+            <Image
+              source={require('@/assets/images/logo-full.png')}
+              style={styles.logo}
+              contentFit="contain"
+              accessibilityLabel="CampusPin: Discover. Connect. Experience."
+            />
             <AppText variant="small">Version {Constants.expoConfig?.version ?? '1.0.0'}</AppText>
           </View>
           <Card style={styles.stack}>
@@ -47,14 +49,5 @@ export default function About() {
 const styles = StyleSheet.create({
   stack: { gap: space.md },
   brand: { alignItems: 'center', gap: space.xs, paddingVertical: space.lg },
-  mark: {
-    width: 76,
-    height: 76,
-    borderRadius: radius.xl,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: space.sm,
-  },
-  markImage: { width: 58, height: 58 },
+  logo: { width: '85%', aspectRatio: 1410 / 388, marginBottom: space.sm },
 });

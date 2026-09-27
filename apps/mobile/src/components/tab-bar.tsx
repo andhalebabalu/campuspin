@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     width: 9,
     height: 9,
     borderRadius: 5,
-    backgroundColor: colors.danger,
+    backgroundColor: colors.pin,
     borderWidth: 1.5,
     borderColor: colors.surface,
   },

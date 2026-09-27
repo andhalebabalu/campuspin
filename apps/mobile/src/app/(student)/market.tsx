@@ -37,7 +37,7 @@ import { CATEGORY_ICONS, ListingTile } from '@/features/marketplace/listing-card
 import { useUnreadMessages } from '@/hooks/use-unread';
 import { useUser } from '@/lib/session';
 import { marketplaceService } from '@/services/marketplace.service';
-import { brandGradient, colors, fonts, radius, shadows, space } from '@/theme/tokens';
+import { accentGradient, colors, fonts, radius, shadows, space } from '@/theme/tokens';
 
 const PAGE_SIZE = 20;
 
@@ -217,7 +217,7 @@ function Browse() {
         onPress={() => router.push('/listing/new')}
         style={({ pressed }) => [styles.fab, pressed && { transform: [{ scale: 0.95 }] }]}
       >
-        <LinearGradient colors={brandGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fabInner}>
+        <LinearGradient colors={accentGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fabInner}>
           <Icon name="add" size={22} color={colors.surface} />
           <AppText variant="bodyStrong" color={colors.surface}>
             Sell
