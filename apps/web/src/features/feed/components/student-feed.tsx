@@ -75,7 +75,7 @@ export function StudentFeed() {
   }
 
   const actions: Array<{ href: string; label: string; icon: IconName }> = [
-    { href: ROUTES.communityNew, label: 'New post', icon: 'sparkles' },
+    { href: ROUTES.community, label: 'Chats', icon: 'chats' },
     { href: ROUTES.marketplaceNew, label: 'Sell', icon: 'tag' },
     { href: ROUTES.messages, label: 'Messages', icon: 'chat' },
     { href: ROUTES.meNotifications, label: 'Alerts', icon: 'info' },
@@ -121,7 +121,9 @@ export function StudentFeed() {
                       href={ROUTES.communityPost(event.id)}
                       className="flex h-full flex-col gap-2 rounded-xl border border-line bg-surface p-4 hover:border-action"
                     >
-                      <span className="font-semibold text-ink">{event.title}</span>
+                      <span className="line-clamp-2 font-semibold text-ink">
+                        {event.title ?? event.body}
+                      </span>
                       {event.event && <EventBox event={event.event} />}
                     </Link>
                   </li>

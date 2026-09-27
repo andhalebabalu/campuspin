@@ -1,12 +1,21 @@
 import type { Metadata } from 'next';
-import { CommunityFeed } from '@/features/community/components/community-feed';
+import { Suspense } from 'react';
+import { Skeleton } from '@/components/shared/skeleton';
+import { CommunityChat } from '@/features/community/components/community-chat';
 
 export const metadata: Metadata = {
-  title: 'Student community',
+  title: 'College chats',
   description:
-    'Questions, notes, events, jobs and lost & found from verified students of your college.',
+    'Your college’s group chats for questions, notes, events, jobs and lost & found, only for verified students.',
 };
 
 export default function CommunityPage() {
-  return <CommunityFeed />;
+  return (
+    <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-6 sm:py-6">
+      {/* The open chat lives in `?c=`, read on the client. */}
+      <Suspense fallback={<Skeleton className="h-[70dvh] w-full" />}>
+        <CommunityChat />
+      </Suspense>
+    </div>
+  );
 }

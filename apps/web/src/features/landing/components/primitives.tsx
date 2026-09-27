@@ -71,7 +71,13 @@ export function ComingSoonBadge() {
 }
 
 /** Page-width container shared by every section so edges line up. */
-export function Container({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function Container({
+  children,
+  className = '',
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 ${className}`}>{children}</div>
   );

@@ -288,7 +288,7 @@ export class ReportsAdminService {
       map.set(`COMMUNITY_POST:${post.id}`, {
         type: 'COMMUNITY_POST',
         id: post.id,
-        label: post.title,
+        label: post.title ?? excerpt(post.body),
         excerpt: excerpt(post.body),
         status: post.status,
         owner: post.author,
@@ -299,7 +299,7 @@ export class ReportsAdminService {
       map.set(`COMMUNITY_COMMENT:${comment.id}`, {
         type: 'COMMUNITY_COMMENT',
         id: comment.id,
-        label: `Comment on "${comment.post.title}"`,
+        label: `Comment on "${comment.post.title ?? 'a message'}"`,
         excerpt: excerpt(comment.body),
         status: comment.status,
         owner: comment.author,

@@ -55,8 +55,13 @@ export const communityPostSchema = z.object({
   id: z.string(),
   category: communityCategorySchema,
   visibility: communityVisibilitySchema,
-  title: z.string(),
+  /** Chat messages have no title. */
+  title: z.string().nullable(),
   body: z.string(),
+  /** The message this one quotes, if it is a reply (null when that message is gone). */
+  replyTo: z
+    .object({ id: z.string(), authorName: z.string(), excerpt: z.string() })
+    .nullable(),
   /** Always the author's verified college at the time of posting. */
   college: collegeRefSchema,
   author: memberSummarySchema,
@@ -112,7 +117,7 @@ const eventLocationField = singleLineField('Location', 200);
 
 const postFields = {
   visibility: communityVisibilitySchema.default('COLLEGE_ONLY'),
-  title: titleField.meta({ example: 'Anyone has last year’s DBMS notes?' }),
+  title: titleField.optional().meta({ example: 'Anyone has last year’s DBMS notes?' }),
   body: bodyField.meta({ example: 'Looking for the unit 3 and 4 notes. Can pay for printing.' }),
   eventStartsAt: z.iso.datetime({ offset: true }).optional(),
   eventLocation: eventLocationField.optional(),
@@ -122,9 +127,6 @@ function eventRule(
   value: { category?: CommunityCategory; eventStartsAt?: string; eventLocation?: string },
   ctx: z.RefinementCtx,
 ) {
-  if (value.category === 'EVENT' && !value.eventStartsAt) {
-    ctx.addIssue({ code: 'custom', path: ['eventStartsAt'], message: 'When does the event start?' });
-  }
   if (value.category && value.category !== 'EVENT' && (value.eventStartsAt || value.eventLocation)) {
     ctx.addIssue({
       code: 'custom',
@@ -136,7 +138,12 @@ function eventRule(
 
 /** `POST /community/posts`. There is no college field: it always comes from the verified account. */
 export const createCommunityPostSchema = z
-  .strictObject({ category: communityCategorySchema, ...postFields })
+  .strictObject({
+    category: communityCategorySchema,
+    ...postFields,
+    /** Reply to another message in the same section of my college's chat. */
+    replyToId: uuidSchema.optional(),
+  })
   .superRefine(eventRule);
 export type CreateCommunityPostRequest = z.output<typeof createCommunityPostSchema>;
 
@@ -177,3 +184,26 @@ export const memberProfileSchema = memberSummarySchema.extend({
   blockedByMe: z.boolean(),
 });
 export type MemberProfile = z.infer<typeof memberProfileSchema>;
+
+// ── Chat sections ────────────────────────────────────────────────────────────────────────────────
+
+/** One section of my college's group chat, as the chat list shows it. */
+export const communityChannelSchema = z.object({
+  category: communityCategorySchema,
+  lastMessage: z
+    .object({
+      id: z.string(),
+      text: z.string(),
+      authorName: z.string(),
+      createdAt: z.string(),
+    })
+    .nullable(),
+  messageCount: z.number().int(),
+});
+export type CommunityChannel = z.infer<typeof communityChannelSchema>;
+
+export const communityChannelsSchema = z.object({
+  college: collegeRefSchema,
+  channels: z.array(communityChannelSchema),
+});
+export type CommunityChannels = z.infer<typeof communityChannelsSchema>;

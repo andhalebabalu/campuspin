@@ -1,5 +1,6 @@
 import {
   blockedMemberSchema,
+  communityChannelsSchema,
   communityCommentSchema,
   communityPostSchema,
   cursorPageSchema,
@@ -109,13 +110,12 @@ describe('College community (e2e, real database)', () => {
       expect(errorOf(response).error.code).toBe('STUDENT_VERIFICATION_REQUIRED');
     });
 
-    it('requires a start time on events and refuses one elsewhere', async () => {
-      const noDate = await as(asha, ctx.post(`${API}/community/posts`)).send({
+    it('lets event chat go without a date but refuses a date outside events', async () => {
+      const chatter = await writePost(asha, {
         category: 'EVENT',
-        title: 'Hackathon',
-        body: 'Join us',
+        body: 'Who is going to the fest?',
       });
-      expect(errorOf(noDate).error.code).toBe('VALIDATION_ERROR');
+      expect(chatter.event).toBeNull();
       const stray = await as(asha, ctx.post(`${API}/community/posts`)).send({
         category: 'QUESTION',
         title: 'Question',
@@ -138,11 +138,15 @@ describe('College community (e2e, real database)', () => {
           z.array(notificationSchema),
           await as(who, ctx.get(`${API}/me/notifications`)).expect(200),
         ).data;
-      expect((await list(ravi)).some((n) => n.link === `/community/posts/${event.id}`)).toBe(true);
-      expect((await list(meera)).some((n) => n.link === `/community/posts/${event.id}`)).toBe(
+      expect((await list(ravi)).some((n) => n.link === `/community?c=EVENT#m-${event.id}`)).toBe(
+        true,
+      );
+      expect((await list(meera)).some((n) => n.link === `/community?c=EVENT#m-${event.id}`)).toBe(
         false,
       );
-      expect((await list(asha)).some((n) => n.link === `/community/posts/${event.id}`)).toBe(false);
+      expect((await list(asha)).some((n) => n.link === `/community?c=EVENT#m-${event.id}`)).toBe(
+        false,
+      );
     });
 
     it('lets only the author edit or delete a post', async () => {
@@ -162,6 +166,86 @@ describe('College community (e2e, real database)', () => {
       await as(ravi, ctx.delete(`${API}/community/posts/${post.id}`)).expect(404);
       await as(asha, ctx.delete(`${API}/community/posts/${post.id}`)).expect(200);
       await as(asha, ctx.get(`${API}/community/posts/${post.id}`)).expect(404);
+    });
+  });
+
+  describe('group chat sections', () => {
+    it('sends plain messages without a title and lists each section with its last message', async () => {
+      const message = await writePost(ravi, {
+        category: 'LOST_FOUND',
+        title: undefined,
+        body: 'Found a blue water bottle in the library',
+      });
+      expect(message.title).toBeNull();
+      expect(message.replyTo).toBeNull();
+
+      const sections = successOf(
+        communityChannelsSchema,
+        await as(asha, ctx.get(`${API}/community/channels`)).expect(200),
+      ).data;
+      expect(sections.college.id).toBe(collegeA);
+      expect(sections.channels).toHaveLength(8);
+      const lostFound = sections.channels.find((channel) => channel.category === 'LOST_FOUND');
+      expect(lostFound?.lastMessage).toMatchObject({
+        id: message.id,
+        authorName: 'Ravi D.',
+        text: 'Found a blue water bottle in the library',
+      });
+
+      const own = successOf(
+        communityChannelsSchema,
+        await as(ravi, ctx.get(`${API}/community/channels`)).expect(200),
+      ).data;
+      expect(own.channels.find((c) => c.category === 'LOST_FOUND')?.lastMessage?.authorName).toBe(
+        'You',
+      );
+
+      const other = successOf(
+        communityChannelsSchema,
+        await as(meera, ctx.get(`${API}/community/channels`)).expect(200),
+      ).data;
+      expect(other.channels.find((c) => c.category === 'LOST_FOUND')?.lastMessage?.id).not.toBe(
+        message.id,
+      );
+
+      const refused = await as(guest, ctx.get(`${API}/community/channels`));
+      expect(errorOf(refused).error.code).toBe('STUDENT_VERIFICATION_REQUIRED');
+    });
+
+    it('quotes the message a reply answers and notifies its author', async () => {
+      const question = await writePost(asha, {
+        category: 'STUDY',
+        body: 'Anyone has DBMS unit 3?',
+      });
+      const reply = await writePost(ravi, {
+        category: 'STUDY',
+        body: 'Yes, sending now',
+        replyToId: question.id,
+      });
+      expect(reply.replyTo).toEqual({
+        id: question.id,
+        authorName: 'Asha K.',
+        excerpt: 'Anyone has DBMS unit 3?',
+      });
+      const notes = successOf(
+        z.array(notificationSchema),
+        await as(asha, ctx.get(`${API}/me/notifications`)).expect(200),
+      ).data;
+      expect(notes.some((n) => n.link === `/community?c=STUDY#m-${reply.id}`)).toBe(true);
+
+      // A reply stays inside the same section and college.
+      const otherSection = await as(ravi, ctx.post(`${API}/community/posts`)).send({
+        category: 'DISCUSSION',
+        body: 'Wrong section',
+        replyToId: question.id,
+      });
+      expect(errorOf(otherSection).error.code).toBe('VALIDATION_ERROR');
+      const otherCollege = await as(meera, ctx.post(`${API}/community/posts`)).send({
+        category: 'STUDY',
+        body: 'Sneaky',
+        replyToId: question.id,
+      });
+      expect(errorOf(otherCollege).error.code).toBe('VALIDATION_ERROR');
     });
   });
 

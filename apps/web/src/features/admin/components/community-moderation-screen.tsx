@@ -139,7 +139,7 @@ export function CommunityModerationScreen({ initialReported }: { initialReported
                       target="_blank"
                       className="font-semibold text-ink hover:text-action"
                     >
-                      {post.title}
+                      {post.title ?? post.body.slice(0, 80)}
                     </Link>
                     <p className="text-xs text-muted">
                       {post.author.name} · {post.college.name} ·{' '}

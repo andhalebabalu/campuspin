@@ -1,11 +1,7 @@
 import { ApiClientError } from '@platform/api-client';
 import type { Metadata } from 'next';
 import { SearchPageClient } from '@/features/search/components/search-page-client';
-import {
-  hasFilters,
-  toPlaceListParams,
-  type Applied,
-} from '@/features/search/lib/search-filters';
+import { hasFilters, toPlaceListParams, type Applied } from '@/features/search/lib/search-filters';
 import { BRAND } from '@/constants/brand';
 import { categoriesService } from '@/services/categories.service';
 import { collegesService } from '@/services/colleges.service';

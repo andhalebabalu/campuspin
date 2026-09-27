@@ -67,7 +67,9 @@ export function PostCard({ post }: { post: CommunityPost }) {
         <CategoryChip category={post.category} />
       </div>
       <Link href={ROUTES.communityPost(post.id)} className="group flex flex-col gap-1.5">
-        <h2 className="text-lg font-bold text-ink group-hover:text-action">{post.title}</h2>
+        {post.title && (
+          <h2 className="text-lg font-bold text-ink group-hover:text-action">{post.title}</h2>
+        )}
         <p className="line-clamp-4 whitespace-pre-line text-sm text-body">{post.body}</p>
       </Link>
       {post.event && <EventBox event={post.event} />}

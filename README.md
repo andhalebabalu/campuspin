@@ -691,11 +691,13 @@ College email domains are managed at `/admin/colleges/:collegeId/email-domains`.
 
 **Community** (`/community/posts`)
 
+On the web the community is a set of **group chats**, like WhatsApp groups: each college has one chat per section (Discussion, Questions, Announcements, Events, Study & notes, Jobs & internships, Lost & found, Student updates), and only its verified students are in them. Each chat message is a community post with no title, so reports, blocks, moderation and notifications work the same way. A message can reply to (quote) another message in the same section. `GET /community/channels` lists the sections with their latest message and message count. An open chat checks for new messages every 6 seconds.
+
 | Method | Path | Who | What it does |
 |---|---|---|---|
 | GET | `/community/posts` | anyone | Cursor-paginated feed (`cursor`, `limit`). `scope=college` shows my college (verified students only). `scope=public` shows public posts from every college, or one with `collegeId`. Without `scope`: my college if I am verified, otherwise public. Filters: `category`, `authorId` |
 | GET | `/community/posts/:id`, `/:id/comments` | anyone | A college-only post returns `404` outside its college |
-| POST / PATCH / DELETE | `/community/posts[/:id]` | verified students (edit and delete: author only) | Categories: `DISCUSSION`, `QUESTION`, `ANNOUNCEMENT`, `EVENT` (start time required), `STUDY`, `JOB`, `LOST_FOUND`, `STUDENT_UPDATE`. Visibility: `COLLEGE_ONLY` (default) or `PUBLIC`. Limit: 10 posts an hour |
+| POST / PATCH / DELETE | `/community/posts[/:id]` | verified students (edit and delete: author only) | Categories: `DISCUSSION`, `QUESTION`, `ANNOUNCEMENT`, `EVENT` (an optional start time and place; only messages with a start time notify the college), `STUDY`, `JOB`, `LOST_FOUND`, `STUDENT_UPDATE`. Visibility: `COLLEGE_ONLY` (default) or `PUBLIC`. Title optional; `replyToId` quotes a message from the same section. Limit: 120 messages an hour |
 | POST | `/community/posts/:id/comments` | verified students who can see the post | Comments, or replies one level deep with `parentId` |
 | PUT / DELETE | `/community/posts/:id/reaction` | verified students | One reaction per member: `LIKE`, `HELPFUL` or `CELEBRATE` |
 | POST | `/community/posts/:id/report`, `/community/comments/:id/report` | signed in | Reasons: `SPAM`, `HARASSMENT`, `INAPPROPRIATE`, `WRONG_INFO`, `OTHER`. Reporting again returns the open report |

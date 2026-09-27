@@ -228,6 +228,7 @@ describe('Access control (e2e, real database)', () => {
       'GET /api/v1/business/enquiries',
       'GET /api/v1/business/listings',
       'GET /api/v1/business/reviews',
+      'GET /api/v1/community/channels',
       'GET /api/v1/marketplace/listings',
       'GET /api/v1/marketplace/listings/{id}',
       'GET /api/v1/me/blocks',

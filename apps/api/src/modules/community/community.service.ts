@@ -1,6 +1,8 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type {
-  CommunityComment,
+import {
+  COMMUNITY_CATEGORIES,
+  type CommunityChannels,
+  type CommunityComment,
   CommunityPost,
   CommunityReportRequest,
   CreateCommentRequest,
@@ -41,7 +43,26 @@ const MEMBER_SELECT = {
 const POST_INCLUDE = {
   author: { select: MEMBER_SELECT },
   college: { select: { id: true, slug: true, name: true } },
+  replyTo: {
+    select: {
+      id: true,
+      body: true,
+      status: true,
+      authorId: true,
+      author: { select: { name: true } },
+    },
+  },
 } as const;
+
+/** A short, single-line preview of a message. */
+export const excerptOf = (text: string, max = 120) => {
+  const flat = text.replace(/\s+/g, ' ').trim();
+  return flat.length > max ? `${flat.slice(0, max - 1)}…` : flat;
+};
+
+/** Where a message lives in the app: its section of the college chat. */
+export const chatLink = (category: string, postId?: string) =>
+  `/community?c=${category}${postId ? `#m-${postId}` : ''}`;
 
 type PostRow = Prisma.CommunityPostGetPayload<{ include: typeof POST_INCLUDE }>;
 
@@ -123,6 +144,66 @@ export class CommunityService {
     return (await this.toPosts([row], viewer))[0]!;
   }
 
+  /**
+   * My college's group chat, one section per category, each with its latest message: the chat
+   * list of the community screen. Verified students only.
+   */
+  async channels(userId: string): Promise<CommunityChannels> {
+    const student = await this.students.requireVerified(userId);
+    const hidden = await this.blocks.hiddenFrom(userId);
+    const where: Prisma.CommunityPostWhereInput = {
+      collegeId: student.college.id,
+      status: 'ACTIVE',
+      ...(hidden.length > 0 ? { authorId: { notIn: hidden } } : {}),
+    };
+    const [counts, latest] = await Promise.all([
+      this.prisma.communityPost.groupBy({ by: ['category'], where, _count: { _all: true } }),
+      Promise.all(
+        COMMUNITY_CATEGORIES.map((category) =>
+          this.prisma.communityPost.findFirst({
+            where: { ...where, category },
+            orderBy: { id: 'desc' },
+            select: {
+              id: true,
+              title: true,
+              body: true,
+              createdAt: true,
+              authorId: true,
+              author: { select: { name: true } },
+            },
+          }),
+        ),
+      ),
+    ]);
+    const countOf = new Map(counts.map((row) => [row.category, row._count._all]));
+    return {
+      college: student.college,
+      channels: COMMUNITY_CATEGORIES.map((category, index) => {
+        const last = latest[index];
+        return {
+          category,
+          messageCount: countOf.get(category) ?? 0,
+          lastMessage: last
+            ? {
+                id: last.id,
+                text: excerptOf(last.title ?? last.body, 80),
+                authorName:
+                  last.authorId === userId
+                    ? 'You'
+                    : toMemberSummary({
+                        id: last.authorId,
+                        name: last.author.name,
+                        studentVerifiedUntil: null,
+                        verifiedCollege: null,
+                      }).displayName,
+                createdAt: last.createdAt.toISOString(),
+              }
+            : null,
+        };
+      }),
+    };
+  }
+
   // ── Writing posts ──────────────────────────────────────────────────────────────────────────────
 
   async create(userId: string, dto: CreateCommunityPostRequest): Promise<CommunityPost> {
@@ -133,9 +214,29 @@ export class CommunityService {
     if (recent >= POSTS_PER_HOUR) {
       throw new AppException(
         'RATE_LIMITED',
-        `You can post ${POSTS_PER_HOUR} times an hour. Try again a little later.`,
+        `You can send ${POSTS_PER_HOUR} messages an hour. Try again a little later.`,
         HttpStatus.TOO_MANY_REQUESTS,
       );
+    }
+
+    // A reply quotes a live message from the same section of the same college chat.
+    let replyAuthorId: string | null = null;
+    if (dto.replyToId) {
+      const target = await this.prisma.communityPost.findUnique({
+        where: { id: dto.replyToId },
+        select: { collegeId: true, category: true, status: true, authorId: true },
+      });
+      const hidden = await this.blocks.hiddenFrom(userId);
+      if (
+        !target ||
+        target.status !== 'ACTIVE' ||
+        target.collegeId !== student.college.id ||
+        target.category !== dto.category ||
+        hidden.includes(target.authorId)
+      ) {
+        throw AppException.validation({ replyToId: ['That message is not in this chat'] });
+      }
+      replyAuthorId = target.authorId;
     }
 
     const row = await this.prisma.communityPost.create({
@@ -144,7 +245,8 @@ export class CommunityService {
         collegeId: student.college.id,
         category: dto.category,
         visibility: dto.visibility,
-        title: dto.title,
+        title: dto.title ?? null,
+        replyToId: dto.replyToId ?? null,
         body: dto.body,
         eventStartsAt: dto.eventStartsAt ? new Date(dto.eventStartsAt) : null,
         eventLocation: dto.category === 'EVENT' ? (dto.eventLocation ?? null) : null,
@@ -153,8 +255,10 @@ export class CommunityService {
     });
 
     // Events and jobs reach the rest of the college (each member can switch these off).
+    // An event only notifies once it has a date: plain chat in the Events section does not.
     const category = eventCategoryFor(dto.category);
-    if (category) {
+    const label = dto.title ?? excerptOf(dto.body, 80);
+    if (category && (category !== 'EVENTS' || dto.eventStartsAt)) {
       const classmates = await this.prisma.user.findMany({
         where: {
           verifiedCollegeId: student.college.id,
@@ -170,11 +274,22 @@ export class CommunityService {
         {
           category,
           type: category === 'EVENTS' ? 'community.event' : 'community.job',
-          title: category === 'EVENTS' ? `New event: ${dto.title}` : `New opportunity: ${dto.title}`,
+          title: category === 'EVENTS' ? `New event: ${label}` : `New opportunity: ${label}`,
           message: `Posted in the ${student.college.name} community.`,
-          link: `/community/posts/${row.id}`,
+          link: chatLink(dto.category, row.id),
         },
       );
+    }
+
+    if (replyAuthorId && replyAuthorId !== userId) {
+      await this.notifications.notify({
+        userId: replyAuthorId,
+        category: 'COMMUNITY',
+        type: 'community.reply',
+        title: `${toMemberSummary(row.author).displayName} replied to your message`,
+        message: excerptOf(dto.body),
+        link: chatLink(dto.category, row.id),
+      });
     }
 
     const viewer = { userId, collegeId: student.college.id, hidden: [] };
@@ -258,7 +373,11 @@ export class CommunityService {
     dto: CreateCommentRequest,
   ): Promise<CommunityComment> {
     const student = await this.students.requireVerified(userId);
-    const viewer = { userId, collegeId: student.college.id, hidden: await this.blocks.hiddenFrom(userId) };
+    const viewer = {
+      userId,
+      collegeId: student.college.id,
+      hidden: await this.blocks.hiddenFrom(userId),
+    };
     const post = await this.readablePost(viewer, postId);
     if (post.status !== 'ACTIVE') {
       throw AppException.conflict('CONFLICT', 'This post is not open for comments.');
@@ -300,7 +419,7 @@ export class CommunityService {
         category: 'COMMUNITY',
         type: 'community.comment',
         title: `${author.displayName} commented on your post`,
-        message: post.title,
+        message: post.title ?? excerptOf(post.body),
         link,
       });
     }
@@ -310,7 +429,7 @@ export class CommunityService {
         category: 'COMMUNITY',
         type: 'community.reply',
         title: `${author.displayName} replied to your comment`,
-        message: post.title,
+        message: post.title ?? excerptOf(post.body),
         link,
       });
     }
@@ -335,7 +454,10 @@ export class CommunityService {
       throw AppException.notFound('Comment not found');
     }
     await this.prisma.$transaction([
-      this.prisma.communityComment.update({ where: { id: commentId }, data: { status: 'REMOVED' } }),
+      this.prisma.communityComment.update({
+        where: { id: commentId },
+        data: { status: 'REMOVED' },
+      }),
       this.prisma.communityPost.update({
         where: { id: comment.postId },
         data: { commentCount: { decrement: 1 } },
@@ -347,7 +469,11 @@ export class CommunityService {
 
   async react(userId: string, postId: string, dto: ReactionRequest): Promise<ReactionSummary> {
     const student = await this.students.requireVerified(userId);
-    const viewer = { userId, collegeId: student.college.id, hidden: await this.blocks.hiddenFrom(userId) };
+    const viewer = {
+      userId,
+      collegeId: student.college.id,
+      hidden: await this.blocks.hiddenFrom(userId),
+    };
     const post = await this.readablePost(viewer, postId);
     if (post.status !== 'ACTIVE') throw AppException.notFound('Post not found');
 
@@ -432,7 +558,10 @@ export class CommunityService {
    */
   async member(userId: string | null, memberId: string): Promise<MemberProfile> {
     const viewer = await this.viewer(userId);
-    if (viewer.hidden.includes(memberId) && !(userId && (await this.blocks.blockedByMe(userId, memberId)))) {
+    if (
+      viewer.hidden.includes(memberId) &&
+      !(userId && (await this.blocks.blockedByMe(userId, memberId)))
+    ) {
       throw AppException.notFound('Member not found');
     }
     const row = await this.prisma.user.findUnique({
@@ -507,6 +636,21 @@ export class CommunityService {
         visibility: row.visibility,
         title: row.title,
         body: row.body,
+        replyTo:
+          row.replyTo &&
+          row.replyTo.status === 'ACTIVE' &&
+          !viewer.hidden.includes(row.replyTo.authorId)
+            ? {
+                id: row.replyTo.id,
+                authorName: toMemberSummary({
+                  id: row.replyTo.authorId,
+                  name: row.replyTo.author.name,
+                  studentVerifiedUntil: null,
+                  verifiedCollege: null,
+                }).displayName,
+                excerpt: excerptOf(row.replyTo.body),
+              }
+            : null,
         college: row.college,
         author: toMemberSummary(row.author),
         event: row.eventStartsAt
@@ -524,4 +668,3 @@ export class CommunityService {
     });
   }
 }
-

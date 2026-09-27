@@ -158,7 +158,7 @@ export function PostDetail({ postId }: { postId: string }) {
           <CategoryChip category={post.category} />
         </div>
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-ink">{post.title}</h1>
+          {post.title && <h1 className="text-2xl font-bold text-ink">{post.title}</h1>}
           <p className="whitespace-pre-line text-body">{post.body}</p>
           {post.editedAt && <p className="text-xs text-muted">Edited {timeAgo(post.editedAt)}</p>}
         </div>

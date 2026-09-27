@@ -22,7 +22,11 @@ const PEOPLE: Array<{ initials: string; tone: Tone; x: number; y: number; size: 
   { initials: 'MN', tone: 'violet', x: 84, y: 70, size: 'size-16 text-lg' },
 ];
 
-const BUBBLES: Array<{ icon: 'chat' | 'users' | 'calendar' | 'search' | 'chats'; x: number; y: number }> = [
+const BUBBLES: Array<{
+  icon: 'chat' | 'users' | 'calendar' | 'search' | 'chats';
+  x: number;
+  y: number;
+}> = [
   { icon: 'chat', x: 12, y: 24 },
   { icon: 'users', x: 34, y: 14 },
   { icon: 'chats', x: 58, y: 18 },

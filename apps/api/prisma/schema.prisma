@@ -1243,8 +1243,11 @@ model CommunityPost {
   collegeId      String                 @db.Char(36)
   category       CommunityCategory
   visibility     CommunityVisibility    @default(COLLEGE_ONLY)
-  title          String                 @db.VarChar(150)
+  // Optional: chat messages have none, longer posts may.
+  title          String?                @db.VarChar(150)
   body           String                 @db.Text
+  // The message this one replies to (WhatsApp-style quote), in the same college chat.
+  replyToId      String?                @db.Char(36)
   // EVENT posts only.
   eventStartsAt  DateTime?
   eventLocation  String?                @db.VarChar(200)
@@ -1260,7 +1263,10 @@ model CommunityPost {
   college   College             @relation(fields: [collegeId], references: [id], onDelete: Cascade)
   comments  CommunityComment[]
   reactions CommunityReaction[]
+  replyTo   CommunityPost?      @relation("PostReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   CommunityPost[]     @relation("PostReplies")
 
+  @@index([collegeId, category, status, id])
   @@index([collegeId, status, createdAt])
   @@index([visibility, status, createdAt])
   @@index([authorId, createdAt])

@@ -1,4 +1,5 @@
 import {
+  communityChannelsSchema,
   communityCommentSchema,
   communityPostSchema,
   cursorPageSchema,
@@ -35,6 +36,12 @@ export const communityService = {
     apiClient.get('/community/posts', {
       query: { ...params },
       schema: postPage,
+      signal,
+      init: { cache: 'no-store' },
+    }),
+  channels: (signal?: AbortSignal) =>
+    apiClient.get('/community/channels', {
+      schema: communityChannelsSchema,
       signal,
       init: { cache: 'no-store' },
     }),

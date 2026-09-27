@@ -5,8 +5,8 @@ import type {
   NotificationCategory,
 } from '@platform/contracts';
 
-/** A verified student may start at most this many posts in any hour (spam brake). */
-export const POSTS_PER_HOUR = 10;
+/** A verified student may send at most this many messages in any hour (spam brake). */
+export const POSTS_PER_HOUR = 120;
 
 /** The reader of a community resource, as resolved from the database. */
 export interface Viewer {

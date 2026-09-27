@@ -68,7 +68,7 @@ export type DismissReportRequest = z.output<typeof dismissReportSchema>;
 
 export const adminCommunityPostSchema = z.object({
   id: z.string(),
-  title: z.string(),
+  title: z.string().nullable(),
   body: z.string(),
   category: communityCategorySchema,
   visibility: z.enum(['COLLEGE_ONLY', 'PUBLIC']),

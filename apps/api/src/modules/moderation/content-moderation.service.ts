@@ -14,6 +14,7 @@ import { PrismaService } from '../../infra/database/prisma.service.js';
 import type { AuditAction } from '../audit/audit-actions.js';
 import { AuditService } from '../audit/audit.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { excerptOf } from '../community/community.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 
 type Tx = Prisma.TransactionClient;
@@ -85,7 +86,7 @@ export class ContentModerationService {
   ): Promise<AdminCommunityPost> {
     const post = await this.prisma.communityPost.findUnique({
       where: { id: postId },
-      select: { status: true, authorId: true, title: true },
+      select: { status: true, authorId: true, title: true, body: true },
     });
     if (!post) throw AppException.notFound('Post not found');
     assertMove(post.status, next);
@@ -105,7 +106,7 @@ export class ContentModerationService {
             type: next === 'HIDDEN' ? 'community.post_hidden' : 'community.post_removed',
             title:
               next === 'HIDDEN' ? 'A moderator hid your post' : 'A moderator removed your post',
-            message: `"${post.title}": ${reason ?? 'against the community rules'}`,
+            message: `"${post.title ?? excerptOf(post.body, 60)}": ${reason ?? 'against the community rules'}`,
             ...(next === 'HIDDEN' ? { link: `/community/posts/${postId}` } : {}),
           },
           tx,

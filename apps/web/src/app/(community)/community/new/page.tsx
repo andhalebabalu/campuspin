@@ -1,8 +1,7 @@
-import type { Metadata } from 'next';
-import { PostComposer } from '@/features/community/components/post-composer';
+import { redirect } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
 
-export const metadata: Metadata = { title: 'New post', robots: { index: false, follow: false } };
-
+/** Posting now happens inside the college chats. */
 export default function NewPostPage() {
-  return <PostComposer />;
+  redirect(ROUTES.community);
 }

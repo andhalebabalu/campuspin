@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
+  type CommunityChannels,
   type CommunityComment,
   type CommunityPost,
   type CommunityReportRequest,
@@ -26,6 +27,7 @@ import {
   type ReactionSummary,
   type ReportReceipt,
   type UpdateCommunityPostRequest,
+  communityChannelsSchema,
   communityCommentSchema,
   communityPostSchema,
   communityReportRequestSchema,
@@ -76,6 +78,7 @@ const EXAMPLE_POST = {
   visibility: 'COLLEGE_ONLY',
   title: 'Anyone has last year’s DBMS notes?',
   body: 'Looking for the unit 3 and 4 notes.',
+  replyTo: null,
   college: MEMBER.college,
   author: MEMBER,
   event: null,
@@ -125,6 +128,40 @@ export class CommunityController {
     @Viewer() viewer: AuthenticatedUser | null,
   ): Promise<CursorPage<CommunityPost>> {
     return this.community.feed(viewer?.id ?? null, query);
+  }
+
+  @Get('community/channels')
+  @ApiBearerAuth()
+  @ResponseMessage('Chat sections retrieved')
+  @ApiOperation({
+    summary: 'My college chat sections',
+    description:
+      'One section per category with its latest message and message count. Verified students only.',
+  })
+  @ApiEnvelopeResponse(communityChannelsSchema, {
+    description: 'The sections.',
+    example: {
+      message: 'Chat sections retrieved',
+      data: {
+        college: MEMBER.college,
+        channels: [
+          {
+            category: 'QUESTION',
+            lastMessage: {
+              id: EXAMPLE_POST.id,
+              text: 'Anyone has last year’s DBMS notes?',
+              authorName: 'Rahul A.',
+              createdAt: '2026-09-26T10:00:00.000Z',
+            },
+            messageCount: 12,
+          },
+        ],
+      },
+    },
+  })
+  @ApiErrorResponses(UNAUTHORIZED, NOT_VERIFIED)
+  channels(@CurrentUser() actor: AuthenticatedUser): Promise<CommunityChannels> {
+    return this.community.channels(actor.id);
   }
 
   @OptionalAuth()
@@ -295,7 +332,10 @@ export class CommunityController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ResponseMessage('Report received')
-  @ApiOperation({ summary: 'Report a post', description: 'Reporting twice returns the open report.' })
+  @ApiOperation({
+    summary: 'Report a post',
+    description: 'Reporting twice returns the open report.',
+  })
   @ApiEnvelopeResponse(reportReceiptSchema, {
     description: 'The report.',
     example: {

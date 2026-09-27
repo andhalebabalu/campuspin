@@ -64,3 +64,17 @@ describe('cursorPage', () => {
     expect(cursorPage(rows, 3)).toEqual({ items: rows, nextCursor: null });
   });
 });
+
+describe('excerptOf and chatLink', () => {
+  it('flattens whitespace, keeps letters and cuts long text with an ellipsis', async () => {
+    const { excerptOf } = await import('./community.service.js');
+    expect(excerptOf('Anyone has\n\n DBMS   notes?')).toBe('Anyone has DBMS notes?');
+    expect(excerptOf('x'.repeat(200), 10)).toBe(`${'x'.repeat(9)}…`);
+  });
+
+  it('points into the right chat section, optionally at one message', async () => {
+    const { chatLink } = await import('./community.service.js');
+    expect(chatLink('STUDY')).toBe('/community?c=STUDY');
+    expect(chatLink('EVENT', 'abc')).toBe('/community?c=EVENT#m-abc');
+  });
+});
