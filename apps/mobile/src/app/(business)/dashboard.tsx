@@ -57,6 +57,9 @@ export default function Dashboard() {
         >
           <View style={styles.glow} />
           <View style={styles.heroTop}>
+            <View style={styles.markTile}>
+              <Image source={require('@/assets/images/logo-mark.png')} style={styles.mark} contentFit="contain" />
+            </View>
             <View style={styles.flex}>
               <AppText variant="small" color="rgba(255,255,255,0.75)">
                 Business dashboard
@@ -264,6 +267,15 @@ const styles = StyleSheet.create({
     right: -60,
   },
   heroTop: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  markTile: {
+    width: 46,
+    height: 46,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mark: { width: 36, height: 36 },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',

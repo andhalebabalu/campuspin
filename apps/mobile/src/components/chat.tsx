@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, BackButton, Icon } from '@/components/ui';
+import { useKeyboardVisible } from '@/components/keyboard-avoider';
 import { colors, fonts, radius, space } from '@/theme/tokens';
 
 /** The top bar of a chat: back, an avatar/icon, a title with a subtitle, and an optional action. */
@@ -83,9 +84,11 @@ export function Composer({
   disabled?: boolean;
 }) {
   const insets = useSafeAreaInsets();
+  // With the keyboard open there is no home indicator to keep clear of.
+  const keyboardOpen = useKeyboardVisible();
   const canSend = value.trim().length > 0 && !sending && !disabled;
   return (
-    <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, space.sm) + space.xs }]}>
+    <View style={[styles.composer, { paddingBottom: (keyboardOpen ? space.sm : Math.max(insets.bottom, space.sm)) + space.xs }]}>
       {above}
       <View style={styles.composerRow}>
         {leading}

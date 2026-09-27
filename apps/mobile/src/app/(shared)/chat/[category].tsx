@@ -15,13 +15,13 @@ import {
   Alert,
   AppState,
   FlatList,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   StyleSheet,
   View,
   type TextInput,
 } from 'react-native';
+import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ChatHeader, Composer, DaySeparator, ReplyPreview } from '@/components/chat';
 import { ReportSheet } from '@/components/report-sheet';
 import {
@@ -200,7 +200,7 @@ function ChatPane({ category }: { category: CommunityCategory }) {
         title={COMMUNITY_CATEGORY_LABELS[category]}
         subtitle={`${collegeName} · ${meta.hint}`}
       />
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoider>
         {error ? (
           <ErrorState error={error} onRetry={() => setReload((n) => n + 1)} />
         ) : !messages ? (
@@ -267,7 +267,7 @@ function ChatPane({ category }: { category: CommunityCategory }) {
             setReplyTo(null);
           }}
         />
-      </KeyboardAvoidingView>
+      </KeyboardAvoider>
 
       <Sheet visible={menuFor !== null} onClose={() => setMenuFor(null)}>
         {menuFor ? (

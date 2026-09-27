@@ -2,7 +2,8 @@ import { MARKETPLACE_REPORT_REASONS, MESSAGE_MAX, type Conversation, type Messag
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, AppState, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, AppState, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ChatHeader, Composer, DaySeparator } from '@/components/chat';
 import { ReportSheet } from '@/components/report-sheet';
 import {
@@ -186,7 +187,7 @@ export default function Thread() {
         <Icon name="chevron-forward" size={18} color={colors.placeholder} />
       </Pressable>
 
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoider>
         <FlatList
           inverted
           data={messages}
@@ -242,7 +243,7 @@ export default function Thread() {
             maxLength={MESSAGE_MAX}
           />
         )}
-      </KeyboardAvoidingView>
+      </KeyboardAvoider>
 
       <Sheet visible={menuOpen} onClose={() => setMenuOpen(false)}>
         <SheetOption

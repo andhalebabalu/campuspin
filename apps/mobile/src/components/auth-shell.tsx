@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { useRef, type ReactNode } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAvoider, useRevealFocusedInput } from '@/components/keyboard-avoider';
 import { AppText, BackButton } from '@/components/ui';
 import { useLightStatusBar } from '@/hooks/use-status-bar';
 import { colors, heroGradient, radius, shadows, space } from '@/theme/tokens';
@@ -21,12 +22,14 @@ export function AuthShell({
 }) {
   useLightStatusBar();
   const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
+  const onScroll = useRevealFocusedInput(scrollRef);
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoider style={styles.flex}>
       <ScrollView
+        ref={scrollRef}
+        onScroll={onScroll}
+        scrollEventThrottle={32}
         style={styles.flex}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + space.xxl }}
         keyboardShouldPersistTaps="handled"
@@ -58,7 +61,7 @@ export function AuthShell({
         <View style={styles.card}>{children}</View>
         {footer ? <View style={styles.footer}>{footer}</View> : null}
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAvoider>
   );
 }
 

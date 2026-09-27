@@ -9,7 +9,8 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { Composer, ReplyPreview } from '@/components/chat';
 import { MemberLine } from '@/components/member-line';
 import { ReportSheet } from '@/components/report-sheet';
@@ -166,11 +167,7 @@ export default function PostScreen() {
           ),
         }}
       />
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-      >
+      <KeyboardAvoider>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.card}>
             <MemberLine member={post.author} />
@@ -256,7 +253,7 @@ export default function PostScreen() {
             }
           />
         ) : null}
-      </KeyboardAvoidingView>
+      </KeyboardAvoider>
 
       <Sheet visible={menu !== null} onClose={() => setMenu(null)}>
         {menu?.kind === 'post' ? (

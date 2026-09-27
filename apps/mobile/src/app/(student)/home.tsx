@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, type Href } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -85,6 +86,9 @@ export default function Home() {
         >
           <View style={styles.glow} />
           <View style={styles.heroTop}>
+            <View style={styles.markTile}>
+              <Image source={require('@/assets/images/logo-mark.png')} style={styles.mark} contentFit="contain" />
+            </View>
             <View style={styles.flex}>
               <AppText variant="small" color="rgba(255,255,255,0.75)">
                 {greeting()}
@@ -259,6 +263,15 @@ const styles = StyleSheet.create({
     right: -60,
   },
   heroTop: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  markTile: {
+    width: 46,
+    height: 46,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mark: { width: 36, height: 36 },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',

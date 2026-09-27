@@ -1,9 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -13,6 +11,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAvoider, useRevealFocusedInput } from '@/components/keyboard-avoider';
 import { colors, radius, shadows, space } from '@/theme/tokens';
 import { Icon, type IconName } from './icon';
 import { AppText } from './text';
@@ -43,9 +42,14 @@ export function Screen({
   footer?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
+  const onScroll = useRevealFocusedInput(scrollRef);
   const body = (
     <View style={styles.flex}>
       <ScrollView
+        ref={scrollRef}
+        onScroll={onScroll}
+        scrollEventThrottle={32}
         style={styles.flex}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
@@ -75,13 +79,7 @@ export function Screen({
   return (
     <View style={styles.screen}>
       {keyboard ? (
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-        >
-          {body}
-        </KeyboardAvoidingView>
+        <KeyboardAvoider>{body}</KeyboardAvoider>
       ) : (
         body
       )}

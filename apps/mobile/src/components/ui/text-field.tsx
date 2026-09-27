@@ -1,5 +1,6 @@
 import { forwardRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import { announceInputFocus } from '@/components/keyboard-avoider';
 import { colors, fonts, radius, space } from '@/theme/tokens';
 import { Icon, type IconName } from './icon';
 import { AppText } from './text';
@@ -45,6 +46,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
           textAlignVertical={multiline ? 'top' : 'center'}
           onFocus={(event) => {
             setFocused(true);
+            announceInputFocus();
             onFocus?.(event);
           }}
           onBlur={(event) => {

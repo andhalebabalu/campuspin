@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAvoider, useKeyboardVisible } from '@/components/keyboard-avoider';
 import { colors, radius, space } from '@/theme/tokens';
 import { Icon, type IconName } from './icon';
 import { AppText } from './text';
@@ -18,11 +19,12 @@ export function Sheet({
   children: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
+  const keyboardOpen = useKeyboardVisible();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.root}>
+      <KeyboardAvoider style={styles.root}>
         <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Close" />
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + space.lg }]}>
+        <View style={[styles.sheet, { paddingBottom: (keyboardOpen ? 0 : insets.bottom) + space.lg }]}>
           <View style={styles.handle} />
           {title ? (
             <AppText variant="heading" style={styles.title}>
@@ -31,7 +33,7 @@ export function Sheet({
           ) : null}
           {children}
         </View>
-      </View>
+      </KeyboardAvoider>
     </Modal>
   );
 }
