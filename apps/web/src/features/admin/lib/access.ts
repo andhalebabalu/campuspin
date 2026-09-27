@@ -27,6 +27,7 @@ export interface AdminSection {
  */
 export const ADMIN_SECTIONS: readonly AdminSection[] = [
   { href: ROUTES.admin, label: 'Overview', icon: 'grid' },
+  { href: ROUTES.adminAnalytics, label: 'Analytics', icon: 'chart', permission: 'analytics.view' },
   {
     href: ROUTES.adminVerifications,
     label: 'Verifications',

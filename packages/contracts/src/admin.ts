@@ -62,6 +62,8 @@ export const adminUserSchema = z.object({
   /** The business this account owns, if any. */
   business: z.object({ id: z.string(), businessName: z.string() }).nullable(),
   lastLoginAt: z.string().nullable(),
+  /** The last time the account used the web or mobile app (updated at most once a minute). */
+  lastActiveAt: z.string().nullable(),
   createdAt: z.string(),
 });
 export type AdminUser = z.infer<typeof adminUserSchema>;
@@ -107,7 +109,12 @@ export const adminBusinessSchema = z.object({
   id: z.string(),
   businessName: z.string(),
   slug: z.string(),
-  owner: z.object({ id: z.string(), name: z.string(), email: z.string() }),
+  owner: z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string(),
+    lastActiveAt: z.string().nullable(),
+  }),
   phone: z.string().nullable(),
   email: z.string().nullable(),
   website: z.string().nullable(),

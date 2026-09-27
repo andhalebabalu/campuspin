@@ -27,6 +27,7 @@ const USER_SELECT = {
   status: true,
   emailVerifiedAt: true,
   lastLoginAt: true,
+  lastActiveAt: true,
   createdAt: true,
   userRoles: { select: { role: { select: { key: true } } } },
   ownedBusinesses: {
@@ -49,6 +50,7 @@ function toAdminUser(row: UserRow): AdminUser {
     roles: roleKeysOf(row),
     business: business ? { id: business.id, businessName: business.businessName } : null,
     lastLoginAt: row.lastLoginAt ? row.lastLoginAt.toISOString() : null,
+    lastActiveAt: row.lastActiveAt ? row.lastActiveAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
   };
 }

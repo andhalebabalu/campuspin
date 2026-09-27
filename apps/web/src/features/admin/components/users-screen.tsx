@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useSession } from '@/lib/auth/session-context';
+import { LastActive } from './last-active';
 import { ListingCreditsPanel } from './listing-credits-panel';
 import { adminService } from '@/services/admin.service';
 import { can } from '../lib/access';
@@ -173,6 +174,9 @@ export function UsersScreen({
                       {target.lastLoginAt
                         ? ` · last sign-in ${dateFormat.format(new Date(target.lastLoginAt))}`
                         : ' · never signed in'}
+                    </span>
+                    <span className="text-xs text-body">
+                      <LastActive at={target.lastActiveAt} />
                     </span>
                   </div>
                   {mayAct(target) && (

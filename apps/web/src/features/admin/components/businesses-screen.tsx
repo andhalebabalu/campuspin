@@ -23,6 +23,7 @@ import {
   useAdminList,
   type ReasonRequest,
 } from './admin-ui';
+import { LastActive } from './last-active';
 
 /** Business accounts and the "verified business" badge students see. */
 export function BusinessesScreen({
@@ -129,6 +130,9 @@ export function BusinessesScreen({
                     <span className="text-xs text-muted">
                       {business.liveListingCount} live of {business.listingCount} listings · joined{' '}
                       {dateFormat.format(new Date(business.createdAt))}
+                    </span>
+                    <span className="text-xs text-body">
+                      Owner: <LastActive at={business.owner.lastActiveAt} />
                     </span>
                   </div>
                   <Button

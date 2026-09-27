@@ -23,7 +23,7 @@ const BUSINESS_SELECT = {
   logoUrl: true,
   verificationStatus: true,
   createdAt: true,
-  owner: { select: { id: true, name: true, email: true } },
+  owner: { select: { id: true, name: true, email: true, lastActiveAt: true } },
 } satisfies Prisma.BusinessProfileSelect;
 
 type BusinessRow = Prisma.BusinessProfileGetPayload<{ select: typeof BUSINESS_SELECT }>;
@@ -135,7 +135,12 @@ export class AdminBusinessesService {
         id: row.id,
         businessName: row.businessName,
         slug: row.slug,
-        owner: { id: row.owner.id, name: row.owner.name, email: row.owner.email },
+        owner: {
+          id: row.owner.id,
+          name: row.owner.name,
+          email: row.owner.email,
+          lastActiveAt: row.owner.lastActiveAt?.toISOString() ?? null,
+        },
         phone: row.phone,
         email: row.email,
         website: row.website,

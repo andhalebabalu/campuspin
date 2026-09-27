@@ -14,6 +14,7 @@ import { AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from '@/components/ui';
+import { useVisitTracker } from '@/hooks/use-visit-tracker';
 import { queryClient } from '@/lib/query';
 import { SessionProvider, useSession } from '@/lib/session';
 import { colors } from '@/theme/tokens';
@@ -30,6 +31,7 @@ const navigationTheme = {
 
 function RootNavigator() {
   const { status, app } = useSession();
+  useVisitTracker();
   const signedIn = status === 'authenticated';
 
   useEffect(() => {

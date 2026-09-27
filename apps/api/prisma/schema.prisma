@@ -230,6 +230,8 @@ model User {
   course               String?    @db.VarChar(120)
   year                 Int?       @db.TinyInt
   lastLoginAt          DateTime?
+  // The last time the account used the web or mobile app; written at most once a minute.
+  lastActiveAt         DateTime?
   // The college this member is a VERIFIED student of (null = not verified). Separate from
   // `collegeId` above, which is only the college they chose to browse and never grants anything.
   verifiedCollegeId    String?    @db.Char(36)
@@ -282,6 +284,7 @@ model User {
   creditEntries                ListingCreditEntry[]  @relation("CreditEntryUser")
   creditEntriesMade            ListingCreditEntry[]  @relation("CreditEntryActor")
   updatedSettings              PlatformSetting[]
+  dailyVisits                  DailyVisit[]
 
   refreshTokens           RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -291,6 +294,7 @@ model User {
   @@index([collegeId])
   @@index([verifiedCollegeId])
   @@index([createdAt])
+  @@index([lastActiveAt])
   @@map("users")
 }
 
@@ -1550,4 +1554,29 @@ model ListingCreditEntry {
 
   @@index([userId, createdAt])
   @@map("listing_credit_entries")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Activity analytics
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+// One row per device per day (India time). The key is a random id the browser or phone keeps, so
+// no IP address or other personal data is stored. A signed-in visit also records the account.
+model DailyVisit {
+  day         DateTime @db.Date
+  visitorKey  String   @db.VarChar(64)
+  userId      String?  @db.Char(36)
+  // STUDENT, BUSINESS or STAFF when signed in; null for a guest.
+  audience    String?  @db.VarChar(16)
+  // "web" or "mobile"
+  client      String   @db.VarChar(10)
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@id([day, visitorKey])
+  @@index([day, userId])
+  @@index([userId])
+  @@map("daily_visits")
 }

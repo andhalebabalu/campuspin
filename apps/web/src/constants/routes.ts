@@ -51,4 +51,5 @@ export const ROUTES = {
   adminBusinesses: '/admin/businesses',
   adminPromotions: '/admin/promotions',
   adminListingLimits: '/admin/listing-limits',
+  adminAnalytics: '/admin/analytics',
 } as const;
