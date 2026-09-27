@@ -514,3 +514,11 @@ export const updatePlaceImageRequestSchema = z
     }
   });
 export type UpdatePlaceImageRequest = z.output<typeof updatePlaceImageRequestSchema>;
+
+// ── Saved places (a member's bookmarks) ──────────────────────────────────────────────────────────
+
+export const savedPlaceStateSchema = z.object({ placeId: z.string(), saved: z.boolean() });
+export type SavedPlaceState = z.infer<typeof savedPlaceStateSchema>;
+
+/** The ids of every place I saved, for bookmark icons in lists. */
+export const savedPlaceIdsSchema = z.array(z.string());
