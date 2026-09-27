@@ -4,6 +4,8 @@ export const ROUTES = {
   colleges: '/colleges',
   collegeDetail: (slug: string) => `/colleges/${slug}`,
   placeDetail: (slug: string) => `/places/${slug}`,
+  /** Where a listing's printed QR code leads: straight to writing a review. */
+  placeReview: (slug: string) => `/places/${slug}/review`,
   search: '/search',
   suggestPlace: '/suggest-a-place',
   login: '/login',

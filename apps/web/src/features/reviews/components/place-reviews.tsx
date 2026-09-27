@@ -254,12 +254,13 @@ const STATUS_NOTES: Partial<Record<Review['status'], string>> = {
  * The signed-in student's own review: a prompt to write one, the form, or their review with edit and
  * withdraw. Anyone else gets a sign-in link or a short note on who can review.
  */
-function MyReview({
+export function MyReview({
   placeId,
   placeSlug,
   summary,
   onChanged,
   onMine,
+  returnTo,
 }: {
   placeId: string;
   placeSlug: string;
@@ -267,6 +268,8 @@ function MyReview({
   onChanged: () => void;
   /** Tells the list which review is the caller's own, so it is not listed twice. */
   onMine: (id: string | null) => void;
+  /** Where signing in leads back to. Defaults to the reviews on the place page. */
+  returnTo?: string;
 }) {
   const { status: sessionStatus, user } = useSession();
   const isStudent = user?.roles.includes('STUDENT') ?? false;
@@ -301,7 +304,7 @@ function MyReview({
     return (
       <p className="text-sm text-body">
         <Link
-          href={`${ROUTES.login}?next=${encodeURIComponent(`${ROUTES.placeDetail(placeSlug)}#reviews`)}`}
+          href={`${ROUTES.login}?next=${encodeURIComponent(returnTo ?? `${ROUTES.placeDetail(placeSlug)}#reviews`)}`}
           className="font-medium text-action underline-offset-2 hover:underline"
         >
           Sign in

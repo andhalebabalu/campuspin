@@ -218,6 +218,15 @@ const GLYPHS = {
       <path d="m21 16-5-5-9 9" />
     </>
   ),
+  qr: (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M14 14h3v3h-3zM21 14v.01M14 21h.01M17 21h4v-4" />
+    </>
+  ),
+  download: <path d="M12 4v11m-5-5 5 5 5-5M4 20h16" />,
   arrowLeft: <path d="M19 12H5m6-6-6 6 6 6" />,
   external: (
     <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
