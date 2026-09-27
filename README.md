@@ -61,6 +61,7 @@ Detailed design lives in [docs/](docs/README.md): architecture, database/ERD, AP
 │  │  │  ├─ infra/          config, database (Prisma), logging
 │  │  │  └─ modules/        feature modules (health, auth, audit, colleges, categories, places; search, ... next)
 │  │  └─ test/              end-to-end tests (Supertest against the real Nest app)
+│  ├─ mobile/               Expo (React Native) app for students and businesses (see its README)
 │  └─ web/                  Next.js app (@platform/web)
 │     └─ src/
 │        ├─ app/            routes (App Router), global styles + design tokens
@@ -794,6 +795,19 @@ open "http://localhost:3000/search?q=mess"
 open http://localhost:3000/register
 open http://localhost:3000/suggest-a-place   # signed out: a "sign in to continue" prompt; signed in: the form
 ```
+
+## Mobile app
+
+`apps/mobile` is the Android and iOS app for students and businesses (no admin panel: staff use the
+web). It is an Expo app on the same API, reusing the shared `contracts` and `api-client` packages. It
+keeps its own `node_modules` because Expo pins its own React version.
+
+```bash
+cd apps/mobile && npm install    # once
+npm run dev:mobile               # from the root, with the API running; scan the QR code with Expo Go
+```
+
+Testing on a phone, APK builds and store release: [apps/mobile/README.md](apps/mobile/README.md).
 
 ## Testing
 

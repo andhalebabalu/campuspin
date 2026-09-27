@@ -12,6 +12,8 @@ export default defineConfig([
     '**/generated/**',
     '**/.next/**',
     'apps/web/**',
+    // The Expo app has its own config (eslint-config-expo).
+    'apps/mobile/**',
   ]),
   js.configs.recommended,
   {
