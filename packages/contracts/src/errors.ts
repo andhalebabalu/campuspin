@@ -37,6 +37,7 @@ export const ERROR_CODES = [
   'ALREADY_VERIFIED',
   // 403: the other member has blocked you, or you have blocked them.
   'BLOCKED',
+  'LISTING_LIMIT_REACHED', // 402: no free listing and not enough credits left
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

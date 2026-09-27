@@ -19,7 +19,10 @@ export const promotionsAdminService = {
   create: (dto: CreatePromotionRequest) =>
     apiClient.post('/admin/promotions', { body: dto, schema: adminPromotionSchema }),
   update: (promotionId: string, dto: UpdatePromotionRequest) =>
-    apiClient.patch(`/admin/promotions/${id(promotionId)}`, { body: dto, schema: adminPromotionSchema }),
+    apiClient.patch(`/admin/promotions/${id(promotionId)}`, {
+      body: dto,
+      schema: adminPromotionSchema,
+    }),
   remove: (promotionId: string) =>
     apiClient.delete(`/admin/promotions/${id(promotionId)}`, { schema: z.null() }),
 };

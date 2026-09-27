@@ -21,6 +21,7 @@ import { FormAlert } from '@/components/form-alert';
 import { PhotoPicker } from '@/components/photo-picker';
 import { AppText, Button, ChipRow, Screen, Segmented, TextField, useToast } from '@/components/ui';
 import { CATEGORY_ICONS } from '@/features/marketplace/listing-card';
+import { QuotaBanner, useListingQuota } from '@/features/marketplace/listing-quota';
 import { errorMessage, serverFieldErrors } from '@/lib/errors';
 import { useUser } from '@/lib/session';
 import { marketplaceService } from '@/services/marketplace.service';
@@ -42,6 +43,9 @@ export function ListingForm({ existing }: { existing?: Listing }) {
   const user = useUser();
   const toast = useToast();
   const queryClient = useQueryClient();
+  // Only a new listing uses a free slot or credits; editing is always free.
+  const quota = useListingQuota();
+  const blocked = !existing && quota.data?.next === 'BLOCKED';
   const [images, setImages] = useState<string[]>(existing?.images ?? []);
   const [title, setTitle] = useState(existing?.title ?? '');
   const [description, setDescription] = useState(existing?.description ?? '');
@@ -102,6 +106,7 @@ export function ListingForm({ existing }: { existing?: Listing }) {
           size="lg"
           icon={existing ? 'checkmark' : 'rocket-outline'}
           loading={busy}
+          disabled={blocked}
           onPress={() => void submit()}
         />
       }
@@ -111,6 +116,7 @@ export function ListingForm({ existing }: { existing?: Listing }) {
           Listed under {user.student.college?.name ?? 'your verified college'}. Buyers message you in
           the app; your phone number and email are never shown.
         </AppText>
+        {!existing ? <QuotaBanner quota={quota.data} /> : null}
         {formError ? <FormAlert message={formError} /> : null}
         {Object.keys(errors).length > 0 && !errors.price && !formError ? (
           <FormAlert message="Please fix the highlighted fields." />

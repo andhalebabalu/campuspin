@@ -1,6 +1,7 @@
 import {
   conversationSchema,
   listingCardSchema,
+  listingQuotaSchema,
   listingSchema,
   reportReceiptSchema,
   type CreateListingRequest,
@@ -48,6 +49,9 @@ export const marketplaceService = {
       schema: z.array(listingCardSchema),
       signal,
     }),
+  /** My free listings and credits: what the next listing costs. */
+  quota: (signal?: AbortSignal) =>
+    apiClient.get('/me/listing-quota', { schema: listingQuotaSchema, signal }),
   create: (dto: CreateListingRequest) =>
     apiClient.post('/marketplace/listings', { body: dto, schema: listingSchema }),
   update: (listingId: string, dto: UpdateListingRequest) =>

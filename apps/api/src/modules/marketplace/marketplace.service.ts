@@ -24,6 +24,7 @@ import { BlocksService } from '../safety/blocks.service.js';
 import { ReportsService } from '../safety/reports.service.js';
 import { DEFAULT_SETTINGS } from '../students/profile.service.js';
 import { StudentAccessService, toMemberSummary } from '../students/student-access.service.js';
+import { ListingCreditsService } from './listing-credits.service.js';
 import {
   BROWSABLE_STATUSES,
   type Shopper,
@@ -78,6 +79,7 @@ export class MarketplaceService {
     private readonly blocks: BlocksService,
     private readonly reports: ReportsService,
     private readonly images: ImageStorage,
+    private readonly credits: ListingCreditsService,
   ) {}
 
   /** The verified student behind a request, with the colleges near theirs. */
@@ -235,25 +237,32 @@ export class MarketplaceService {
     }
     this.assertOwnImages(dto.images);
 
-    const row = await this.prisma.marketplaceListing.create({
-      data: {
-        sellerId: userId,
-        collegeId: student.college.id,
-        title: dto.title,
-        description: dto.description,
-        category: dto.category,
-        condition: dto.condition,
-        price: dto.price,
-        negotiable: dto.negotiable,
-        quantity: dto.quantity,
-        location: dto.location ?? null,
-        visibility: dto.visibility,
-        expiresAt: expiryFrom(now),
-        images: {
-          create: dto.images.map((imageUrl, sortOrder) => ({ imageUrl, sortOrder })),
+    // Free listings first, then credits (when a super admin has switched limits on).
+    const row = await this.prisma.$transaction(async (tx) => {
+      const creditsSpent = await this.credits.chargeFor(tx, userId, now);
+      const created = await tx.marketplaceListing.create({
+        data: {
+          sellerId: userId,
+          collegeId: student.college.id,
+          title: dto.title,
+          description: dto.description,
+          category: dto.category,
+          condition: dto.condition,
+          price: dto.price,
+          negotiable: dto.negotiable,
+          quantity: dto.quantity,
+          location: dto.location ?? null,
+          visibility: dto.visibility,
+          expiresAt: expiryFrom(now),
+          creditsSpent,
+          images: {
+            create: dto.images.map((imageUrl, sortOrder) => ({ imageUrl, sortOrder })),
+          },
         },
-      },
-      include: LISTING_INCLUDE,
+        include: LISTING_INCLUDE,
+      });
+      await this.credits.spend(tx, userId, created.id, creditsSpent);
+      return created;
     });
     return this.toListing(row, null, { mine: true });
   }
@@ -300,14 +309,25 @@ export class MarketplaceService {
       throw AppException.conflict('CONFLICT', `A ${status.toLowerCase()} listing cannot do that.`);
     }
     const now = new Date();
-    const row = await this.prisma.marketplaceListing.update({
-      where: { id: listingId },
-      data: {
-        status: next,
-        ...(action === 'renew' ? { expiresAt: expiryFrom(now) } : {}),
-        ...(action === 'sold' ? { soldAt: now } : {}),
-      },
-      include: LISTING_INCLUDE,
+    const row = await this.prisma.$transaction(async (tx) => {
+      // Bringing back an expired free listing takes a free slot again when limits count live
+      // listings; a listing that was paid for stays paid.
+      const renewCharge =
+        action === 'renew' && status === 'EXPIRED' && current.creditsSpent === 0
+          ? await this.credits.renewalCharge(tx, userId, now)
+          : 0;
+      const updated = await tx.marketplaceListing.update({
+        where: { id: listingId },
+        data: {
+          status: next,
+          ...(action === 'renew' ? { expiresAt: expiryFrom(now) } : {}),
+          ...(action === 'sold' ? { soldAt: now } : {}),
+          ...(renewCharge > 0 ? { creditsSpent: renewCharge } : {}),
+        },
+        include: LISTING_INCLUDE,
+      });
+      await this.credits.spend(tx, userId, listingId, renewCharge);
+      return updated;
     });
     return this.toListing(row, null, { mine: true });
   }
@@ -352,7 +372,7 @@ export class MarketplaceService {
   private async ownListing(userId: string, listingId: string) {
     const row = await this.prisma.marketplaceListing.findUnique({
       where: { id: listingId },
-      select: { sellerId: true, status: true, expiresAt: true },
+      select: { sellerId: true, status: true, expiresAt: true, creditsSpent: true },
     });
     if (!row || row.sellerId !== userId || row.status === 'REMOVED') {
       throw AppException.notFound('Listing not found');

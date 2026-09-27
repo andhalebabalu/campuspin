@@ -60,7 +60,9 @@ export function PromotionsScreen() {
 
   async function toggle(promotion: AdminPromotion) {
     try {
-      const next = (await promotionsAdminService.update(promotion.id, { active: !promotion.active })).data;
+      const next = (
+        await promotionsAdminService.update(promotion.id, { active: !promotion.active })
+      ).data;
       list.replace((item) => item.id === next.id, next);
       setNotice(null);
     } catch (caught) {
@@ -92,7 +94,11 @@ export function PromotionsScreen() {
       )}
 
       {list.error ? (
-        <ErrorState message={list.error.message} requestId={list.error.requestId} onRetry={list.reload} />
+        <ErrorState
+          message={list.error.message}
+          requestId={list.error.requestId}
+          onRetry={list.reload}
+        />
       ) : !list.items ? (
         <Skeleton className="h-64 w-full" />
       ) : list.items.length === 0 ? (
@@ -105,7 +111,8 @@ export function PromotionsScreen() {
         <ul className="flex flex-col gap-3">
           {list.items.map((promotion) => {
             const state = STATE[promotion.state];
-            const rate = promotion.views > 0 ? Math.round((promotion.clicks / promotion.views) * 100) : 0;
+            const rate =
+              promotion.views > 0 ? Math.round((promotion.clicks / promotion.views) * 100) : 0;
             return (
               <li key={promotion.id}>
                 <Card className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
@@ -123,18 +130,25 @@ export function PromotionsScreen() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-ink">{promotion.title}</span>
                       <Badge tone={state.tone}>{state.label}</Badge>
-                      <Badge tone="neutral">{promotion.placement === 'SPLASH' ? 'Full screen' : 'Featured card'}</Badge>
+                      <Badge tone="neutral">
+                        {promotion.placement === 'SPLASH' ? 'Full screen' : 'Featured card'}
+                      </Badge>
                     </div>
                     <span className="text-sm text-body">
-                      {PROMOTION_AUDIENCE_LABELS[promotion.audience]} · {PROMOTION_KIND_LABELS[promotion.kind]}
+                      {PROMOTION_AUDIENCE_LABELS[promotion.audience]} ·{' '}
+                      {PROMOTION_KIND_LABELS[promotion.kind]}
                       {promotion.placement === 'SPLASH' &&
                         ` · ${promotion.displaySeconds} s, close after ${promotion.skipAfterSeconds} s`}
                       {` · priority ${promotion.priority}`}
                     </span>
                     <span className="text-xs text-muted">
-                      {promotion.startsAt ? `From ${dateFormat.format(new Date(promotion.startsAt))}` : 'No start date'}
+                      {promotion.startsAt
+                        ? `From ${dateFormat.format(new Date(promotion.startsAt))}`
+                        : 'No start date'}
                       {' · '}
-                      {promotion.endsAt ? `until ${dateFormat.format(new Date(promotion.endsAt))}` : 'no end date'}
+                      {promotion.endsAt
+                        ? `until ${dateFormat.format(new Date(promotion.endsAt))}`
+                        : 'no end date'}
                       {` · ${promotion.views} views · ${promotion.clicks} taps (${rate}%)`}
                     </span>
                   </div>
@@ -268,7 +282,8 @@ function PromotionDialog({
       else await promotionsAdminService.create(parsed.data);
       onSaved();
     } catch (caught) {
-      if (caught instanceof ApiClientError && caught.fieldErrors) setErrors(firstFieldErrors(caught.fieldErrors));
+      if (caught instanceof ApiClientError && caught.fieldErrors)
+        setErrors(firstFieldErrors(caught.fieldErrors));
       else setFormError(errorMessage(caught, 'Could not save.'));
     } finally {
       setBusy(false);
@@ -284,7 +299,10 @@ function PromotionDialog({
       className="m-auto w-[min(64rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-0 text-ink shadow-xl backdrop:bg-ink/40"
     >
       {promotion && (
-        <form onSubmit={(event) => void submit(event)} className="grid gap-6 p-6 lg:grid-cols-[1fr_20rem]">
+        <form
+          onSubmit={(event) => void submit(event)}
+          className="grid gap-6 p-6 lg:grid-cols-[1fr_20rem]"
+        >
           <div className="flex flex-col gap-4">
             <h2 className="text-lg font-semibold">{existing ? 'Edit ad' : 'New ad'}</h2>
             {formError && <FormAlert message={formError} />}
@@ -317,7 +335,11 @@ function PromotionDialog({
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex flex-col gap-1.5 text-sm font-medium">
                 Type
-                <select className={SELECT_CLASSES} value={values.kind} onChange={(e) => set('kind', e.target.value as PromotionKind)}>
+                <select
+                  className={SELECT_CLASSES}
+                  value={values.kind}
+                  onChange={(e) => set('kind', e.target.value as PromotionKind)}
+                >
                   {PROMOTION_KINDS.map((kind) => (
                     <option key={kind} value={kind}>
                       {PROMOTION_KIND_LABELS[kind]}
@@ -341,7 +363,13 @@ function PromotionDialog({
               </label>
             </div>
 
-            <Input label="Title" value={values.title} maxLength={80} onChange={(e) => set('title', e.target.value)} error={errors.title} />
+            <Input
+              label="Title"
+              value={values.title}
+              maxLength={80}
+              onChange={(e) => set('title', e.target.value)}
+              error={errors.title}
+            />
             <label className="flex flex-col gap-1.5 text-sm font-medium">
               Text (optional)
               <textarea
@@ -408,8 +436,20 @@ function PromotionDialog({
             )}
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <Input label="Starts (optional)" type="datetime-local" value={values.startsAt} onChange={(e) => set('startsAt', e.target.value)} error={errors.startsAt} />
-              <Input label="Ends (optional)" type="datetime-local" value={values.endsAt} onChange={(e) => set('endsAt', e.target.value)} error={errors.endsAt} />
+              <Input
+                label="Starts (optional)"
+                type="datetime-local"
+                value={values.startsAt}
+                onChange={(e) => set('startsAt', e.target.value)}
+                error={errors.startsAt}
+              />
+              <Input
+                label="Ends (optional)"
+                type="datetime-local"
+                value={values.endsAt}
+                onChange={(e) => set('endsAt', e.target.value)}
+                error={errors.endsAt}
+              />
               <Input
                 label="Priority"
                 type="number"
@@ -422,7 +462,11 @@ function PromotionDialog({
             </div>
 
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={values.active} onChange={(e) => set('active', e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={values.active}
+                onChange={(e) => set('active', e.target.checked)}
+              />
               Live (untick to save it paused)
             </label>
 
@@ -479,12 +523,16 @@ function Preview({ values }: { values: FormValues }) {
               // eslint-disable-next-line @next/next/no-img-element -- uploaded, served by the API.
               <img src={image} alt="" className="absolute inset-0 size-full object-cover" />
             ) : null}
-            <span className="relative rounded-full bg-white/20 px-2 py-1 text-xs text-white">{kind}</span>
+            <span className="relative rounded-full bg-white/20 px-2 py-1 text-xs text-white">
+              {kind}
+            </span>
           </div>
           <div className="flex flex-col gap-1 p-3">
             <span className="font-semibold">{values.title || 'Your title'}</span>
             {values.body && <span className="text-sm text-body">{values.body}</span>}
-            {values.ctaLabel && <span className="text-sm font-semibold text-action">{values.ctaLabel} →</span>}
+            {values.ctaLabel && (
+              <span className="text-sm font-semibold text-action">{values.ctaLabel} →</span>
+            )}
           </div>
         </div>
       )}

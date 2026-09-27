@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useSession } from '@/lib/auth/session-context';
+import { ListingCreditsPanel } from './listing-credits-panel';
 import { adminService } from '@/services/admin.service';
 import { can } from '../lib/access';
 import {
@@ -54,6 +55,7 @@ export function UsersScreen({
   const [page, setPage] = useState(1);
   const [dialog, setDialog] = useState<ReasonRequest | null>(null);
   const [editingRoles, setEditingRoles] = useState<string | null>(null);
+  const [creditsFor, setCreditsFor] = useState<string | null>(null);
 
   const list = useAdminList(
     (signal) =>
@@ -67,6 +69,7 @@ export function UsersScreen({
 
   const canManage = can(me, 'users.manage');
   const isSuper = Boolean(me?.roles.includes('SUPER_ADMIN'));
+  const canCredit = can(me, 'settings.manage');
   const mayAct = (target: AdminUser) =>
     target.id !== me?.id && (isSuper || !target.roles.some((key) => STAFF.has(key)));
 
@@ -185,6 +188,17 @@ export function UsersScreen({
                           Roles
                         </Button>
                       )}
+                      {canCredit && target.roles.includes('STUDENT') && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() =>
+                            setCreditsFor((current) => (current === target.id ? null : target.id))
+                          }
+                        >
+                          Credits
+                        </Button>
+                      )}
                       {canManage && target.status === 'ACTIVE' && (
                         <Button
                           size="sm"
@@ -225,6 +239,7 @@ export function UsersScreen({
                     </div>
                   )}
                 </div>
+                {creditsFor === target.id && <ListingCreditsPanel userId={target.id} />}
                 {editingRoles === target.id && (
                   <RolesEditor
                     user={target}

@@ -79,4 +79,10 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
     icon: 'sparkles',
     permission: 'promotions.manage',
   },
+  {
+    href: ROUTES.adminListingLimits,
+    label: 'Listing limits',
+    icon: 'tag',
+    permission: 'settings.manage',
+  },
 ];

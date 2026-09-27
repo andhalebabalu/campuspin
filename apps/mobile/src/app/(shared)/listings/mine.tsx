@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { Button, ChipRow, EmptyState, ErrorState, ListSkeleton } from '@/components/ui';
 import { ListingRow } from '@/features/marketplace/listing-card';
+import { QuotaBanner, useListingQuota } from '@/features/marketplace/listing-quota';
 import { marketplaceService } from '@/services/marketplace.service';
 import { colors, space } from '@/theme/tokens';
 
@@ -19,6 +20,7 @@ const FILTERS: { value: Filter; label: string }[] = [
 
 export default function MyListings() {
   const [filter, setFilter] = useState<Filter>('ALL');
+  const quota = useListingQuota();
   const query = useQuery({
     queryKey: ['marketplace', 'mine', filter],
     queryFn: ({ signal }) =>
@@ -41,6 +43,7 @@ export default function MyListings() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => <ListingRow listing={item} />}
+          ListHeaderComponent={<QuotaBanner quota={quota.data} />}
           refreshControl={
             <RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} tintColor={colors.action} />
           }

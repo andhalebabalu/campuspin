@@ -103,6 +103,9 @@ export const AUDIT_ACTIONS = [
   'PROMOTION_CREATED',
   'PROMOTION_UPDATED',
   'PROMOTION_DELETED',
+  // Marketplace listing limits and credits.
+  'LISTING_LIMITS_UPDATED',
+  'LISTING_CREDITS_ADJUSTED',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
