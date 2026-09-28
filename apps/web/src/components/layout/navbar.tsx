@@ -96,7 +96,13 @@ function useNavLinks() {
     user !== null &&
     !user.roles.includes('BUSINESS_OWNER') &&
     !isStaff(user);
-  return student ? [{ href: ROUTES.studentHome, label: 'My day' }, ...NAV_LINKS] : NAV_LINKS;
+  return student
+    ? [
+        { href: ROUTES.studentHome, label: 'My day' },
+        { href: ROUTES.orders, label: 'Orders' },
+        ...NAV_LINKS,
+      ]
+    : NAV_LINKS;
 }
 
 export function Navbar() {

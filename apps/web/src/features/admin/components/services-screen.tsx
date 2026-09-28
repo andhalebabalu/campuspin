@@ -14,6 +14,7 @@ import { useToast } from '@/components/ui/toast';
 import { ROUTES } from '@/constants/routes';
 import { dayLabel, mealLines, serviceIcon } from '@/features/services/lib/service-meta';
 import { useSession } from '@/lib/auth/session-context';
+import { ordersService } from '@/services/orders.service';
 import { servicesService } from '@/services/services.service';
 import { can } from '../lib/access';
 import {
@@ -27,7 +28,7 @@ import {
   type ReasonRequest,
 } from './admin-ui';
 
-type Tab = 'types' | 'places' | 'menus';
+type Tab = 'types' | 'places' | 'orders' | 'menus' | 'qr';
 
 const KIND_LABELS: Record<ServiceKind, string> = {
   FOOD_ORDER: 'Food ordering',
@@ -445,6 +446,173 @@ function MenusTab() {
   );
 }
 
+function OrdersTab() {
+  const [qInput, setQInput] = useState('');
+  const [q, setQ] = useState('');
+  const [page, setPage] = useState(1);
+  const list = useAdminList(
+    (signal) => ordersService.adminOrders({ page, ...(q ? { q } : {}) }, signal),
+    [q, page],
+  );
+  return (
+    <div className="flex flex-col gap-4">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          setQ(qInput.trim());
+          setPage(1);
+        }}
+        className="flex flex-wrap gap-2"
+      >
+        <input
+          aria-label="Order code or place"
+          placeholder="Order code or place name"
+          value={qInput}
+          onChange={(event) => setQInput(event.target.value)}
+          className={`${SEARCH_CLASSES} w-64`}
+        />
+        <Button type="submit" size="sm" variant="secondary">
+          Search
+        </Button>
+      </form>
+      {list.error ? (
+        <ErrorState
+          message={list.error.message}
+          requestId={list.error.requestId}
+          onRetry={list.reload}
+        />
+      ) : !list.items ? (
+        <Skeleton className="h-64 w-full" />
+      ) : list.items.length === 0 ? (
+        <EmptyState title="No orders" description="Nothing matches this search." />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {list.items.map((order) => (
+            <li key={order.id}>
+              <Card className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
+                <div>
+                  <p className="font-semibold text-ink">
+                    {order.code} · {order.place.name}
+                    {order.table ? ` · ${order.table}` : ''}
+                  </p>
+                  <p className="text-body">
+                    {order.student.name} · {order.items.length} lines · ₹{order.total} ·{' '}
+                    {new Date(order.createdAt).toLocaleString('en-IN')}
+                  </p>
+                  {order.statusReason && <p className="text-muted">Reason: {order.statusReason}</p>}
+                </div>
+                <Badge
+                  tone={
+                    order.status === 'CANCELLED' || order.status === 'REJECTED'
+                      ? 'danger'
+                      : order.status === 'COMPLETED'
+                        ? 'success'
+                        : 'accent'
+                  }
+                >
+                  {order.statusLabel}
+                </Badge>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Pagination meta={list.meta} page={page} onPage={setPage} />
+    </div>
+  );
+}
+
+function QrTab() {
+  const [qInput, setQInput] = useState('');
+  const [q, setQ] = useState('');
+  const [page, setPage] = useState(1);
+  const [dialog, setDialog] = useState<ReasonRequest | null>(null);
+  const list = useAdminList(
+    (signal) => ordersService.adminQrCodes({ page, ...(q ? { q } : {}) }, signal),
+    [q, page],
+  );
+  return (
+    <div className="flex flex-col gap-4">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          setQ(qInput.trim());
+          setPage(1);
+        }}
+        className="flex flex-wrap gap-2"
+      >
+        <input
+          aria-label="Place name"
+          placeholder="Place name"
+          value={qInput}
+          onChange={(event) => setQInput(event.target.value)}
+          className={`${SEARCH_CLASSES} w-64`}
+        />
+        <Button type="submit" size="sm" variant="secondary">
+          Search
+        </Button>
+      </form>
+      {list.error ? (
+        <ErrorState
+          message={list.error.message}
+          requestId={list.error.requestId}
+          onRetry={list.reload}
+        />
+      ) : !list.items ? (
+        <Skeleton className="h-64 w-full" />
+      ) : list.items.length === 0 ? (
+        <EmptyState title="No QR codes" description="Nothing matches this search." />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {list.items.map((code) => (
+            <li key={code.id}>
+              <Card className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
+                <div>
+                  <p className="font-semibold text-ink">
+                    {code.place.name} · {code.table ? code.table.label : 'Business code'}
+                  </p>
+                  <p className="text-body">
+                    {code.scanCount} scans · created{' '}
+                    {new Date(code.createdAt).toLocaleDateString('en-IN')}
+                  </p>
+                </div>
+                {code.status === 'ACTIVE' ? (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() =>
+                      setDialog({
+                        title: 'Switch this QR code off?',
+                        description: 'Scans stop working. The business can make a new one.',
+                        confirmLabel: 'Switch off',
+                        required: false,
+                        danger: true,
+                        onConfirm: async () => {
+                          await ordersService.adminDisableQr(code.id);
+                          list.replace((item) => item.id === code.id, {
+                            ...code,
+                            status: 'DISABLED',
+                          });
+                        },
+                      })
+                    }
+                  >
+                    Switch off
+                  </Button>
+                ) : (
+                  <Badge tone="danger">Off</Badge>
+                )}
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Pagination meta={list.meta} page={page} onPage={setPage} />
+      <ReasonDialog request={dialog} onClose={() => setDialog(null)} />
+    </div>
+  );
+}
+
 /** Staff view of daily-use services: the catalogue, per-business overrides and content moderation. */
 export function ServicesScreen() {
   const { user } = useSession();
@@ -454,9 +622,11 @@ export function ServicesScreen() {
       ? [
           { id: 'types' as const, label: 'Service types' },
           { id: 'places' as const, label: 'Business services' },
+          { id: 'orders' as const, label: 'Order log' },
         ]
       : []),
     { id: 'menus', label: 'Mess menus' },
+    { id: 'qr', label: 'QR codes' },
   ];
   const [tab, setTab] = useState<Tab>(manage ? 'types' : 'menus');
 
@@ -486,7 +656,9 @@ export function ServicesScreen() {
       </div>
       {tab === 'types' && <ServiceTypesTab />}
       {tab === 'places' && <PlaceServicesTab />}
+      {tab === 'orders' && <OrdersTab />}
       {tab === 'menus' && <MenusTab />}
+      {tab === 'qr' && <QrTab />}
     </div>
   );
 }

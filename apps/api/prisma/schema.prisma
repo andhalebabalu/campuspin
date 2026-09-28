@@ -286,6 +286,8 @@ model User {
   updatedSettings              PlatformSetting[]
   dailyVisits                  DailyVisit[]
   createdDailyMenus            DailyMenu[]           @relation("DailyMenuCreatedBy")
+  serviceOrders                ServiceOrder[]        @relation("ServiceOrderStudent")
+  createdQrCodes               PlaceQrCode[]         @relation("QrCreatedBy")
 
   refreshTokens           RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -660,6 +662,11 @@ model Place {
   leads           Lead[]
   services        PlaceService[]
   dailyMenus      DailyMenu[]
+  serviceItems    ServiceItem[]
+  tables          PlaceTable[]
+  qrCodes         PlaceQrCode[]
+  serviceOrders   ServiceOrder[]
+  dailyStats      PlaceDailyStat[]
   createdFrom    PlaceSubmission[]     @relation("SubmissionResultingPlace")
   duplicatesOf    PlaceSubmission[]     @relation("SubmissionDuplicateOfPlace")
 
@@ -807,6 +814,7 @@ model BusinessProfile {
   places  Place[]
   claims  PlaceClaim[]
   leads   Lead[]
+  serviceOrders ServiceOrder[]
 
   @@index([ownerId])
   @@index([status, verificationStatus])
@@ -1631,6 +1639,7 @@ model ServiceType {
   updatedAt    DateTime     @updatedAt
 
   placeServices PlaceService[]
+  items         ServiceItem[]
 
   @@index([status, sortOrder])
   @@map("service_types")
@@ -1705,4 +1714,187 @@ model DailyMenuItem {
 
   @@index([menuId, meal, sortOrder])
   @@map("daily_menu_items")
+}
+
+// One thing a place sells through a service: a dish on the food menu, a repair, a haircut, a study
+// seat. Reused by every kind that has a price list: one catalogue, not one per business type.
+model ServiceItem {
+  id            String   @id @default(uuid(7)) @db.Char(36)
+  placeId       String   @db.Char(36)
+  serviceTypeId String   @db.Char(36)
+  // Menu category / group, e.g. "Breakfast", "Beverages".
+  section       String   @default("") @db.VarChar(60)
+  name          String   @db.VarChar(100)
+  description   String?  @db.VarChar(300)
+  // Whole rupees.
+  price         Int
+  // Food only: true = veg, false = non-veg, null = not said.
+  isVeg         Boolean?
+  // Add-ons the student may pick: [{ "name": "Extra cheese", "price": 20 }]
+  options       Json?
+  available     Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  place       Place              @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  serviceType ServiceType        @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
+  orderItems  ServiceOrderItem[]
+
+  @@index([placeId, serviceTypeId, sortOrder])
+  @@map("service_items")
+}
+
+// A table in a restaurant or cafe ("Table 07"). Future: rooms, library seats, counters.
+model PlaceTable {
+  id        String       @id @default(uuid(7)) @db.Char(36)
+  placeId   String       @db.Char(36)
+  label     String       @db.VarChar(30)
+  status    ActiveStatus @default(ACTIVE)
+  sortOrder Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  place   Place          @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  qrCodes PlaceQrCode[]
+  orders  ServiceOrder[]
+
+  @@unique([placeId, label])
+  @@map("place_tables")
+}
+
+enum QrKind {
+  BUSINESS
+  TABLE
+}
+
+enum QrStatus {
+  ACTIVE
+  DISABLED
+  // A newer code was generated for the same target (a leaked or damaged print).
+  REPLACED
+}
+
+// A printed CampusPin QR code. The random token is the only thing in the printed URL: no database
+// id is ever exposed. At most one ACTIVE code per target, enforced with activeKey.
+model PlaceQrCode {
+  id            String    @id @default(uuid(7)) @db.Char(36)
+  token         String    @unique @db.VarChar(32)
+  placeId       String    @db.Char(36)
+  kind          QrKind
+  tableId       String?   @db.Char(36)
+  status        QrStatus  @default(ACTIVE)
+  // "<placeId>:<kind>:<tableId or ->" while ACTIVE, NULL otherwise.
+  activeKey     String?   @unique @db.VarChar(90)
+  scanCount     Int       @default(0)
+  lastScannedAt DateTime?
+  createdById   String?   @db.Char(36)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  place     Place       @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  table     PlaceTable? @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  createdBy User?       @relation("QrCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([placeId, kind])
+  @@map("place_qr_codes")
+}
+
+enum OrderKind {
+  FOOD
+  PRINT
+}
+
+// One lifecycle for every kind; each kind allows only its own moves (see order-rules.ts).
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  // Food: preparing. Print: processing.
+  PREPARING
+  // Food: ready. Print: ready for pickup.
+  READY
+  SERVED
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+// No card data is ever stored. Online payment would add a payments table keyed on the order.
+enum PaymentMethod {
+  PAY_AT_COUNTER
+  CASH_AT_TABLE
+}
+
+// An order a student placed with a business. Totals are always computed by the server from the
+// catalogue at order time; item names and prices are copied so later menu edits never change it.
+model ServiceOrder {
+  id                String        @id @default(uuid(7)) @db.Char(36)
+  // Short code said at the counter, e.g. CP7K2Q9M.
+  code              String        @unique @db.VarChar(12)
+  kind              OrderKind
+  placeId           String        @db.Char(36)
+  // Denormalised: the business inbox is keyed on it.
+  businessProfileId String        @db.Char(36)
+  userId            String        @db.Char(36)
+  tableId           String?       @db.Char(36)
+  // Copied so the order still reads right if the table is renamed or deleted.
+  tableLabel        String?       @db.VarChar(30)
+  status            OrderStatus   @default(PENDING)
+  subtotal          Int
+  discount          Int           @default(0)
+  total             Int
+  paymentMethod     PaymentMethod @default(PAY_AT_COUNTER)
+  note              String?       @db.VarChar(300)
+  // The client's retry key: the same key never creates a second order.
+  idempotencyKey    String        @db.VarChar(64)
+  statusReason      String?       @db.VarChar(255)
+  statusChangedAt   DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  place           Place              @relation(fields: [placeId], references: [id], onDelete: Restrict)
+  businessProfile BusinessProfile    @relation(fields: [businessProfileId], references: [id], onDelete: Restrict)
+  user            User               @relation("ServiceOrderStudent", fields: [userId], references: [id], onDelete: Restrict)
+  table           PlaceTable?        @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  items           ServiceOrderItem[]
+
+  @@unique([userId, idempotencyKey])
+  @@index([businessProfileId, status, createdAt])
+  @@index([placeId, createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("service_orders")
+}
+
+model ServiceOrderItem {
+  id            String  @id @default(uuid(7)) @db.Char(36)
+  orderId       String  @db.Char(36)
+  serviceItemId String? @db.Char(36)
+  name          String  @db.VarChar(100)
+  // Price of one, add-ons included, in whole rupees.
+  unitPrice     Int
+  quantity      Int
+  // The add-ons chosen: [{ "name": "Extra cheese", "price": 20 }]
+  options       Json?
+  lineTotal     Int
+
+  order       ServiceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  serviceItem ServiceItem? @relation(fields: [serviceItemId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@map("service_order_items")
+}
+
+// Per place per India day: page views and QR scans, counted from when this table was added (no
+// back-filled or invented numbers).
+model PlaceDailyStat {
+  placeId String   @db.Char(36)
+  day     DateTime @db.Date
+  views   Int      @default(0)
+  qrScans Int      @default(0)
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@id([placeId, day])
+  @@map("place_daily_stats")
 }

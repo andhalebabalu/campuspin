@@ -1,10 +1,13 @@
 'use client';
 
 import type { PlaceServices } from '@platform/contracts';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/shared/skeleton';
 import { Card } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
+import { ROUTES } from '@/constants/routes';
+import { ordersService } from '@/services/orders.service';
 import { servicesService } from '@/services/services.service';
 import { MealLines } from './menu-card';
 
@@ -27,17 +30,44 @@ export function PlaceServicesSection({ placeSlug }: { placeSlug: string }) {
     return () => controller.abort();
   }, [placeSlug]);
 
+  useEffect(() => {
+    void ordersService.recordView(placeSlug);
+  }, [placeSlug]);
+
   if (failed) return null;
   if (!data) return <Skeleton className="h-40 w-full" />;
   if (data.services.length === 0) return null;
 
   const hasMenu = data.services.some((service) => service.kind === 'DAILY_MENU');
+  const food = data.services.find((service) => service.kind === 'FOOD_ORDER');
 
   return (
     <section className="flex flex-col gap-4" aria-labelledby="services-heading">
       <h2 id="services-heading" className="text-xl font-semibold text-ink">
         Use {data.name} on CampusPin
       </h2>
+
+      {food && (
+        <Card className="flex flex-wrap items-center justify-between gap-4 p-5">
+          <div className="flex items-center gap-3">
+            <span className="flex size-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+              <Icon name="utensils" className="size-5" />
+            </span>
+            <div>
+              <p className="font-semibold text-ink">Order food</p>
+              <p className="text-sm text-body">
+                Order for pickup here, or scan the code on your table to order from your seat.
+              </p>
+            </div>
+          </div>
+          <Link
+            href={ROUTES.placeOrder(data.slug)}
+            className="inline-flex h-11 items-center justify-center rounded-md bg-action px-5 text-sm font-medium text-white hover:bg-action-hover"
+          >
+            See the menu
+          </Link>
+        </Card>
+      )}
 
       {hasMenu && (
         <div className="grid gap-4 sm:grid-cols-2">

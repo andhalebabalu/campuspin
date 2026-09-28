@@ -421,12 +421,94 @@ export const publicPlaceServiceSchema = serviceTypeSummarySchema.extend({
 });
 export type PublicPlaceService = z.infer<typeof publicPlaceServiceSchema>;
 
+// ── Catalogue (price lists: food menu, repairs, haircuts, seats) ─────────────────────────────────
+
+export const MAX_ITEM_OPTIONS = 10;
+
+export const itemOptionSchema = z.object({ name: z.string(), price: z.number().int().min(0) });
+export type ItemOption = z.infer<typeof itemOptionSchema>;
+
+export const serviceItemSchema = z.object({
+  id: z.string(),
+  serviceKey: z.string(),
+  section: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  price: z.number().int().min(0),
+  isVeg: z.boolean().nullable(),
+  options: z.array(itemOptionSchema),
+  available: z.boolean(),
+  sortOrder: z.number().int(),
+  /** Bookable items: minutes per slot (null = a whole-day booking). */
+  durationMinutes: z.number().int().nullable(),
+  /** Bookable items: bookings allowed per slot. */
+  capacity: z.number().int().nullable(),
+});
+export type ServiceItem = z.infer<typeof serviceItemSchema>;
+
+export const saveServiceItemSchema = z.strictObject({
+  serviceKey: serviceTypeKeySchema,
+  section: z.string().trim().max(60).default(''),
+  name: singleLineField('Name', 100),
+  description: singleLineField('Description', 300).nullable().optional(),
+  price: z.number().int('Whole rupees only').min(0).max(100_000),
+  isVeg: z.boolean().nullable().optional(),
+  options: z
+    .array(
+      z.strictObject({
+        name: singleLineField('Add-on', 60),
+        price: z.number().int().min(0).max(10_000),
+      }),
+    )
+    .max(MAX_ITEM_OPTIONS)
+    .default([]),
+  available: z.boolean().default(true),
+  sortOrder: z.number().int().min(0).max(10_000).default(0),
+  durationMinutes: z
+    .number()
+    .int()
+    .min(5)
+    .max(24 * 60)
+    .nullable()
+    .optional(),
+  capacity: z.number().int().min(1).max(500).nullable().optional(),
+});
+export type SaveServiceItemRequest = z.output<typeof saveServiceItemSchema>;
+
+export const updateServiceItemSchema = saveServiceItemSchema
+  .omit({ serviceKey: true })
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, { message: 'Send at least one field' });
+export type UpdateServiceItemRequest = z.output<typeof updateServiceItemSchema>;
+
+export const listServiceItemsQuerySchema = z.object({ service: serviceTypeKeySchema.optional() });
+export type ListServiceItemsQuery = z.output<typeof listServiceItemsQuerySchema>;
+
+/** Items of one section, for menus shown to students. */
+export const itemSectionSchema = z.object({
+  name: z.string(),
+  items: z.array(serviceItemSchema),
+});
+export type ItemSection = z.infer<typeof itemSectionSchema>;
+
+/** A live table request type ("Water", "Request bill"), configured per place. */
+export const tableRequestTypeSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  icon: z.string().nullable(),
+});
+export type TableRequestType = z.infer<typeof tableRequestTypeSchema>;
+
 export const placeServicesSchema = z.object({
   placeId: z.string(),
   slug: z.string(),
   name: z.string(),
   services: z.array(publicPlaceServiceSchema),
   menus: placeMenusSchema,
+  /** Price lists per service key (food menu, repairs, ...), available items only, by section. */
+  catalog: z.record(z.string(), z.array(itemSectionSchema)),
+  /** What a student can ask for from a table (Table Service). */
+  tableRequests: z.array(tableRequestTypeSchema),
 });
 export type PlaceServices = z.infer<typeof placeServicesSchema>;
 
@@ -472,20 +554,3 @@ export const moderationRemoveSchema = z.strictObject({
   reason: multiLineField('Reason', 255),
 });
 export type ModerationRemoveRequest = z.output<typeof moderationRemoveSchema>;
-
-// ── Student home ─────────────────────────────────────────────────────────────────────────────────
-
-export const studentHomeQuerySchema = z
-  .object(coordinates)
-  .refine((value) => (value.lat === undefined) === (value.lng === undefined), {
-    message: 'Send both lat and lng, or neither',
-  });
-export type StudentHomeQuery = z.output<typeof studentHomeQuerySchema>;
-
-export const studentHomeSchema = z.object({
-  quickActions: z.array(quickActionSchema),
-  /** Published menus for today: saved messes first, then the nearest. */
-  todaysMenus: z.array(messMenuCardSchema),
-  saved: z.array(placeCardSchema),
-});
-export type StudentHome = z.infer<typeof studentHomeSchema>;

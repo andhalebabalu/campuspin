@@ -79,6 +79,14 @@ export async function removeAuthTestData(db: PrismaClient): Promise<void> {
   });
   // Reports keep their reporter (RESTRICT); community posts, comments and blocks cascade with users.
   if (ids.length > 0) await db.report.deleteMany({ where: { reporterId: { in: ids } } });
+  // Orders keep their student, place and business (RESTRICT): remove those of test users and places.
+  const orderFilter = {
+    OR: [
+      ...(ids.length > 0 ? [{ userId: { in: ids } }] : []),
+      { place: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } },
+    ],
+  };
+  await db.serviceOrder.deleteMany({ where: orderFilter });
   await db.place.deleteMany({ where: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } });
   await db.college.deleteMany({ where: { slug: { startsWith: TEST_COLLEGE_SLUG_PREFIX } } });
   // A business profile blocks deleting its owner (RESTRICT). Its enquiries cascade with it; its

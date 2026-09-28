@@ -38,6 +38,13 @@ export const ERROR_CODES = [
   // 403: the other member has blocked you, or you have blocked them.
   'BLOCKED',
   'LISTING_LIMIT_REACHED', // 402: no free listing and not enough credits left
+  // Daily-use services
+  'QR_INACTIVE', // 410: the QR code was disabled or replaced by a newer one
+  'SERVICE_UNAVAILABLE_NOW', // 409: the business switched the service off or paused it
+  'STATUS_CHANGED', // 409: the order or request changed meanwhile, or the move is not allowed
+  'OFFER_NOT_AVAILABLE', // 409: expired, paused, used up or not valid today
+  'OFFER_LIMIT_REACHED', // 409: this student already used the offer as often as allowed
+  'SLOT_FULL', // 409: the booking slot has no seats left
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

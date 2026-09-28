@@ -10,6 +10,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Skeleton } from '@/components/shared/skeleton';
 import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
+import { OrderCard } from '@/features/orders/components/my-orders';
 import { PlaceCard } from '@/features/places/components/place-card';
 import { useSession } from '@/lib/auth/session-context';
 import { useLocation } from '@/lib/geo/use-location';
@@ -191,6 +192,25 @@ export function StudentHome() {
             )}
           </Section>
 
+          {home.activeOrders.length > 0 && (
+            <Section
+              title="On the way"
+              action={
+                <Link href={ROUTES.orders} className={SEE_ALL}>
+                  All orders
+                </Link>
+              }
+            >
+              <ul className="grid gap-3 md:grid-cols-2">
+                {home.activeOrders.map((order) => (
+                  <li key={order.id}>
+                    <OrderCard order={order} />
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
           <Section
             title="Today's mess menu"
             action={
@@ -241,6 +261,16 @@ export function StudentHome() {
               </div>
             )}
           </Section>
+
+          {home.recentPlaces.length > 0 && (
+            <Section title="Recently used">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {home.recentPlaces.slice(0, 4).map((place) => (
+                  <PlaceCard key={place.id} place={place} />
+                ))}
+              </div>
+            </Section>
+          )}
         </>
       )}
     </div>

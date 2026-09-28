@@ -47,9 +47,26 @@ describe('Swagger documentation of business owners, enquiries and uploads (e2e)'
     await app.close();
   });
 
+  const SERVICE_SEGMENTS = [
+    'places',
+    'orders',
+    'insights',
+    'qr',
+    'requests',
+    'offers',
+    'redemptions',
+    'bookings',
+  ];
+
   it('documents exactly the 7 business routes', () => {
     const documented = Object.entries(doc.paths)
-      .filter(([path]) => path.startsWith('/api/v1/business'))
+      // Services, orders, QR codes and insights under /business belong to the daily-use services
+      // feature (tagged "Business: Services" / "Business: Orders").
+      .filter(
+        ([path]) =>
+          path.startsWith('/api/v1/business') &&
+          !SERVICE_SEGMENTS.some((segment) => path.startsWith(`/api/v1/business/${segment}`)),
+      )
       .flatMap(([path, operations]) =>
         Object.keys(operations).map((method) => `${method} ${path}`),
       );

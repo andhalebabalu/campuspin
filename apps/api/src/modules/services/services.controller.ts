@@ -1,5 +1,5 @@
 import { Controller, Get, Header, Param, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   messMenuCardSchema,
   placeCardSchema,
@@ -9,8 +9,6 @@ import {
   serviceTypeKeySchema,
   serviceTypePlacesQuerySchema,
   serviceTypeSchema,
-  studentHomeQuerySchema,
-  studentHomeSchema,
   todaysMenusQuerySchema,
   type MessMenuCard,
   type PlaceCard,
@@ -18,8 +16,6 @@ import {
   type PlaceServices,
   type ServiceType,
   type ServiceTypePlacesQuery,
-  type StudentHome,
-  type StudentHomeQuery,
   type TodaysMenusQuery,
 } from '@platform/contracts';
 import { z } from 'zod';
@@ -27,12 +23,11 @@ import type { Paginated } from '../../common/http/paginated.js';
 import { ResponseMessage } from '../../common/http/response-message.decorator.js';
 import { ApiEnvelopeResponse, ApiErrorResponses } from '../../common/swagger/api-responses.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
-import { CurrentUser, Viewer } from '../auth/decorators/current-user.decorator.js';
+import { Viewer } from '../auth/decorators/current-user.decorator.js';
 import { OptionalAuth, Public } from '../auth/decorators/public.decorator.js';
 import { MenusService } from './menus.service.js';
 import { PlaceServicesService } from './place-services.service.js';
 import { ServiceTypesService } from './service-types.service.js';
-import { StudentHomeService } from './student-home.service.js';
 
 const PUBLIC_CACHE = 'public, s-maxage=60, stale-while-revalidate=300';
 const NOT_FOUND = { status: 404, code: 'NOT_FOUND', message: 'Place not found' } as const;
@@ -131,30 +126,5 @@ export class PlaceServicesController {
     @Viewer() viewer: AuthenticatedUser | null,
   ): Promise<MessMenuCard[]> {
     return this.menus.todaysMenus(query, viewer?.id ?? null);
-  }
-}
-
-/** The student home screen in one call. */
-@ApiTags('Services')
-@ApiBearerAuth()
-@Controller('me/home')
-export class StudentHomeController {
-  constructor(private readonly home: StudentHomeService) {}
-
-  @Get()
-  @ResponseMessage('Home retrieved')
-  @ApiOperation({
-    summary: 'My home screen',
-    description:
-      'Quick actions (with how many places offer each), today’s mess menus and saved places. Send ' +
-      '`lat`/`lng` for distances.',
-  })
-  @ApiEnvelopeResponse(studentHomeSchema, { description: 'Everything the home screen shows.' })
-  @ApiErrorResponses({ status: 401, code: 'UNAUTHORIZED', message: 'Authentication required' })
-  get(
-    @Query({ schema: studentHomeQuerySchema }) query: StudentHomeQuery,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<StudentHome> {
-    return this.home.home(actor, query);
   }
 }

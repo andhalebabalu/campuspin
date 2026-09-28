@@ -16,7 +16,13 @@ import { daysBefore, dayKey, istDay } from '../analytics/activity-rules.js';
  * The kinds a business can switch on today. A kind is added here only once its whole student and
  * business flow works, so the apps never offer a service that does nothing.
  */
-export const SUPPORTED_KINDS: ReadonlySet<ConfigurableServiceKind> = new Set(['DAILY_MENU']);
+export const SUPPORTED_KINDS: ReadonlySet<ConfigurableServiceKind> = new Set([
+  'DAILY_MENU',
+  'FOOD_ORDER',
+]);
+
+/** Kinds whose students order or pick from the place's catalogue. */
+export const CATALOG_KINDS: ReadonlySet<string> = new Set(['FOOD_ORDER']);
 
 export const isSupportedKind = (kind: ServiceKind): kind is ConfigurableServiceKind =>
   isConfigurableKind(kind) && SUPPORTED_KINDS.has(kind);

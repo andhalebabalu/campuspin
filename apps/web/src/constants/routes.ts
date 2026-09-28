@@ -27,6 +27,11 @@ export const ROUTES = {
   serviceType: (key: string) => `/services/${key}`,
   todaysMenus: '/menus',
   saved: '/saved',
+  /** Where a printed CampusPin QR code leads. */
+  qr: (token: string) => `/q/${token}`,
+  placeOrder: (slug: string) => `/places/${slug}/order`,
+  orders: '/orders',
+  order: (id: string) => `/orders/${id}`,
   community: '/community',
   communityPost: (id: string) => `/community/posts/${id}`,
   communityNew: '/community/new',

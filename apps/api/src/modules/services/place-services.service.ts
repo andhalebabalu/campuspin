@@ -17,8 +17,10 @@ import { PrismaService } from '../../infra/database/prisma.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { BusinessAccessService } from '../business/business-access.service.js';
+import { CatalogService } from './catalog.service.js';
 import { MenusService } from './menus.service.js';
 import {
+  CATALOG_KINDS,
   LIVE_SERVICE_WHERE,
   configOf,
   isSupportedKind,
@@ -47,6 +49,7 @@ export class PlaceServicesService {
     private readonly prisma: PrismaService,
     private readonly access: BusinessAccessService,
     private readonly menus: MenusService,
+    private readonly catalog: CatalogService,
     private readonly audit: AuditService,
   ) {}
 
@@ -176,12 +179,21 @@ export class PlaceServicesService {
         config: configOf(row.serviceType.kind, row.config),
       }));
     const hasMenu = services.some((service) => service.kind === 'DAILY_MENU');
+    const catalogKeys = services
+      .filter((service) => CATALOG_KINDS.has(service.kind))
+      .map((service) => service.key);
+    const [menus, catalog] = await Promise.all([
+      hasMenu ? this.menus.placeMenus(place.id) : Promise.resolve({ today: null, tomorrow: null }),
+      this.catalog.publicCatalog(place.id, catalogKeys),
+    ]);
     return {
       placeId: place.id,
       slug: place.slug,
       name: place.name,
       services,
-      menus: hasMenu ? await this.menus.placeMenus(place.id) : { today: null, tomorrow: null },
+      menus,
+      catalog,
+      tableRequests: [],
     };
   }
 

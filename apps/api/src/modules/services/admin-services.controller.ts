@@ -12,6 +12,10 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   adminDailyMenuSchema,
+  adminListQrQuerySchema,
+  adminQrCodeSchema,
+  type AdminListQrQuery,
+  type AdminQrCode,
   adminListMenusQuerySchema,
   adminListPlaceServicesQuerySchema,
   adminPlaceServiceSchema,
@@ -42,6 +46,7 @@ import { Permissions } from '../auth/decorators/permissions.decorator.js';
 import { MenusService } from './menus.service.js';
 import { PlaceServicesService } from './place-services.service.js';
 import { ServiceTypesService } from './service-types.service.js';
+import { TablesQrService } from './tables-qr.service.js';
 
 const UNAUTHORIZED = {
   status: 401,
@@ -67,6 +72,7 @@ export class AdminServicesController {
     private readonly types: ServiceTypesService,
     private readonly services: PlaceServicesService,
     private readonly menus: MenusService,
+    private readonly tablesQr: TablesQrService,
   ) {}
 
   @Permissions('services.manage')
@@ -191,5 +197,39 @@ export class AdminServicesController {
     @RequestClient() client: ClientContext,
   ): Promise<AdminDailyMenu> {
     return this.menus.adminRestore(id, actor, client);
+  }
+
+  @Permissions('services.moderate')
+  @Get('qr-codes')
+  @ResponseMessage('QR codes retrieved')
+  @ApiOperation({
+    summary: 'CampusPin QR codes',
+    description: 'Live and disabled codes; search by place name.',
+  })
+  @ApiEnvelopeResponse(z.array(adminQrCodeSchema), { description: 'A page of codes.' })
+  @ApiErrorResponses(UNAUTHORIZED, FORBIDDEN)
+  listQr(
+    @Query({ schema: adminListQrQuerySchema }) query: AdminListQrQuery,
+  ): Promise<Paginated<AdminQrCode>> {
+    return this.tablesQr.adminList(query);
+  }
+
+  @Permissions('services.moderate')
+  @Post('qr-codes/:id/disable')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('QR code disabled')
+  @ApiOperation({
+    summary: 'Stop a QR code working',
+    description: 'The business can generate a new one.',
+  })
+  @ApiEnvelopeResponse(z.null(), { description: 'Disabled.' })
+  @ApiErrorResponses(UNAUTHORIZED, FORBIDDEN, 404)
+  async disableQr(
+    @Param('id', idParam) id: string,
+    @CurrentUser() actor: AuthenticatedUser,
+    @RequestClient() client: ClientContext,
+  ): Promise<null> {
+    await this.tablesQr.adminDisable(id, actor, client);
+    return null;
   }
 }

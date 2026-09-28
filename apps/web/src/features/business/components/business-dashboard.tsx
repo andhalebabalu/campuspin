@@ -12,17 +12,25 @@ import { ROUTES } from '@/constants/routes';
 import { businessService } from '@/services/business.service';
 import { DailyMenuPanel } from './daily-menu-panel';
 import { EnquiriesPanel } from './enquiries-panel';
+import { FoodMenuPanel } from './food-menu-panel';
+import { InsightsPanel } from './insights-panel';
+import { OrdersPanel } from './orders-panel';
+import { QrPanel } from './qr-panel';
 import { ADD_LISTING_CLASSES, ListingsPanel } from './listings-panel';
 import { ProfilePanel } from './profile-panel';
 import { ReviewsPanel } from './reviews-panel';
 import { ServicesPanel } from './services-panel';
 
-type Tab = 'listings' | 'menu' | 'services' | 'enquiries' | 'reviews' | 'profile';
+type Tab =
+  'orders' | 'menu' | 'food' | 'services' | 'qr' | 'listings' | 'enquiries' | 'reviews' | 'profile';
 
 const TABS: ReadonlyArray<{ id: Tab; label: string }> = [
-  { id: 'listings', label: 'Listings' },
+  { id: 'orders', label: 'Orders' },
   { id: 'menu', label: 'Daily menu' },
+  { id: 'food', label: 'Food menu' },
   { id: 'services', label: 'Services' },
+  { id: 'qr', label: 'QR codes' },
+  { id: 'listings', label: 'Listings' },
   { id: 'enquiries', label: 'Enquiries' },
   { id: 'reviews', label: 'Reviews' },
   { id: 'profile', label: 'Business profile' },
@@ -70,7 +78,13 @@ export function BusinessDashboard() {
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [listings, setListings] = useState<BusinessListing[] | null>(null);
   const [error, setError] = useState<{ message: string; requestId?: string } | null>(null);
-  const [tab, setTab] = useState<Tab>('listings');
+  // `?tab=orders` (from a notification) opens that tab.
+  const [tab, setTab] = useState<Tab>(() => {
+    if (typeof window === 'undefined') return 'listings';
+    const wanted = new URLSearchParams(window.location.search).get('tab');
+    return TABS.some((item) => item.id === wanted) ? (wanted as Tab) : 'listings';
+  });
+  const [pendingOrders, setPendingOrders] = useState(0);
   const [enquiryPlaceId, setEnquiryPlaceId] = useState('');
   const [reload, setReload] = useState(0);
 
@@ -191,6 +205,16 @@ export function BusinessDashboard() {
         />
       </div>
 
+      <InsightsPanel
+        onOpen={(target) =>
+          setTab(
+            target === 'requests' || target === 'bookings' || target === 'offers'
+              ? 'services'
+              : target,
+          )
+        }
+      />
+
       <div className="flex flex-col gap-5">
         <div
           role="tablist"
@@ -200,7 +224,11 @@ export function BusinessDashboard() {
           {TABS.map((item) => {
             const active = tab === item.id;
             const badge =
-              item.id === 'enquiries' && stats.enquiries.new > 0 ? stats.enquiries.new : null;
+              item.id === 'enquiries' && stats.enquiries.new > 0
+                ? stats.enquiries.new
+                : item.id === 'orders' && pendingOrders > 0
+                  ? pendingOrders
+                  : null;
             return (
               <button
                 key={item.id}
@@ -243,7 +271,10 @@ export function BusinessDashboard() {
               onChanged={refresh}
             />
           )}
+          {tab === 'orders' && <OrdersPanel onNewCount={setPendingOrders} />}
           {tab === 'menu' && <DailyMenuPanel listings={listings} />}
+          {tab === 'food' && <FoodMenuPanel listings={listings} />}
+          {tab === 'qr' && <QrPanel listings={listings} />}
           {tab === 'services' && <ServicesPanel listings={listings} />}
           {tab === 'reviews' && <ReviewsPanel />}
           {tab === 'profile' && (

@@ -67,7 +67,14 @@ describe('Swagger documentation of places (e2e)', () => {
           path.includes('/places') &&
           path !== '/api/v1/places/duplicate-check' &&
           !path.includes('/reviews') &&
-          !path.includes('/enquiries'),
+          !path.includes('/enquiries') &&
+          // Daily-use services of a place (services, menus, views, offers, bookings) and the
+          // business-side place routes belong to the services feature.
+          !['services', 'menus', 'view', 'offers', 'availability'].some((segment) =>
+            path.endsWith(`/places/{idOrSlug}/${segment}`),
+          ) &&
+          !path.startsWith('/api/v1/business/') &&
+          !path.startsWith('/api/v1/service-types/'),
       )
       .flatMap(([path, operations]) =>
         Object.keys(operations).map((method) => `${method} ${path}`),
