@@ -12,7 +12,12 @@ import { SWAGGER_PATH, setupSwagger } from './swagger.js';
  * Route groups whose responses are private to the caller and must never be cached: credentials and
  * tokens (`auth`) and staff views (`admin`). Public, user-agnostic routes set their own caching.
  */
-const PRIVATE_ROUTE_PREFIXES = ['/api/v1/auth', '/api/v1/admin'] as const;
+const PRIVATE_ROUTE_PREFIXES = [
+  '/api/v1/auth',
+  '/api/v1/admin',
+  '/api/v1/business',
+  '/api/v1/me',
+] as const;
 
 /**
  * Security headers. Swagger UI needs inline scripts/styles, so /api/docs gets a relaxed CSP;

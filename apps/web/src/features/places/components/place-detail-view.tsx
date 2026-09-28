@@ -2,6 +2,8 @@ import type { PlaceDetail } from '@platform/contracts';
 import { Badge, VerifiedBadge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { PlaceReviews } from '@/features/reviews/components/place-reviews';
+import { PlaceServicesSection } from '@/features/services/components/place-services-section';
+import { SavePlaceButton } from '@/features/services/components/save-place-button';
 import { EnquiryForm } from './enquiry-form';
 import { formatPrice } from '@/utils/format-price';
 
@@ -56,23 +58,28 @@ export function PlaceDetailView({ place }: { place: PlaceDetail }) {
             : 'No reviews yet'}
         </a>
 
-        <a
-          href={directionsUrl(place)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex h-11 w-fit items-center justify-center rounded-md bg-action px-5 text-sm font-medium text-white transition-colors hover:bg-action-hover"
-        >
-          Open in Google Maps
-        </a>
-        {place.acceptsEnquiries && (
+        <div className="flex flex-wrap gap-3">
           <a
-            href="#enquiry"
-            className="inline-flex h-11 w-fit items-center justify-center rounded-md border border-control px-5 text-sm font-medium text-ink transition-colors hover:bg-subtle"
+            href={directionsUrl(place)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-11 w-fit items-center justify-center rounded-md bg-action px-5 text-sm font-medium text-white transition-colors hover:bg-action-hover"
           >
-            Send an enquiry
+            Open in Google Maps
           </a>
-        )}
+          {place.acceptsEnquiries && (
+            <a
+              href="#enquiry"
+              className="inline-flex h-11 w-fit items-center justify-center rounded-md border border-control px-5 text-sm font-medium text-ink transition-colors hover:bg-subtle"
+            >
+              Send an enquiry
+            </a>
+          )}
+          <SavePlaceButton placeId={place.id} />
+        </div>
       </div>
+
+      <PlaceServicesSection placeSlug={place.slug} />
 
       {place.description && (
         <Card className="p-6">

@@ -98,6 +98,7 @@ const EXAMPLE_SETTINGS = {
   notifyEvents: true,
   notifyJobs: false,
   notifyMessages: true,
+  notifyPlaceUpdates: true,
 };
 
 /** The signed-in member's student verification, profile and settings. */

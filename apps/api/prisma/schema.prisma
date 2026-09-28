@@ -285,6 +285,7 @@ model User {
   creditEntriesMade            ListingCreditEntry[]  @relation("CreditEntryActor")
   updatedSettings              PlatformSetting[]
   dailyVisits                  DailyVisit[]
+  createdDailyMenus            DailyMenu[]           @relation("DailyMenuCreatedBy")
 
   refreshTokens           RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -657,7 +658,9 @@ model Place {
   contributions   PlaceContribution[]
   reviews         Review[]
   leads           Lead[]
-  createdFrom     PlaceSubmission[]     @relation("SubmissionResultingPlace")
+  services        PlaceService[]
+  dailyMenus      DailyMenu[]
+  createdFrom    PlaceSubmission[]     @relation("SubmissionResultingPlace")
   duplicatesOf    PlaceSubmission[]     @relation("SubmissionDuplicateOfPlace")
 
   @@index([status, city])
@@ -1206,6 +1209,8 @@ model UserSettings {
   notifyEvents             Boolean           @default(true)
   notifyJobs               Boolean           @default(true)
   notifyMessages           Boolean           @default(true)
+  // Menus and offers from places the member saved.
+  notifyPlaceUpdates       Boolean           @default(true)
   updatedAt                DateTime          @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1579,4 +1584,125 @@ model DailyVisit {
   @@index([day, userId])
   @@index([userId])
   @@map("daily_visits")
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// Daily-use services: what a place lets students DO through CampusPin (order, print, book, ...)
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+// How a service works. The behaviour (screens, state machine) is chosen by the kind; the service
+// types themselves are data, so admins can add "Tailoring" as another SERVICE_REQUEST without code.
+enum ServiceKind {
+  // Menu + cart ordering (restaurant, cafe, canteen), optionally at a table.
+  FOOD_ORDER
+  // A mess publishing its menu for the day.
+  DAILY_MENU
+  // Water / bill / call-staff requests from a table.
+  TABLE_SERVICE
+  // Upload a PDF, choose copies and options, pick it up.
+  PRINT_ORDER
+  // Describe a job; the business accepts, estimates and completes it (repair, laundry).
+  SERVICE_REQUEST
+  // Time-slot or whole-day bookings (salon, study seat, sports court).
+  BOOKING
+  // Student offers and their redemption.
+  OFFERS
+  // Discovery only: opens the places of a category (Find Room).
+  LISTING
+}
+
+// One quick action / service a business can switch on. Seeded; admins manage the list.
+model ServiceType {
+  id           String       @id @default(uuid(7)) @db.Char(36)
+  // Stable machine key used by the apps, e.g. ORDER_FOOD.
+  key          String       @unique @db.VarChar(40)
+  name         String       @db.VarChar(60)
+  description  String?      @db.VarChar(255)
+  // A key from the UI icon set, not a URL.
+  icon         String?      @db.VarChar(50)
+  kind         ServiceKind
+  // Shown as a quick action on the student home screen.
+  showOnHome   Boolean      @default(false)
+  // LISTING kind: the category group or category it opens (e.g. "accommodation").
+  categorySlug String?      @db.VarChar(100)
+  status       ActiveStatus @default(ACTIVE)
+  sortOrder    Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  placeServices PlaceService[]
+
+  @@index([status, sortOrder])
+  @@map("service_types")
+}
+
+// A service switched on (or off) for one place. The owner controls `enabled`; staff can override
+// with `disabledByAdmin`, which wins. Kind-specific settings live in `config` (validated by the API).
+model PlaceService {
+  id              String   @id @default(uuid(7)) @db.Char(36)
+  placeId         String   @db.Char(36)
+  serviceTypeId   String   @db.Char(36)
+  enabled         Boolean  @default(true)
+  // e.g. { "acceptingOrders": true } or { "seats": 40, "bookingEnabled": false }
+  config          Json?
+  disabledByAdmin Boolean  @default(false)
+  adminNote       String?  @db.VarChar(255)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  place       Place       @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  serviceType ServiceType @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
+
+  @@unique([placeId, serviceTypeId])
+  @@index([serviceTypeId, enabled])
+  @@map("place_services")
+}
+
+enum MenuStatus {
+  DRAFT
+  PUBLISHED
+  // Taken down by staff (inappropriate content); only staff and the owner see it.
+  REMOVED
+}
+
+enum MealSlot {
+  BREAKFAST
+  LUNCH
+  SNACKS
+  DINNER
+}
+
+// A mess's menu for one day (India date). One per place per day.
+model DailyMenu {
+  id            String     @id @default(uuid(7)) @db.Char(36)
+  placeId       String     @db.Char(36)
+  date          DateTime   @db.Date
+  status        MenuStatus @default(DRAFT)
+  note          String?    @db.VarChar(255)
+  publishedAt   DateTime?
+  removedReason String?    @db.VarChar(255)
+  createdById   String?    @db.Char(36)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  place     Place           @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  createdBy User?           @relation("DailyMenuCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  items     DailyMenuItem[]
+
+  @@unique([placeId, date])
+  @@index([date, status])
+  @@map("daily_menus")
+}
+
+model DailyMenuItem {
+  id        String   @id @default(uuid(7)) @db.Char(36)
+  menuId    String   @db.Char(36)
+  meal      MealSlot
+  name      String   @db.VarChar(100)
+  sortOrder Int      @default(0)
+
+  menu DailyMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  @@index([menuId, meal, sortOrder])
+  @@map("daily_menu_items")
 }

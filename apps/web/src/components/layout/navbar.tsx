@@ -88,9 +88,21 @@ function AccountActions({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+/** Signed-in students also get their daily dashboard first. */
+function useNavLinks() {
+  const { status, user } = useSession();
+  const student =
+    status === 'authenticated' &&
+    user !== null &&
+    !user.roles.includes('BUSINESS_OWNER') &&
+    !isStaff(user);
+  return student ? [{ href: ROUTES.studentHome, label: 'My day' }, ...NAV_LINKS] : NAV_LINKS;
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const links = useNavLinks();
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
@@ -101,7 +113,7 @@ export function Navbar() {
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-6 lg:flex">
-          {NAV_LINKS.map((link) => (
+          {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -131,7 +143,7 @@ export function Navbar() {
       {open && (
         <div id="mobile-menu" className="border-t border-line bg-surface lg:hidden">
           <nav aria-label="Main" className="mx-auto flex max-w-6xl flex-col px-4 py-3 sm:px-6">
-            {NAV_LINKS.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

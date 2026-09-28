@@ -3,6 +3,7 @@ import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { Footer } from '@/components/layout/footer';
 import { Navbar } from '@/components/layout/navbar';
+import { ToastProvider } from '@/components/ui/toast';
 import { BRAND } from '@/constants/brand';
 import { VisitTracker } from '@/lib/analytics/visit-tracker';
 import { SessionProvider } from '@/lib/auth/session-context';
@@ -36,10 +37,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className={`${inter.variable} ${jakarta.variable}`}>
       <body className="flex min-h-dvh flex-col">
         <SessionProvider>
-          <VisitTracker />
-          <Navbar />
-          {children}
-          <Footer />
+          <ToastProvider>
+            <VisitTracker />
+            <Navbar />
+            {children}
+            <Footer />
+          </ToastProvider>
         </SessionProvider>
       </body>
     </html>

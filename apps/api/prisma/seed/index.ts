@@ -22,7 +22,8 @@ type SeededTable =
   | 'place_price_options'
   | 'place_attribute_values'
   | 'college_places'
-  | 'promotions';
+  | 'promotions'
+  | 'service_types';
 
 /** Row counts of every table the seed touches. */
 export type SeedCounts = Record<SeededTable, number>;
@@ -50,6 +51,7 @@ export async function countSeededTables(db: Db): Promise<SeedCounts> {
     place_attribute_values: await db.placeAttributeValue.count(),
     college_places: await db.collegePlace.count(),
     promotions: await db.promotion.count(),
+    service_types: await db.serviceType.count(),
   };
 }
 

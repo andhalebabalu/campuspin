@@ -75,6 +75,12 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
     permission: 'businesses.manage',
   },
   {
+    href: ROUTES.adminServices,
+    label: 'Services',
+    icon: 'utensils',
+    permission: 'services.moderate',
+  },
+  {
     href: ROUTES.adminPromotions,
     label: 'Ads & announcements',
     icon: 'sparkles',

@@ -22,6 +22,11 @@ export const ROUTES = {
   meSettings: '/me/settings',
   meNotifications: '/me/notifications',
   feed: '/feed',
+  /** The signed-in student's daily dashboard. */
+  studentHome: '/home',
+  serviceType: (key: string) => `/services/${key}`,
+  todaysMenus: '/menus',
+  saved: '/saved',
   community: '/community',
   communityPost: (id: string) => `/community/posts/${id}`,
   communityNew: '/community/new',
@@ -52,4 +57,5 @@ export const ROUTES = {
   adminPromotions: '/admin/promotions',
   adminListingLimits: '/admin/listing-limits',
   adminAnalytics: '/admin/analytics',
+  adminServices: '/admin/services',
 } as const;

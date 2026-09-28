@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SubmissionsModule } from '../submissions/submissions.module.js';
+import { BusinessAccessService } from './business-access.service.js';
 import { BusinessController } from './business.controller.js';
 import { BusinessService } from './business.service.js';
 import { EnquiriesController } from './enquiries.controller.js';
@@ -13,6 +14,7 @@ import { LeadsService } from './leads.service.js';
 @Module({
   imports: [SubmissionsModule],
   controllers: [BusinessController, EnquiriesController],
-  providers: [BusinessService, LeadsService],
+  providers: [BusinessService, LeadsService, BusinessAccessService],
+  exports: [BusinessAccessService],
 })
 export class BusinessModule {}

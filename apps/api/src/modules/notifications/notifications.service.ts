@@ -20,15 +20,21 @@ export interface NotifyInput {
   link?: string;
 }
 
-/** Which settings switch governs each category. ACCOUNT notices (verification) always send. */
+/** Categories that always send: account notices and order/booking/request updates. */
+type AlwaysSent = 'ACCOUNT' | 'ORDERS';
+const isAlwaysSent = (category: NotificationCategory): category is AlwaysSent =>
+  category === 'ACCOUNT' || category === 'ORDERS';
+
+/** Which settings switch governs each category. */
 const SETTING_FOR: Readonly<
-  Record<Exclude<NotificationCategory, 'ACCOUNT'>, keyof Prisma.UserSettingsSelect>
+  Record<Exclude<NotificationCategory, AlwaysSent>, keyof Prisma.UserSettingsSelect>
 > = {
   COMMUNITY: 'notifyCommunity',
   MARKETPLACE: 'notifyMarketplace',
   EVENTS: 'notifyEvents',
   JOBS: 'notifyJobs',
   MESSAGES: 'notifyMessages',
+  PLACE_UPDATES: 'notifyPlaceUpdates',
 };
 
 type Db = Prisma.TransactionClient | PrismaService;
@@ -47,7 +53,7 @@ export class NotificationsService {
 
   /** Writes the notification unless the member opted out. Returns whether it was written. */
   async notify(input: NotifyInput, db: Db = this.prisma): Promise<boolean> {
-    if (input.category !== 'ACCOUNT') {
+    if (!isAlwaysSent(input.category)) {
       const field = SETTING_FOR[input.category];
       const settings = await db.userSettings.findUnique({
         where: { userId: input.userId },
@@ -80,7 +86,7 @@ export class NotificationsService {
   ): Promise<number> {
     let ids = [...new Set(userIds)].slice(0, NOTIFY_MANY_MAX);
     if (ids.length === 0) return 0;
-    if (input.category !== 'ACCOUNT') {
+    if (!isAlwaysSent(input.category)) {
       const field = SETTING_FOR[input.category];
       const optedOut = await db.userSettings.findMany({
         where: { userId: { in: ids }, [field]: false },

@@ -84,6 +84,14 @@ export const PERMISSIONS = {
     resource: 'marketplace',
     description: 'Remove and restore marketplace listings, handle their reports',
   },
+  'services.manage': {
+    resource: 'services',
+    description: 'Manage service types, switch business services off, view order and booking logs',
+  },
+  'services.moderate': {
+    resource: 'services',
+    description: 'Remove inappropriate menus and offers, disable QR codes',
+  },
 } as const satisfies Record<string, { resource: string; description: string }>;
 
 export type PermissionKey = keyof typeof PERMISSIONS;
@@ -107,6 +115,7 @@ export const ROLE_PERMISSIONS: Readonly<Record<RoleKey, readonly PermissionKey[]
     'verifications.review',
     'community.moderate',
     'marketplace.moderate',
+    'services.moderate',
   ],
   STUDENT: ['colleges.read', 'categories.read', 'places.read'],
   // places.create / places.update are limited to the owner's own listings by a resource policy.

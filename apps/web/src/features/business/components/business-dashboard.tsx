@@ -10,15 +10,19 @@ import { Card } from '@/components/ui/card';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
 import { businessService } from '@/services/business.service';
+import { DailyMenuPanel } from './daily-menu-panel';
 import { EnquiriesPanel } from './enquiries-panel';
 import { ADD_LISTING_CLASSES, ListingsPanel } from './listings-panel';
 import { ProfilePanel } from './profile-panel';
 import { ReviewsPanel } from './reviews-panel';
+import { ServicesPanel } from './services-panel';
 
-type Tab = 'listings' | 'enquiries' | 'reviews' | 'profile';
+type Tab = 'listings' | 'menu' | 'services' | 'enquiries' | 'reviews' | 'profile';
 
 const TABS: ReadonlyArray<{ id: Tab; label: string }> = [
   { id: 'listings', label: 'Listings' },
+  { id: 'menu', label: 'Daily menu' },
+  { id: 'services', label: 'Services' },
   { id: 'enquiries', label: 'Enquiries' },
   { id: 'reviews', label: 'Reviews' },
   { id: 'profile', label: 'Business profile' },
@@ -132,9 +136,18 @@ export function BusinessDashboard() {
             <h1 className="text-2xl font-bold text-ink sm:text-3xl">{profile.businessName}</h1>
           </div>
         </div>
-        <Link href={ROUTES.dashboardNewListing} className={ADD_LISTING_CLASSES}>
-          <span className="text-lg leading-none">+</span> Add a listing
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setTab('menu')}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-control px-4 text-sm font-medium text-ink hover:bg-subtle"
+          >
+            <span className="text-lg leading-none">+</span> Add today&apos;s menu
+          </button>
+          <Link href={ROUTES.dashboardNewListing} className={ADD_LISTING_CLASSES}>
+            <span className="text-lg leading-none">+</span> Add a listing
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -230,6 +243,8 @@ export function BusinessDashboard() {
               onChanged={refresh}
             />
           )}
+          {tab === 'menu' && <DailyMenuPanel listings={listings} />}
+          {tab === 'services' && <ServicesPanel listings={listings} />}
           {tab === 'reviews' && <ReviewsPanel />}
           {tab === 'profile' && (
             <ProfilePanel

@@ -196,6 +196,8 @@ export const settingsSchema = z.object({
   notifyEvents: z.boolean(),
   notifyJobs: z.boolean(),
   notifyMessages: z.boolean(),
+  /** Menus and offers from places the member saved. */
+  notifyPlaceUpdates: z.boolean(),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 
@@ -212,6 +214,10 @@ export const NOTIFICATION_CATEGORIES = [
   'EVENTS',
   'JOBS',
   'MESSAGES',
+  // Menus and offers from saved places (switch: notifyPlaceUpdates).
+  'PLACE_UPDATES',
+  // Orders, bookings and requests: transactional, always sent like ACCOUNT.
+  'ORDERS',
 ] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 

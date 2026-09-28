@@ -7,6 +7,7 @@ import {
 } from '@platform/contracts';
 import { AMENITIES } from './data/amenities.js';
 import { CATEGORY_GROUPS } from './data/categories.js';
+import { SERVICE_TYPES } from './data/service-types.js';
 import { type Db, required } from './db.js';
 
 /**
@@ -19,6 +20,7 @@ export async function seedReference(db: Db): Promise<void> {
   await seedRolesAndPermissions(db);
   await seedCategories(db);
   await seedAmenities(db);
+  await seedServiceTypes(db);
 }
 
 async function seedRolesAndPermissions(db: Db): Promise<void> {
@@ -128,6 +130,26 @@ async function seedAmenities(db: Db): Promise<void> {
       where: { key: amenity.key },
       update: {},
       create: { key: amenity.key, name: amenity.name, icon: amenity.icon, sortOrder: index },
+    });
+  }
+}
+
+/** Create-only, like categories: staff edits to names, order or visibility are never overwritten. */
+async function seedServiceTypes(db: Db): Promise<void> {
+  for (const [index, type] of SERVICE_TYPES.entries()) {
+    await db.serviceType.upsert({
+      where: { key: type.key },
+      update: {},
+      create: {
+        key: type.key,
+        name: type.name,
+        description: type.description,
+        icon: type.icon,
+        kind: type.kind,
+        showOnHome: type.showOnHome,
+        categorySlug: type.categorySlug ?? null,
+        sortOrder: index,
+      },
     });
   }
 }

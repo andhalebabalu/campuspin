@@ -32,7 +32,7 @@ describe('permissions', () => {
   });
 
   it('has the initial permission set', () => {
-    expect(PERMISSION_KEYS).toHaveLength(21);
+    expect(PERMISSION_KEYS).toHaveLength(23);
     expect(permissionKeySchema.safeParse('places.manage').success).toBe(true);
     expect(permissionKeySchema.safeParse('places.destroy').success).toBe(false);
   });

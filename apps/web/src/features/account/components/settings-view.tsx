@@ -45,6 +45,7 @@ const NOTIFY_TOGGLES: Array<[Toggle, string]> = [
   ['notifyJobs', 'Jobs and internships'],
   ['notifyMarketplace', 'Marketplace activity'],
   ['notifyMessages', 'New messages'],
+  ['notifyPlaceUpdates', 'Menus from places I saved'],
 ];
 
 /** Privacy and notification switches; each change saves at once. */

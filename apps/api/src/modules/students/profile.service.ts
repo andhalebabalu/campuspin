@@ -17,6 +17,7 @@ export const DEFAULT_SETTINGS: Settings = {
   notifyEvents: true,
   notifyJobs: true,
   notifyMessages: true,
+  notifyPlaceUpdates: true,
 };
 
 const COLLEGE = { select: { id: true, slug: true, name: true } } as const;
@@ -108,6 +109,7 @@ export class ProfileService {
       notifyEvents: row.notifyEvents,
       notifyJobs: row.notifyJobs,
       notifyMessages: row.notifyMessages,
+      notifyPlaceUpdates: row.notifyPlaceUpdates,
     };
   }
 

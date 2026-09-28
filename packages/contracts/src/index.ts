@@ -18,6 +18,7 @@ export * from './promotions.js';
 export * from './rbac.js';
 export * from './reviews.js';
 export * from './safety.js';
+export * from './services.js';
 export * from './students.js';
 export * from './submissions.js';
 export * from './text.js';
