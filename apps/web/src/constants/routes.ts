@@ -32,6 +32,8 @@ export const ROUTES = {
   placeOrder: (slug: string) => `/places/${slug}/order`,
   orders: '/orders',
   order: (id: string) => `/orders/${id}`,
+  request: (id: string) => `/requests/${id}`,
+  offers: '/offers',
   community: '/community',
   communityPost: (id: string) => `/community/posts/${id}`,
   communityNew: '/community/new',

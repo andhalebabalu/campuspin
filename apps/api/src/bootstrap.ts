@@ -19,6 +19,7 @@ const PRIVATE_ROUTE_PREFIXES = [
   '/api/v1/me',
   '/api/v1/orders',
   '/api/v1/qr',
+  '/api/v1/service-requests',
 ] as const;
 
 /**

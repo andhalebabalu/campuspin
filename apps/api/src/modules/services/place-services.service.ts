@@ -7,6 +7,7 @@ import {
   type PlaceServices,
   type PublicPlaceService,
   type UpdatePlaceServiceRequest,
+  DEFAULT_TABLE_REQUESTS,
   looksLikeUuid,
 } from '@platform/contracts';
 import { AppException } from '../../common/http/app-exception.js';
@@ -17,6 +18,9 @@ import { PrismaService } from '../../infra/database/prisma.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { BusinessAccessService } from '../business/business-access.service.js';
+import { istDay } from '../analytics/activity-rules.js';
+import { OFFER_SELECT, toStudentOffer } from '../offers/offers.service.js';
+import { visibleOfferWhere } from '../offers/offer-rules.js';
 import { CatalogService } from './catalog.service.js';
 import { MenusService } from './menus.service.js';
 import {
@@ -104,6 +108,20 @@ export class PlaceServicesService {
       ? parseSubmittedConfig(type.kind, { ...configOf(type.kind, existing?.config), ...dto.config })
       : configOf(type.kind, existing?.config);
     const enabled = dto.enabled ?? existing?.enabled ?? true;
+    // Switching Table Service on for the first time adds the usual requests (Water, Bill, ...).
+    if (type.kind === 'TABLE_SERVICE' && enabled) {
+      const count = await this.prisma.tableRequestType.count({ where: { placeId: place.id } });
+      if (count === 0) {
+        await this.prisma.tableRequestType.createMany({
+          data: DEFAULT_TABLE_REQUESTS.map((item, index) => ({
+            placeId: place.id,
+            label: item.label,
+            icon: item.icon,
+            sortOrder: index,
+          })),
+        });
+      }
+    }
 
     const row = await this.prisma.$transaction(async (tx) => {
       const saved = await tx.placeService.upsert({
@@ -182,9 +200,26 @@ export class PlaceServicesService {
     const catalogKeys = services
       .filter((service) => CATALOG_KINDS.has(service.kind))
       .map((service) => service.key);
-    const [menus, catalog] = await Promise.all([
+    const hasTableService = services.some((service) => service.kind === 'TABLE_SERVICE');
+    const today = istDay(new Date());
+    const [menus, catalog, requestTypes, offerRows] = await Promise.all([
       hasMenu ? this.menus.placeMenus(place.id) : Promise.resolve({ today: null, tomorrow: null }),
       this.catalog.publicCatalog(place.id, catalogKeys),
+      hasTableService
+        ? this.prisma.tableRequestType.findMany({
+            where: { placeId: place.id, status: 'ACTIVE' },
+            select: { id: true, label: true, icon: true },
+            orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+          })
+        : Promise.resolve([]),
+      place.businessProfile?.status === 'ACTIVE'
+        ? this.prisma.studentOffer.findMany({
+            where: { ...visibleOfferWhere(today), placeId: place.id },
+            select: OFFER_SELECT,
+            orderBy: { createdAt: 'desc' },
+            take: 20,
+          })
+        : Promise.resolve([]),
     ]);
     return {
       placeId: place.id,
@@ -193,7 +228,10 @@ export class PlaceServicesService {
       services,
       menus,
       catalog,
-      tableRequests: [],
+      tableRequests: requestTypes,
+      offers: offerRows
+        .map((row) => toStudentOffer(row, today))
+        .filter((offer) => offer.availableToday),
     };
   }
 

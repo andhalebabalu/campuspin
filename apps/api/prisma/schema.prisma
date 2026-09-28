@@ -288,6 +288,10 @@ model User {
   createdDailyMenus            DailyMenu[]           @relation("DailyMenuCreatedBy")
   serviceOrders                ServiceOrder[]        @relation("ServiceOrderStudent")
   createdQrCodes               PlaceQrCode[]         @relation("QrCreatedBy")
+  serviceRequests              ServiceRequest[]      @relation("ServiceRequestStudent")
+  createdOffers                StudentOffer[]        @relation("OfferCreatedBy")
+  offerRedemptions             OfferRedemption[]     @relation("RedemptionStudent")
+  verifiedRedemptions          OfferRedemption[]     @relation("RedemptionVerifiedBy")
 
   refreshTokens           RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -667,6 +671,10 @@ model Place {
   qrCodes         PlaceQrCode[]
   serviceOrders   ServiceOrder[]
   dailyStats      PlaceDailyStat[]
+  requestTypes    TableRequestType[]
+  serviceRequests ServiceRequest[]
+  offers          StudentOffer[]
+  redemptions     OfferRedemption[]
   createdFrom    PlaceSubmission[]     @relation("SubmissionResultingPlace")
   duplicatesOf    PlaceSubmission[]     @relation("SubmissionDuplicateOfPlace")
 
@@ -815,6 +823,9 @@ model BusinessProfile {
   claims  PlaceClaim[]
   leads   Lead[]
   serviceOrders ServiceOrder[]
+  serviceRequests ServiceRequest[]
+  offers        StudentOffer[]
+  redemptions   OfferRedemption[]
 
   @@index([ownerId])
   @@index([status, verificationStatus])
@@ -1640,6 +1651,7 @@ model ServiceType {
 
   placeServices PlaceService[]
   items         ServiceItem[]
+  requests      ServiceRequest[]
 
   @@index([status, sortOrder])
   @@map("service_types")
@@ -1740,6 +1752,7 @@ model ServiceItem {
   place       Place              @relation(fields: [placeId], references: [id], onDelete: Cascade)
   serviceType ServiceType        @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
   orderItems  ServiceOrderItem[]
+  requests    ServiceRequest[]
 
   @@index([placeId, serviceTypeId, sortOrder])
   @@map("service_items")
@@ -1758,6 +1771,7 @@ model PlaceTable {
   place   Place          @relation(fields: [placeId], references: [id], onDelete: Cascade)
   qrCodes PlaceQrCode[]
   orders  ServiceOrder[]
+  requests ServiceRequest[]
 
   @@unique([placeId, label])
   @@map("place_tables")
@@ -1857,6 +1871,7 @@ model ServiceOrder {
   user            User               @relation("ServiceOrderStudent", fields: [userId], references: [id], onDelete: Restrict)
   table           PlaceTable?        @relation(fields: [tableId], references: [id], onDelete: SetNull)
   items           ServiceOrderItem[]
+  redemption      OfferRedemption?
 
   @@unique([userId, idempotencyKey])
   @@index([businessProfileId, status, createdAt])
@@ -1897,4 +1912,195 @@ model PlaceDailyStat {
 
   @@id([placeId, day])
   @@map("place_daily_stats")
+}
+
+// What a student can ask for from a table ("Water", "Request bill"). Configured per place.
+model TableRequestType {
+  id        String       @id @default(uuid(7)) @db.Char(36)
+  placeId   String       @db.Char(36)
+  label     String       @db.VarChar(40)
+  // A key from the app icon set.
+  icon      String?      @db.VarChar(40)
+  status    ActiveStatus @default(ACTIVE)
+  sortOrder Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  place    Place            @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  requests ServiceRequest[]
+
+  @@index([placeId, sortOrder])
+  @@map("table_request_types")
+}
+
+enum RequestKind {
+  // "Water for Table 07": quick, acknowledged and done.
+  TABLE
+  // A job: repair, laundry pickup. May go through an estimate the student approves.
+  GENERAL
+}
+
+// One lifecycle for every request kind; each kind allows only its own moves (request-rules.ts).
+enum RequestStatus {
+  NEW
+  ACKNOWLEDGED
+  ACCEPTED
+  DIAGNOSING
+  ESTIMATE_AVAILABLE
+  APPROVED
+  IN_PROGRESS
+  READY
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+// A request from a student to a business: a table request, a repair, a laundry pickup.
+model ServiceRequest {
+  id                String        @id @default(uuid(7)) @db.Char(36)
+  code              String        @unique @db.VarChar(12)
+  kind              RequestKind
+  placeId           String        @db.Char(36)
+  businessProfileId String        @db.Char(36)
+  userId            String        @db.Char(36)
+  serviceTypeId     String        @db.Char(36)
+  tableId           String?       @db.Char(36)
+  tableLabel        String?       @db.VarChar(30)
+  requestTypeId     String?       @db.Char(36)
+  serviceItemId     String?       @db.Char(36)
+  // What was asked for, copied: "Water", "Screen replacement".
+  label             String        @db.VarChar(100)
+  description       String?       @db.Text
+  // A private photo of the problem (key in the private store, never a public URL).
+  imageKey          String?       @db.VarChar(80)
+  preferredAt       DateTime?
+  status            RequestStatus @default(NEW)
+  // The business's estimate in whole rupees, which the student approves before work starts.
+  estimateAmount    Int?
+  estimateNote      String?       @db.VarChar(300)
+  statusReason      String?       @db.VarChar(255)
+  // "<userId>:<tableId>:<requestTypeId>" while a table request is open: tapping "Water" twice
+  // does not send two requests. NULL for other kinds and once handled.
+  activeKey         String?       @unique @db.VarChar(120)
+  idempotencyKey    String        @db.VarChar(64)
+  statusChangedAt   DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  place           Place             @relation(fields: [placeId], references: [id], onDelete: Restrict)
+  businessProfile BusinessProfile   @relation(fields: [businessProfileId], references: [id], onDelete: Restrict)
+  user            User              @relation("ServiceRequestStudent", fields: [userId], references: [id], onDelete: Restrict)
+  serviceType     ServiceType       @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
+  table           PlaceTable?       @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  requestType     TableRequestType? @relation(fields: [requestTypeId], references: [id], onDelete: SetNull)
+  serviceItem     ServiceItem?      @relation(fields: [serviceItemId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, idempotencyKey])
+  @@index([businessProfileId, status, createdAt])
+  @@index([placeId, createdAt])
+  @@index([userId, createdAt])
+  @@map("service_requests")
+}
+
+enum OfferDiscountType {
+  PERCENT
+  FLAT
+  // A free item or perk given in person ("free tea with any meal"); no rupee discount.
+  FREEBIE
+}
+
+enum OfferLimitPeriod {
+  ONCE
+  DAILY
+}
+
+enum OfferStatus {
+  ACTIVE
+  PAUSED
+  EXPIRED
+  // Taken down by staff; only staff and the business see it.
+  REMOVED
+}
+
+// A student offer a business runs: "10% off for CampusPin students".
+model StudentOffer {
+  id                String            @id @default(uuid(7)) @db.Char(36)
+  placeId           String            @db.Char(36)
+  businessProfileId String            @db.Char(36)
+  title             String            @db.VarChar(80)
+  description       String?           @db.VarChar(500)
+  discountType      OfferDiscountType
+  // Percent (1-100) or whole rupees; 0 for FREEBIE.
+  discountValue     Int               @default(0)
+  // PERCENT only: the most it can take off, in rupees.
+  maxDiscount       Int?
+  minOrderAmount    Int?
+  validFrom         DateTime          @db.Date
+  validUntil        DateTime?         @db.Date
+  // Bit 0 = Monday ... bit 6 = Sunday. 127 = every day.
+  daysOfWeek        Int               @default(127) @db.TinyInt
+  limitPerStudent   Int               @default(1)
+  limitPeriod       OfferLimitPeriod  @default(ONCE)
+  totalLimit        Int?
+  redeemedCount     Int               @default(0)
+  terms             String?           @db.Text
+  status            OfferStatus       @default(ACTIVE)
+  removedReason     String?           @db.VarChar(255)
+  createdById       String?           @db.Char(36)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  place           Place             @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  businessProfile BusinessProfile   @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  createdBy       User?             @relation("OfferCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  redemptions     OfferRedemption[]
+
+  @@index([status, validUntil])
+  @@index([placeId])
+  @@index([businessProfileId, createdAt])
+  @@map("student_offers")
+}
+
+enum RedemptionStatus {
+  // A code was issued; the student shows it at the counter.
+  ISSUED
+  REDEEMED
+  // Not used in time; the slot can be issued again.
+  EXPIRED
+}
+
+// One use of an offer by a student. (offerId, userId, periodKey, slot) is unique, so the database
+// itself stops a student using an offer more often than allowed, even with simultaneous taps.
+model OfferRedemption {
+  id                String           @id @default(uuid(7)) @db.Char(36)
+  offerId           String           @db.Char(36)
+  userId            String           @db.Char(36)
+  placeId           String           @db.Char(36)
+  businessProfileId String           @db.Char(36)
+  code              String           @unique @db.VarChar(12)
+  status            RedemptionStatus @default(ISSUED)
+  // "ONCE" or the India date (YYYY-MM-DD) for daily offers.
+  periodKey         String           @db.VarChar(10)
+  slot              Int              @default(1)
+  expiresAt         DateTime
+  redeemedAt        DateTime?
+  verifiedById      String?          @db.Char(36)
+  // Set when the offer was applied to an order instead of shown at a counter.
+  orderId           String?          @unique @db.Char(36)
+  // Rupees taken off (0 for a freebie or a counter redemption).
+  discountAmount    Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  offer           StudentOffer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user            User            @relation("RedemptionStudent", fields: [userId], references: [id], onDelete: Cascade)
+  place           Place           @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  verifiedBy      User?           @relation("RedemptionVerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
+  order           ServiceOrder?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@unique([offerId, userId, periodKey, slot])
+  @@index([businessProfileId, createdAt])
+  @@index([userId, createdAt])
+  @@map("offer_redemptions")
 }

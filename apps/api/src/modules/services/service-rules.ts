@@ -19,6 +19,7 @@ import { daysBefore, dayKey, istDay } from '../analytics/activity-rules.js';
 export const SUPPORTED_KINDS: ReadonlySet<ConfigurableServiceKind> = new Set([
   'DAILY_MENU',
   'FOOD_ORDER',
+  'TABLE_SERVICE',
 ]);
 
 /** Kinds whose students order or pick from the place's catalogue. */

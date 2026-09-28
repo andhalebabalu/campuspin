@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { studentOfferSchema } from './offers.js';
 import { paginationQuerySchema } from './pagination.js';
 import { placeCardSchema } from './places.js';
 import { multiLineField, singleLineField } from './text.js';
@@ -509,6 +510,8 @@ export const placeServicesSchema = z.object({
   catalog: z.record(z.string(), z.array(itemSectionSchema)),
   /** What a student can ask for from a table (Table Service). */
   tableRequests: z.array(tableRequestTypeSchema),
+  /** Live student offers of the place. */
+  offers: z.array(studentOfferSchema),
 });
 export type PlaceServices = z.infer<typeof placeServicesSchema>;
 

@@ -14,6 +14,7 @@ import { useToast } from '@/components/ui/toast';
 import { ROUTES } from '@/constants/routes';
 import { dayLabel, mealLines, serviceIcon } from '@/features/services/lib/service-meta';
 import { useSession } from '@/lib/auth/session-context';
+import { engagementService } from '@/services/engagement.service';
 import { ordersService } from '@/services/orders.service';
 import { servicesService } from '@/services/services.service';
 import { can } from '../lib/access';
@@ -28,7 +29,7 @@ import {
   type ReasonRequest,
 } from './admin-ui';
 
-type Tab = 'types' | 'places' | 'orders' | 'menus' | 'qr';
+type Tab = 'types' | 'places' | 'orders' | 'requests' | 'menus' | 'offers' | 'qr';
 
 const KIND_LABELS: Record<ServiceKind, string> = {
   FOOD_ORDER: 'Food ordering',
@@ -613,6 +614,198 @@ function QrTab() {
   );
 }
 
+function RequestsTab() {
+  const [qInput, setQInput] = useState('');
+  const [q, setQ] = useState('');
+  const [page, setPage] = useState(1);
+  const list = useAdminList(
+    (signal) => engagementService.adminRequests({ page, ...(q ? { q } : {}) }, signal),
+    [q, page],
+  );
+  return (
+    <div className="flex flex-col gap-4">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          setQ(qInput.trim());
+          setPage(1);
+        }}
+        className="flex flex-wrap gap-2"
+      >
+        <input
+          aria-label="Request code or place"
+          placeholder="Request code or place name"
+          value={qInput}
+          onChange={(event) => setQInput(event.target.value)}
+          className={`${SEARCH_CLASSES} w-64`}
+        />
+        <Button type="submit" size="sm" variant="secondary">
+          Search
+        </Button>
+      </form>
+      {list.error ? (
+        <ErrorState
+          message={list.error.message}
+          requestId={list.error.requestId}
+          onRetry={list.reload}
+        />
+      ) : !list.items ? (
+        <Skeleton className="h-64 w-full" />
+      ) : list.items.length === 0 ? (
+        <EmptyState title="No requests" description="Nothing matches this search." />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {list.items.map((request) => (
+            <li key={request.id}>
+              <Card className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
+                <div>
+                  <p className="font-semibold text-ink">
+                    {request.code} · {request.label} · {request.place.name}
+                    {request.table ? ` · ${request.table}` : ''}
+                  </p>
+                  <p className="text-body">
+                    {request.student.name} · {new Date(request.createdAt).toLocaleString('en-IN')}
+                    {request.estimateAmount !== null
+                      ? ` · estimate ₹${request.estimateAmount}`
+                      : ''}
+                  </p>
+                </div>
+                <Badge>{request.statusLabel}</Badge>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Pagination meta={list.meta} page={page} onPage={setPage} />
+    </div>
+  );
+}
+
+function OffersTab() {
+  const [qInput, setQInput] = useState('');
+  const [q, setQ] = useState('');
+  const [page, setPage] = useState(1);
+  const [dialog, setDialog] = useState<ReasonRequest | null>(null);
+  const list = useAdminList(
+    (signal) => engagementService.adminOffers({ page, ...(q ? { q } : {}) }, signal),
+    [q, page],
+  );
+  return (
+    <div className="flex flex-col gap-4">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          setQ(qInput.trim());
+          setPage(1);
+        }}
+        className="flex flex-wrap gap-2"
+      >
+        <input
+          aria-label="Offer or place"
+          placeholder="Offer title or place name"
+          value={qInput}
+          onChange={(event) => setQInput(event.target.value)}
+          className={`${SEARCH_CLASSES} w-64`}
+        />
+        <Button type="submit" size="sm" variant="secondary">
+          Search
+        </Button>
+      </form>
+      {list.error ? (
+        <ErrorState
+          message={list.error.message}
+          requestId={list.error.requestId}
+          onRetry={list.reload}
+        />
+      ) : !list.items ? (
+        <Skeleton className="h-64 w-full" />
+      ) : list.items.length === 0 ? (
+        <EmptyState title="No offers" description="Nothing matches this search." />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {list.items.map((offer) => (
+            <li key={offer.id}>
+              <Card className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
+                <div>
+                  <p className="font-semibold text-ink">
+                    {offer.title} · {offer.place.name}
+                  </p>
+                  <p className="text-body">
+                    {offer.business.name} · used {offer.redeemedCount} times
+                    {offer.terms ? ` · terms: ${offer.terms}` : ''}
+                  </p>
+                  {offer.removedReason && (
+                    <p className="text-muted">Removed: {offer.removedReason}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    tone={
+                      offer.status === 'REMOVED'
+                        ? 'danger'
+                        : offer.status === 'ACTIVE'
+                          ? 'success'
+                          : 'neutral'
+                    }
+                  >
+                    {offer.status.toLowerCase()}
+                  </Badge>
+                  {offer.status === 'REMOVED' ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() =>
+                        setDialog({
+                          title: 'Put this offer back (paused)?',
+                          description: 'The business can resume it.',
+                          confirmLabel: 'Restore',
+                          required: false,
+                          onConfirm: async () => {
+                            const result = await engagementService.adminRestoreOffer(offer.id);
+                            list.replace((item) => item.id === offer.id, result.data);
+                          },
+                        })
+                      }
+                    >
+                      Restore
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() =>
+                        setDialog({
+                          title: 'Take this offer down?',
+                          description:
+                            'Students stop seeing it and codes stop working. The business sees your reason.',
+                          confirmLabel: 'Remove',
+                          required: true,
+                          danger: true,
+                          onConfirm: async (reason) => {
+                            const result = await engagementService.adminRemoveOffer(
+                              offer.id,
+                              reason,
+                            );
+                            list.replace((item) => item.id === offer.id, result.data);
+                          },
+                        })
+                      }
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Pagination meta={list.meta} page={page} onPage={setPage} />
+      <ReasonDialog request={dialog} onClose={() => setDialog(null)} />
+    </div>
+  );
+}
+
 /** Staff view of daily-use services: the catalogue, per-business overrides and content moderation. */
 export function ServicesScreen() {
   const { user } = useSession();
@@ -623,9 +816,11 @@ export function ServicesScreen() {
           { id: 'types' as const, label: 'Service types' },
           { id: 'places' as const, label: 'Business services' },
           { id: 'orders' as const, label: 'Order log' },
+          { id: 'requests' as const, label: 'Request log' },
         ]
       : []),
     { id: 'menus', label: 'Mess menus' },
+    { id: 'offers', label: 'Offers' },
     { id: 'qr', label: 'QR codes' },
   ];
   const [tab, setTab] = useState<Tab>(manage ? 'types' : 'menus');
@@ -658,6 +853,8 @@ export function ServicesScreen() {
       {tab === 'places' && <PlaceServicesTab />}
       {tab === 'orders' && <OrdersTab />}
       {tab === 'menus' && <MenusTab />}
+      {tab === 'requests' && <RequestsTab />}
+      {tab === 'offers' && <OffersTab />}
       {tab === 'qr' && <QrTab />}
     </div>
   );

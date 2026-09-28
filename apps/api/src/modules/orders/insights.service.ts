@@ -40,7 +40,18 @@ export class InsightsService {
     const from = new Date(fromDay.getTime() - 330 * 60_000);
     const inPlaces = { placeId: { in: placeIds } };
 
-    const [orders, activeOrders, stats, reviews, savedBy, menu] = await Promise.all([
+    const [
+      orders,
+      activeOrders,
+      stats,
+      reviews,
+      savedBy,
+      menu,
+      requests,
+      pendingRequests,
+      offerRedemptions,
+      activeOffers,
+    ] = await Promise.all([
       this.prisma.serviceOrder.count({ where: { ...inPlaces, createdAt: { gte: from } } }),
       this.prisma.serviceOrder.count({
         where: { ...inPlaces, status: { notIn: [...FINAL_ORDER_STATUSES] } },
@@ -56,18 +67,32 @@ export class InsightsService {
         select: { status: true },
         orderBy: { updatedAt: 'desc' },
       }),
+      this.prisma.serviceRequest.count({ where: { ...inPlaces, createdAt: { gte: from } } }),
+      this.prisma.serviceRequest.count({
+        where: { ...inPlaces, status: { in: ['NEW', 'ACKNOWLEDGED', 'APPROVED'] } },
+      }),
+      this.prisma.offerRedemption.count({
+        where: { ...inPlaces, status: 'REDEEMED', redeemedAt: { gte: from } },
+      }),
+      this.prisma.studentOffer.count({
+        where: {
+          ...inPlaces,
+          status: 'ACTIVE',
+          OR: [{ validUntil: null }, { validUntil: { gte: today } }],
+        },
+      }),
     ]);
 
     return {
       range: query.range,
       orders,
       activeOrders,
-      pendingRequests: 0,
-      requests: 0,
+      pendingRequests,
+      requests,
       bookings: 0,
       upcomingBookings: 0,
-      offerRedemptions: 0,
-      activeOffers: 0,
+      offerRedemptions,
+      activeOffers,
       profileViews: stats._sum.views ?? 0,
       qrScans: stats._sum.qrScans ?? 0,
       reviews,

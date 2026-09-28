@@ -1,5 +1,7 @@
 import { z } from 'zod';
+import { studentOfferSchema } from './offers.js';
 import { orderSchema } from './orders.js';
+import { serviceRequestSchema } from './requests.js';
 import { placeCardSchema } from './places.js';
 import { messMenuCardSchema, quickActionSchema } from './services.js';
 
@@ -18,6 +20,10 @@ export const studentHomeSchema = z.object({
   quickActions: z.array(quickActionSchema),
   /** Orders still in progress, newest first. */
   activeOrders: z.array(orderSchema),
+  /** Requests still open (table requests, repairs). */
+  activeRequests: z.array(serviceRequestSchema),
+  /** Live offers nearby (or best), usable today. */
+  nearbyOffers: z.array(studentOfferSchema),
   /** Published menus for today: saved messes first, then the nearest. */
   todaysMenus: z.array(messMenuCardSchema),
   saved: z.array(placeCardSchema),

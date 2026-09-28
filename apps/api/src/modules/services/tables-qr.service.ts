@@ -475,6 +475,30 @@ export class TablesQrService {
     return { id: row.table.id, label: row.table.label };
   }
 
+  /** The place and table a live table code belongs to (for requests made from a table). */
+  async tableOfToken(token: string): Promise<{ placeId: string; id: string; label: string }> {
+    const row = await this.prisma.placeQrCode.findUnique({
+      where: { token },
+      select: {
+        status: true,
+        placeId: true,
+        kind: true,
+        table: { select: { id: true, label: true, status: true } },
+      },
+    });
+    if (!row || row.kind !== 'TABLE' || !row.table) {
+      throw AppException.validation({ qrToken: ['This is not a table code'] });
+    }
+    if (row.status !== 'ACTIVE' || row.table.status !== 'ACTIVE') {
+      throw new AppException(
+        'QR_INACTIVE',
+        'This table code is no longer in use. Ask the staff.',
+        410,
+      );
+    }
+    return { placeId: row.placeId, id: row.table.id, label: row.table.label };
+  }
+
   /** Counts a view of a live place page (the app calls this when it opens one). */
   async recordView(idOrSlug: string): Promise<void> {
     const place = await this.prisma.place.findFirst({

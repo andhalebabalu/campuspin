@@ -26,6 +26,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ReviewsModule } from './modules/reviews/reviews.module.js';
 import { StudentsModule } from './modules/students/students.module.js';
 import { HomeModule } from './modules/home/home.module.js';
+import { OffersModule } from './modules/offers/offers.module.js';
+import { RequestsModule } from './modules/requests/requests.module.js';
 import { OrdersModule } from './modules/orders/orders.module.js';
 import { ServicesModule } from './modules/services/services.module.js';
 import { SafetyModule } from './modules/safety/safety.module.js';
@@ -66,6 +68,8 @@ import { UploadsModule } from './modules/uploads/uploads.module.js';
     BusinessModule,
     ServicesModule,
     OrdersModule,
+    OffersModule,
+    RequestsModule,
     HomeModule,
     UploadsModule,
     PromotionsModule,

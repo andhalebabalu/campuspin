@@ -19,7 +19,9 @@ import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { toPlaceCard } from '../places/place-mappers.js';
 import { CARD_SELECT } from '../places/place-queries.js';
 import { metersFrom } from '../places/place-rules.js';
-import { placesWithService } from './service-rules.js';
+import { istDay } from '../analytics/activity-rules.js';
+import { isAvailableOn, visibleOfferWhere } from '../offers/offer-rules.js';
+import { SERVICE_PLACE_WHERE, placesWithService } from './service-rules.js';
 
 export const TYPE_SELECT = {
   id: true,
@@ -253,12 +255,37 @@ export class ServiceTypesService {
   }
 
   private async availability(type: TypeRow): Promise<number> {
-    // Student offers arrive with the offers module; until then there are none to count.
-    if (type.kind === 'OFFERS') return 0;
+    if (type.kind === 'OFFERS') {
+      const today = istDay(new Date());
+      const offers = await this.prisma.studentOffer.findMany({
+        where: visibleOfferWhere(today),
+        select: {
+          placeId: true,
+          status: true,
+          discountType: true,
+          discountValue: true,
+          maxDiscount: true,
+          minOrderAmount: true,
+          validFrom: true,
+          validUntil: true,
+          daysOfWeek: true,
+          limitPeriod: true,
+          totalLimit: true,
+          redeemedCount: true,
+        },
+        take: 1000,
+      });
+      return new Set(
+        offers.filter((offer) => isAvailableOn(offer, today)).map((offer) => offer.placeId),
+      ).size;
+    }
     return this.prisma.place.count({ where: await this.placeFilter(type) });
   }
 
   private async placeFilter(type: TypeRow): Promise<Prisma.PlaceWhereInput> {
+    if (type.kind === 'OFFERS') {
+      return { ...SERVICE_PLACE_WHERE, offers: { some: visibleOfferWhere(istDay(new Date())) } };
+    }
     if (type.kind !== 'LISTING') return placesWithService(type.id);
     if (!type.categorySlug) return { id: { in: [] } };
     const category = await this.prisma.category.findUnique({

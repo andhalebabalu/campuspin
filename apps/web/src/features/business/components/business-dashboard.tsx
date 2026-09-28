@@ -14,21 +14,35 @@ import { DailyMenuPanel } from './daily-menu-panel';
 import { EnquiriesPanel } from './enquiries-panel';
 import { FoodMenuPanel } from './food-menu-panel';
 import { InsightsPanel } from './insights-panel';
+import { OffersPanel } from './offers-panel';
 import { OrdersPanel } from './orders-panel';
 import { QrPanel } from './qr-panel';
+import { RequestsPanel } from './requests-panel';
 import { ADD_LISTING_CLASSES, ListingsPanel } from './listings-panel';
 import { ProfilePanel } from './profile-panel';
 import { ReviewsPanel } from './reviews-panel';
 import { ServicesPanel } from './services-panel';
 
 type Tab =
-  'orders' | 'menu' | 'food' | 'services' | 'qr' | 'listings' | 'enquiries' | 'reviews' | 'profile';
+  | 'orders'
+  | 'requests'
+  | 'menu'
+  | 'food'
+  | 'offers'
+  | 'services'
+  | 'qr'
+  | 'listings'
+  | 'enquiries'
+  | 'reviews'
+  | 'profile';
 
 const TABS: ReadonlyArray<{ id: Tab; label: string }> = [
   { id: 'orders', label: 'Orders' },
+  { id: 'requests', label: 'Requests' },
   { id: 'menu', label: 'Daily menu' },
   { id: 'food', label: 'Food menu' },
   { id: 'services', label: 'Services' },
+  { id: 'offers', label: 'Offers' },
   { id: 'qr', label: 'QR codes' },
   { id: 'listings', label: 'Listings' },
   { id: 'enquiries', label: 'Enquiries' },
@@ -205,15 +219,7 @@ export function BusinessDashboard() {
         />
       </div>
 
-      <InsightsPanel
-        onOpen={(target) =>
-          setTab(
-            target === 'requests' || target === 'bookings' || target === 'offers'
-              ? 'services'
-              : target,
-          )
-        }
-      />
+      <InsightsPanel onOpen={(target) => setTab(target === 'bookings' ? 'services' : target)} />
 
       <div className="flex flex-col gap-5">
         <div
@@ -275,6 +281,8 @@ export function BusinessDashboard() {
           {tab === 'menu' && <DailyMenuPanel listings={listings} />}
           {tab === 'food' && <FoodMenuPanel listings={listings} />}
           {tab === 'qr' && <QrPanel listings={listings} />}
+          {tab === 'requests' && <RequestsPanel listings={listings} />}
+          {tab === 'offers' && <OffersPanel listings={listings} />}
           {tab === 'services' && <ServicesPanel listings={listings} />}
           {tab === 'reviews' && <ReviewsPanel />}
           {tab === 'profile' && (

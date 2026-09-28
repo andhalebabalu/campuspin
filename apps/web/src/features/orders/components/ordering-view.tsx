@@ -185,6 +185,7 @@ export function OrderingView({
   const [checkout, setCheckout] = useState(false);
   const [note, setNote] = useState('');
   const [payment, setPayment] = useState<PaymentMethod>('PAY_AT_COUNTER');
+  const [offerId, setOfferId] = useState('');
   const [placing, setPlacing] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const idempotencyKey = useRef<string | null>(null);
@@ -249,6 +250,7 @@ export function OrderingView({
         })),
         ...(note.trim() ? { note: note.trim() } : {}),
         paymentMethod: payment,
+        ...(offerId ? { offerId } : {}),
         idempotencyKey: idempotencyKey.current,
       });
       cart.clear();
@@ -414,6 +416,35 @@ export function OrderingView({
                     </label>
                   ))}
                 </fieldset>
+                {data.offers.some((offer) => offer.discountType !== 'FREEBIE') && (
+                  <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
+                    Student offer
+                    <select
+                      value={offerId}
+                      onChange={(event) => setOfferId(event.target.value)}
+                      className="h-10 rounded-md border border-control bg-surface px-3 font-normal"
+                    >
+                      <option value="">No offer</option>
+                      {data.offers
+                        .filter((offer) => offer.discountType !== 'FREEBIE')
+                        .map((offer) => (
+                          <option
+                            key={offer.id}
+                            value={offer.id}
+                            disabled={
+                              offer.minOrderAmount !== null && cart.subtotal < offer.minOrderAmount
+                            }
+                          >
+                            {offer.title}
+                            {offer.minOrderAmount ? ` (min. ₹${offer.minOrderAmount})` : ''}
+                          </option>
+                        ))}
+                    </select>
+                    <span className="text-xs font-normal text-muted">
+                      The discount is worked out when you place the order.
+                    </span>
+                  </label>
+                )}
                 <p className="text-xs text-muted">
                   No online payment: you pay the business directly.
                 </p>

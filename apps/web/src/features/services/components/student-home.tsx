@@ -10,7 +10,9 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Skeleton } from '@/components/shared/skeleton';
 import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
+import { OfferCard } from '@/features/offers/components/offer-card';
 import { OrderCard } from '@/features/orders/components/my-orders';
+import { RequestCard } from '@/features/requests/components/request-views';
 import { PlaceCard } from '@/features/places/components/place-card';
 import { useSession } from '@/lib/auth/session-context';
 import { useLocation } from '@/lib/geo/use-location';
@@ -51,7 +53,7 @@ function QuickActionTile({ action, index }: { action: QuickAction; index: number
   const tone = TILE_TONES[index % TILE_TONES.length];
   return (
     <Link
-      href={ROUTES.serviceType(action.key)}
+      href={action.kind === 'OFFERS' ? ROUTES.offers : ROUTES.serviceType(action.key)}
       className="group flex flex-col items-center gap-2 rounded-xl border border-line bg-surface p-4 text-center transition-shadow hover:shadow-md"
     >
       <span className={`flex size-12 items-center justify-center rounded-2xl ${tone}`}>
@@ -192,7 +194,7 @@ export function StudentHome() {
             )}
           </Section>
 
-          {home.activeOrders.length > 0 && (
+          {(home.activeOrders.length > 0 || home.activeRequests.length > 0) && (
             <Section
               title="On the way"
               action={
@@ -205,6 +207,11 @@ export function StudentHome() {
                 {home.activeOrders.map((order) => (
                   <li key={order.id}>
                     <OrderCard order={order} />
+                  </li>
+                ))}
+                {home.activeRequests.map((request) => (
+                  <li key={request.id}>
+                    <RequestCard request={request} />
                   </li>
                 ))}
               </ul>
@@ -232,6 +239,23 @@ export function StudentHome() {
               </div>
             )}
           </Section>
+
+          {home.nearbyOffers.length > 0 && (
+            <Section
+              title="Student offers nearby"
+              action={
+                <Link href={ROUTES.offers} className={SEE_ALL}>
+                  See all
+                </Link>
+              }
+            >
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {home.nearbyOffers.slice(0, 3).map((offer) => (
+                  <OfferCard key={offer.id} offer={offer} />
+                ))}
+              </div>
+            </Section>
+          )}
 
           <Section
             title="Saved places"

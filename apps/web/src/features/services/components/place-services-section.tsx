@@ -9,6 +9,7 @@ import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
 import { ordersService } from '@/services/orders.service';
 import { servicesService } from '@/services/services.service';
+import { OfferCard } from '@/features/offers/components/offer-card';
 import { MealLines } from './menu-card';
 
 /**
@@ -67,6 +68,14 @@ export function PlaceServicesSection({ placeSlug }: { placeSlug: string }) {
             See the menu
           </Link>
         </Card>
+      )}
+
+      {data.offers.length > 0 && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {data.offers.map((offer) => (
+            <OfferCard key={offer.id} offer={offer} showPlace={false} />
+          ))}
+        </div>
       )}
 
       {hasMenu && (

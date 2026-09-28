@@ -22,6 +22,7 @@ import { AuditService } from '../audit/audit.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { BusinessAccessService } from '../business/business-access.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { OffersService, type OrderOfferQuote } from '../offers/offers.service.js';
 import { LIVE_SERVICE_WHERE, SERVICE_PLACE_WHERE, configOf } from '../services/service-rules.js';
 import { TablesQrService } from '../services/tables-qr.service.js';
 import {
@@ -84,6 +85,7 @@ export class OrdersService {
     private readonly access: BusinessAccessService,
     private readonly tablesQr: TablesQrService,
     private readonly notifications: NotificationsService,
+    private readonly offers: OffersService,
     private readonly audit: AuditService,
   ) {}
 
@@ -162,7 +164,10 @@ export class OrdersService {
       items.map((item) => [item.id, { ...item, options: optionsOf(item.options) }]),
     );
     const { lines, subtotal } = priceLines(dto.items, catalog);
-    const discount = 0;
+    const quote: OrderOfferQuote | null = dto.offerId
+      ? await this.offers.quoteForOrder(dto.offerId, actor.id, place.id, subtotal)
+      : null;
+    const discount = quote?.discount ?? 0;
     const businessProfileId = place.businessProfileId;
 
     for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -196,6 +201,7 @@ export class OrdersService {
             },
             select: ORDER_SELECT,
           });
+          if (quote) await this.offers.recordOrderRedemption(tx, quote, created.id);
           await this.audit.record(
             {
               action: 'ORDER_PLACED',
