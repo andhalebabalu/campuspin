@@ -41,6 +41,8 @@ export function PlaceServicesSection({ placeSlug }: { placeSlug: string }) {
 
   const hasMenu = data.services.some((service) => service.kind === 'DAILY_MENU');
   const food = data.services.find((service) => service.kind === 'FOOD_ORDER');
+  const print = data.services.find((service) => service.kind === 'PRINT_ORDER');
+  const jobs = data.services.filter((service) => service.kind === 'SERVICE_REQUEST');
 
   return (
     <section className="flex flex-col gap-4" aria-labelledby="services-heading">
@@ -68,6 +70,28 @@ export function PlaceServicesSection({ placeSlug }: { placeSlug: string }) {
             See the menu
           </Link>
         </Card>
+      )}
+
+      {(print || jobs.length > 0) && (
+        <div className="flex flex-wrap gap-3">
+          {print && (
+            <Link
+              href={ROUTES.placePrint(data.slug)}
+              className="inline-flex h-11 items-center gap-2 rounded-md bg-action px-5 text-sm font-medium text-white hover:bg-action-hover"
+            >
+              <Icon name="printer" className="size-4" /> Print a document
+            </Link>
+          )}
+          {jobs.map((job) => (
+            <Link
+              key={job.key}
+              href={ROUTES.placeRequest(data.slug, job.key.toLowerCase())}
+              className="inline-flex h-11 items-center gap-2 rounded-md border border-control px-5 text-sm font-medium text-ink hover:bg-subtle"
+            >
+              <Icon name="wrench" className="size-4" /> Request {job.name.toLowerCase()}
+            </Link>
+          ))}
+        </div>
       )}
 
       {data.offers.length > 0 && (

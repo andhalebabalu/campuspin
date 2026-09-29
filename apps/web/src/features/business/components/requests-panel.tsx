@@ -18,6 +18,7 @@ import { Card } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
 import { useToast } from '@/components/ui/toast';
 import { requestTone } from '@/features/requests/components/request-views';
+import { openPrivateFile } from '@/features/files/private-file';
 import { engagementService } from '@/services/engagement.service';
 import { PlacePicker } from './place-picker';
 
@@ -109,6 +110,20 @@ function RequestTicket({
       </div>
       {request.description && (
         <p className="whitespace-pre-line text-sm text-body">{request.description}</p>
+      )}
+      {request.hasImage && (
+        <Button
+          size="sm"
+          variant="secondary"
+          className="self-start"
+          onClick={() =>
+            void openPrivateFile(() => engagementService.businessRequestPhoto(request.id)).catch(
+              () => toast.show('The photo is no longer stored.', 'error'),
+            )
+          }
+        >
+          <Icon name="image" className="size-4" /> View photo
+        </Button>
       )}
       {request.preferredAt && (
         <p className="text-sm text-body">

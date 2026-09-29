@@ -8,13 +8,17 @@ import {
   Patch,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import {
   businessInsightsSchema,
   businessOrderSchema,
   createFoodOrderSchema,
+  createPrintOrderSchema,
+  type CreatePrintOrderRequest,
   insightsQuerySchema,
   listBusinessOrdersQuerySchema,
   listMyOrdersQuerySchema,
@@ -41,6 +45,7 @@ import { ResponseMessage } from '../../common/http/response-message.decorator.js
 import { ApiEnvelopeResponse, ApiErrorResponses } from '../../common/swagger/api-responses.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { sendPrivateFile } from '../uploads/send-private-file.js';
 import { Permissions } from '../auth/decorators/permissions.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { InsightsService } from './insights.service.js';
@@ -101,6 +106,53 @@ export class OrdersController {
     @RequestClient() client: ClientContext,
   ): Promise<Order> {
     return this.orders.createFood(actor, body, client);
+  }
+
+  @Roles('STUDENT')
+  @Post('orders/print')
+  @Throttle({ default: { limit: 20, ttl: 10 * 60_000 } })
+  @ResponseMessage('Print order placed')
+  @ApiOperation({
+    summary: 'Place a print order',
+    description:
+      'Upload the PDF first (`POST /uploads/documents`), then send its id with the options. The server ' +
+      'reads the page count from the file and prices the job from the shop’s price list. Pay at pickup.',
+  })
+  @ApiEnvelopeResponse(orderSchema, { status: 201, description: 'The order.' })
+  @ApiErrorResponses(
+    UNAUTHORIZED,
+    FORBIDDEN,
+    400,
+    { status: 404, code: 'NOT_FOUND', message: 'Place not found' },
+    { status: 409, code: 'SERVICE_UNAVAILABLE_NOW', message: 'Not taking print orders.' },
+    429,
+  )
+  createPrint(
+    @Body({ schema: createPrintOrderSchema }) body: CreatePrintOrderRequest,
+    @CurrentUser() actor: AuthenticatedUser,
+    @RequestClient() client: ClientContext,
+  ): Promise<Order> {
+    return this.orders.createPrint(actor, body, client);
+  }
+
+  @Get('me/orders/:id/document')
+  @ApiOperation({
+    summary: 'My print document',
+    description:
+      'The file itself (not JSON), never cached. Only for the student who ordered. Deleted once the job is finished; each opening is audited.',
+  })
+  @ApiOkResponse({
+    description: 'The file.',
+    content: { 'application/pdf': {}, 'image/jpeg': {}, 'image/png': {}, 'image/webp': {} },
+  })
+  @ApiErrorResponses(UNAUTHORIZED, NOT_FOUND)
+  async document(
+    @Param('id', idParam) id: string,
+    @CurrentUser() actor: AuthenticatedUser,
+    @RequestClient() client: ClientContext,
+    @Res() res: Response,
+  ): Promise<void> {
+    sendPrivateFile(res, await this.orders.myDocument(actor, id, client));
   }
 
   @Get('me/orders')
@@ -185,6 +237,26 @@ export class BusinessOrdersController {
     @CurrentUser() actor: AuthenticatedUser,
   ): Promise<BusinessOrder> {
     return this.orders.businessOrder(actor, id);
+  }
+
+  @Get('orders/:id/document')
+  @ApiOperation({
+    summary: 'A print order’s document',
+    description:
+      'The file itself (not JSON), never cached. Only for the business the order was sent to. Deleted once the job is finished; each opening is audited.',
+  })
+  @ApiOkResponse({
+    description: 'The file.',
+    content: { 'application/pdf': {}, 'image/jpeg': {}, 'image/png': {}, 'image/webp': {} },
+  })
+  @ApiErrorResponses(UNAUTHORIZED, NOT_FOUND)
+  async document(
+    @Param('id', idParam) id: string,
+    @CurrentUser() actor: AuthenticatedUser,
+    @RequestClient() client: ClientContext,
+    @Res() res: Response,
+  ): Promise<void> {
+    sendPrivateFile(res, await this.orders.businessDocument(actor, id, client));
   }
 
   @Patch('orders/:id/status')

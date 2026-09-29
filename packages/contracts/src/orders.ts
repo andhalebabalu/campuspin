@@ -288,3 +288,92 @@ export const adminListQrQuerySchema = paginationQuerySchema.extend({
   q: z.string().trim().max(100).optional(),
 });
 export type AdminListQrQuery = z.output<typeof adminListQrQuerySchema>;
+
+// ── Print orders ─────────────────────────────────────────────────────────────────────────────────
+
+/** Largest PDF accepted for printing, and the most pages / copies one job may have. */
+export const PRINT_MAX_BYTES = 20 * 1024 * 1024;
+export const PRINT_MAX_PAGES = 500;
+export const PRINT_MAX_COPIES = 50;
+
+/** A private upload: a PDF to print or a photo for a request. Never served publicly. */
+export const privateDocumentSchema = z.object({
+  id: z.string(),
+  kind: z.enum(['PRINT', 'REQUEST_PHOTO']),
+  fileName: z.string(),
+  contentType: z.string(),
+  sizeBytes: z.number().int(),
+  pageCount: z.number().int().nullable(),
+});
+export type PrivateDocument = z.infer<typeof privateDocumentSchema>;
+
+export const printOptionsSchema = z.strictObject({
+  copies: z.number().int().min(1).max(PRINT_MAX_COPIES),
+  color: z.boolean(),
+  doubleSided: z.boolean(),
+  paperSize: z.enum(['A4', 'A3', 'LEGAL', 'LETTER']),
+  binding: z.boolean(),
+  lamination: z.boolean(),
+});
+export type PrintOptions = z.output<typeof printOptionsSchema>;
+
+/** `POST /orders/print`. Only the choices are sent; the server counts pages and prices it. */
+export const createPrintOrderSchema = printOptionsSchema.extend({
+  placeId: uuidSchema,
+  documentId: uuidSchema,
+  pickupAt: z.iso.datetime().optional(),
+  note: singleLineField('Note', 300).optional(),
+  offerId: uuidSchema.optional(),
+  idempotencyKey: z.string().trim().min(8).max(64),
+});
+export type CreatePrintOrderRequest = z.output<typeof createPrintOrderSchema>;
+
+export interface PrintPriceList {
+  bwPricePerPage: number;
+  colorPricePerPage: number | null;
+  doubleSided: boolean;
+  paperSizes: readonly string[];
+  bindingPrice: number | null;
+  laminationPricePerPage: number | null;
+}
+
+/**
+ * The lines and total of a print job. Used by the server to price the order and by the apps to show
+ * the same number before ordering. Returns the reason instead when a choice is not offered.
+ */
+export function pricePrintJob(
+  prices: PrintPriceList,
+  pageCount: number,
+  options: PrintOptions,
+):
+  | { lines: Array<{ name: string; unitPrice: number; quantity: number }>; subtotal: number }
+  | { problem: string } {
+  if (options.color && prices.colorPricePerPage === null)
+    return { problem: 'This shop does not print in colour.' };
+  if (options.doubleSided && !prices.doubleSided)
+    return { problem: 'This shop does not print double-sided.' };
+  if (!prices.paperSizes.includes(options.paperSize))
+    return { problem: `This shop does not print on ${options.paperSize}.` };
+  if (options.binding && prices.bindingPrice === null)
+    return { problem: 'This shop does not bind.' };
+  if (options.lamination && prices.laminationPricePerPage === null)
+    return { problem: 'This shop does not laminate.' };
+  const perPage = options.color ? (prices.colorPricePerPage ?? 0) : prices.bwPricePerPage;
+  const lines = [
+    {
+      name: `${pageCount} ${pageCount === 1 ? 'page' : 'pages'} · ${options.color ? 'colour' : 'B/W'} · ${options.paperSize}${options.doubleSided ? ' · double-sided' : ''}`,
+      unitPrice: perPage * pageCount,
+      quantity: options.copies,
+    },
+  ];
+  if (options.binding)
+    lines.push({ name: 'Binding', unitPrice: prices.bindingPrice ?? 0, quantity: options.copies });
+  if (options.lamination) {
+    lines.push({
+      name: 'Lamination',
+      unitPrice: (prices.laminationPricePerPage ?? 0) * pageCount,
+      quantity: options.copies,
+    });
+  }
+  return { lines, subtotal: lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0) };
+}

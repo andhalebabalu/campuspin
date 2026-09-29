@@ -19,6 +19,7 @@ import { Icon } from '@/components/ui/icon';
 import { useToast } from '@/components/ui/toast';
 import { ROUTES } from '@/constants/routes';
 import { CodeDialog } from '@/features/offers/components/offer-card';
+import { openPrivateFile } from '@/features/files/private-file';
 import { engagementService } from '@/services/engagement.service';
 
 export function requestTone(request: Pick<ServiceRequest, 'status'>): BadgeTone {
@@ -242,6 +243,20 @@ export function RequestTracking({ requestId }: { requestId: string }) {
         </div>
         {request.description && (
           <p className="whitespace-pre-line text-sm text-body">{request.description}</p>
+        )}
+        {request.hasImage && !finished && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="self-start"
+            onClick={() =>
+              void openPrivateFile(() => engagementService.myRequestPhoto(request.id)).catch(() =>
+                toast.show('The photo is no longer stored.', 'error'),
+              )
+            }
+          >
+            <Icon name="image" className="size-4" /> My photo
+          </Button>
         )}
         {request.statusReason && (
           <p className="text-sm text-muted">Note from the business: {request.statusReason}</p>

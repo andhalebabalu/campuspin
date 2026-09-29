@@ -289,6 +289,7 @@ model User {
   serviceOrders                ServiceOrder[]        @relation("ServiceOrderStudent")
   createdQrCodes               PlaceQrCode[]         @relation("QrCreatedBy")
   serviceRequests              ServiceRequest[]      @relation("ServiceRequestStudent")
+  privateDocuments             PrivateDocument[]
   createdOffers                StudentOffer[]        @relation("OfferCreatedBy")
   offerRedemptions             OfferRedemption[]     @relation("RedemptionStudent")
   verifiedRedemptions          OfferRedemption[]     @relation("RedemptionVerifiedBy")
@@ -1859,6 +1860,9 @@ model ServiceOrder {
   total             Int
   paymentMethod     PaymentMethod @default(PAY_AT_COUNTER)
   note              String?       @db.VarChar(300)
+  // Print orders: the student's document (private) and the chosen options.
+  documentId        String?       @unique @db.Char(36)
+  printOptions      Json?
   // The client's retry key: the same key never creates a second order.
   idempotencyKey    String        @db.VarChar(64)
   statusReason      String?       @db.VarChar(255)
@@ -1872,6 +1876,7 @@ model ServiceOrder {
   table           PlaceTable?        @relation(fields: [tableId], references: [id], onDelete: SetNull)
   items           ServiceOrderItem[]
   redemption      OfferRedemption?
+  document        PrivateDocument?   @relation(fields: [documentId], references: [id], onDelete: SetNull)
 
   @@unique([userId, idempotencyKey])
   @@index([businessProfileId, status, createdAt])
@@ -2103,4 +2108,37 @@ model OfferRedemption {
   @@index([businessProfileId, createdAt])
   @@index([userId, createdAt])
   @@map("offer_redemptions")
+}
+
+enum DocumentKind {
+  // A PDF sent to a print shop.
+  PRINT
+  // A photo of a problem for a repair or laundry request.
+  REQUEST_PHOTO
+}
+
+// A private file a student uploaded for one order or request. The bytes live in PRIVATE_UPLOAD_DIR
+// under a random key, never at a public URL; the API streams them only to the student and to the
+// business the file was sent to. The file is deleted once the job is finished.
+model PrivateDocument {
+  id          String       @id @default(uuid(7)) @db.Char(36)
+  userId      String       @db.Char(36)
+  kind        DocumentKind
+  // Key in the private store ("<uuid>.pdf"); null once the file was deleted.
+  fileKey     String?      @db.VarChar(80)
+  // As the student named it, cleaned for display only (never used as a path).
+  fileName    String       @db.VarChar(120)
+  contentType String       @db.VarChar(40)
+  sizeBytes   Int
+  pageCount   Int?
+  // Set when attached to an order or request: a document is used once.
+  usedAt      DateTime?
+  deletedAt   DateTime?
+  createdAt   DateTime     @default(now())
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order ServiceOrder?
+
+  @@index([userId, createdAt])
+  @@map("private_documents")
 }

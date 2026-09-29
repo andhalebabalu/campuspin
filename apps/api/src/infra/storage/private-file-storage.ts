@@ -2,16 +2,24 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { UploadImageType } from '@platform/contracts';
+
+/** What private storage holds: ID and problem photos, and PDFs sent to print. */
+export type PrivateFileType = UploadImageType | 'application/pdf';
+
+const EXTENSION: Readonly<Record<PrivateFileType, string>> = {
+  ...EXTENSION_FOR_TYPE,
+  'application/pdf': 'pdf',
+};
 import { EXTENSION_FOR_TYPE } from './image-type.js';
 
 /**
- * Storage for PRIVATE files (student ID photos). Unlike `ImageStorage` it never returns a URL: it
+ * Storage for PRIVATE files (student ID photos, problem photos, documents to print). Unlike `ImageStorage` it never returns a URL: it
  * returns an opaque key that only server code can turn back into bytes, behind a permission check.
  * A cloud implementation would use a private bucket with no public access.
  */
 export abstract class PrivateFileStorage {
   /** Stores already-validated bytes; returns the key to read or delete them later. */
-  abstract save(bytes: Buffer, type: UploadImageType): Promise<string>;
+  abstract save(bytes: Buffer, type: PrivateFileType): Promise<string>;
   abstract read(key: string): Promise<Buffer>;
   /** Removes the file. Deleting a file that is already gone is not an error. */
   abstract delete(key: string): Promise<void>;
@@ -19,7 +27,7 @@ export abstract class PrivateFileStorage {
 
 /** Keys are always "<uuid>.<ext>": anything else (a path, "..") is refused before touching disk. */
 const KEY_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$/;
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|pdf)$/;
 
 export function isPrivateKey(key: string): boolean {
   return KEY_PATTERN.test(key);
@@ -34,8 +42,8 @@ export class LocalDiskPrivateFileStorage extends PrivateFileStorage {
     super();
   }
 
-  async save(bytes: Buffer, type: UploadImageType): Promise<string> {
-    const key = `${randomUUID()}.${EXTENSION_FOR_TYPE[type]}`;
+  async save(bytes: Buffer, type: PrivateFileType): Promise<string> {
+    const key = `${randomUUID()}.${EXTENSION[type]}`;
     await mkdir(this.directory, { recursive: true });
     await writeFile(this.pathOf(key), bytes, { flag: 'wx', mode: 0o600 });
     return key;

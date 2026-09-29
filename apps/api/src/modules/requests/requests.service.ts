@@ -28,6 +28,7 @@ import { indiaDayStart } from '../orders/orders.service.js';
 import { shortCode } from '../orders/order-rules.js';
 import { LIVE_SERVICE_WHERE, SERVICE_PLACE_WHERE, configOf } from '../services/service-rules.js';
 import { TablesQrService } from '../services/tables-qr.service.js';
+import { DocumentsService } from '../uploads/documents.service.js';
 import {
   businessCanMove,
   businessMoves,
@@ -106,6 +107,7 @@ export class RequestsService {
     private readonly access: BusinessAccessService,
     private readonly tablesQr: TablesQrService,
     private readonly notifications: NotificationsService,
+    private readonly documents: DocumentsService,
     private readonly audit: AuditService,
   ) {}
 
@@ -546,9 +548,11 @@ export class RequestsService {
         throw AppException.validation({ itemId: ['Choose one of the services listed here'] });
       label = item.name;
     }
-    const imageKey = dto.imageId
-      ? await this.ownedImage(actor.id, dto.imageId, config.photosAllowed)
-      : null;
+    if (dto.imageId && !config.photosAllowed) {
+      throw AppException.validation({
+        imageId: [`${place.name} does not take photos with requests`],
+      });
+    }
     const row = await this.insert(
       {
         kind: 'GENERAL',
@@ -559,12 +563,12 @@ export class RequestsService {
         serviceItemId: dto.itemId ?? null,
         label,
         description: dto.description,
-        imageKey,
         preferredAt: dto.preferredAt ? new Date(dto.preferredAt) : null,
         idempotencyKey: dto.idempotencyKey,
       },
       actor,
       client,
+      dto.imageId,
     );
     await this.notifyBusiness(
       row,
@@ -574,25 +578,42 @@ export class RequestsService {
     return this.toRequest(row, await this.historyOf([row.id]));
   }
 
-  /** Photos arrive with the private document store (next phase); until then none are accepted. */
-  protected async ownedImage(
-    _userId: string,
-    _imageId: string,
-    _allowed: boolean,
-  ): Promise<string | null> {
-    throw AppException.validation({ imageId: ['Photos cannot be attached yet'] });
+  /** The student's photo of a problem (a private document), or a 404 for anyone else. */
+  async myPhoto(actor: AuthenticatedUser, id: string, client: ClientContext) {
+    const row = await this.prisma.serviceRequest.findFirst({
+      where: { id, userId: actor.id },
+      select: { imageKey: true },
+    });
+    if (!row?.imageKey) throw AppException.notFound('No photo for this request');
+    return this.documents.read(row.imageKey, actor, client);
   }
 
+  /** A request's photo, only for the business it was sent to. */
+  async businessPhoto(actor: AuthenticatedUser, id: string, client: ClientContext) {
+    const businessIds = await this.access.businessIdsOf(actor);
+    const row = await this.prisma.serviceRequest.findFirst({
+      where: { id, businessProfileId: { in: businessIds } },
+      select: { imageKey: true },
+    });
+    if (!row?.imageKey) throw AppException.notFound('No photo for this request');
+    return this.documents.read(row.imageKey, actor, client);
+  }
+
+  /** Writes the request; an attached photo is claimed in the same transaction (its id is kept in imageKey). */
   private async insert(
     data: Omit<Prisma.ServiceRequestUncheckedCreateInput, 'code'>,
     actor: AuthenticatedUser,
     client: ClientContext,
+    imageId?: string,
   ): Promise<RequestRow> {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
         return await this.prisma.$transaction(async (tx) => {
+          const photo = imageId
+            ? await this.documents.claim(tx, actor.id, imageId, 'REQUEST_PHOTO')
+            : null;
           const created = await tx.serviceRequest.create({
-            data: { ...data, code: shortCode(6, 'RQ') },
+            data: { ...data, imageKey: photo?.id ?? null, code: shortCode(6, 'RQ') },
             select: REQUEST_SELECT,
           });
           await this.audit.record(
@@ -634,46 +655,55 @@ export class RequestsService {
     actor: AuthenticatedUser,
     client: ClientContext,
   ): Promise<RequestRow> {
-    return this.prisma.$transaction(async (tx) => {
-      const changed = await tx.serviceRequest.updateMany({
-        where: { id: row.id, status: row.status },
-        data: {
-          status: to,
-          statusChangedAt: new Date(),
-          statusReason: extra.reason ?? null,
-          ...(to === 'ESTIMATE_AVAILABLE'
-            ? {
-                estimateAmount: extra.estimateAmount ?? null,
-                estimateNote: extra.estimateNote ?? null,
-              }
-            : {}),
-          // A handled table request no longer blocks asking again.
-          ...(isOpenTableStatus(to) ? {} : { activeKey: null }),
-        },
-      });
-      if (changed.count === 0)
-        throw AppException.conflict(
-          'STATUS_CHANGED',
-          'This request changed meanwhile. Refresh and try again.',
-        );
-      await this.audit.record(
-        {
-          action: 'SERVICE_REQUEST_STATUS_CHANGED',
-          actorId: actor.id,
-          entityType: 'ServiceRequest',
-          entityId: row.id,
-          metadata: {
-            from: row.status,
-            to,
-            reason: extra.reason ?? null,
-            estimate: extra.estimateAmount ?? null,
+    return this.prisma
+      .$transaction(async (tx) => {
+        const changed = await tx.serviceRequest.updateMany({
+          where: { id: row.id, status: row.status },
+          data: {
+            status: to,
+            statusChangedAt: new Date(),
+            statusReason: extra.reason ?? null,
+            ...(to === 'ESTIMATE_AVAILABLE'
+              ? {
+                  estimateAmount: extra.estimateAmount ?? null,
+                  estimateNote: extra.estimateNote ?? null,
+                }
+              : {}),
+            // A handled table request no longer blocks asking again.
+            ...(isOpenTableStatus(to) ? {} : { activeKey: null }),
           },
-          client,
-        },
-        tx,
-      );
-      return tx.serviceRequest.findUniqueOrThrow({ where: { id: row.id }, select: REQUEST_SELECT });
-    });
+        });
+        if (changed.count === 0)
+          throw AppException.conflict(
+            'STATUS_CHANGED',
+            'This request changed meanwhile. Refresh and try again.',
+          );
+        await this.audit.record(
+          {
+            action: 'SERVICE_REQUEST_STATUS_CHANGED',
+            actorId: actor.id,
+            entityType: 'ServiceRequest',
+            entityId: row.id,
+            metadata: {
+              from: row.status,
+              to,
+              reason: extra.reason ?? null,
+              estimate: extra.estimateAmount ?? null,
+            },
+            client,
+          },
+          tx,
+        );
+        return tx.serviceRequest.findUniqueOrThrow({
+          where: { id: row.id },
+          select: REQUEST_SELECT,
+        });
+      })
+      .then(async (updated) => {
+        // The photo is only needed while the job is open: delete it once finished.
+        if (FINAL_REQUEST_STATUSES.includes(to)) await this.documents.discard(updated.imageKey);
+        return updated;
+      });
   }
 
   private async byIdempotencyKey(userId: string, key: string): Promise<ServiceRequest | null> {

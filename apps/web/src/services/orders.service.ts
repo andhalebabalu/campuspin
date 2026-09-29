@@ -3,6 +3,8 @@ import {
   businessInsightsSchema,
   businessOrderSchema,
   orderSchema,
+  privateDocumentSchema,
+  type CreatePrintOrderRequest,
   ownerQrCodeSchema,
   placeTableSchema,
   qrResolutionSchema,
@@ -18,7 +20,7 @@ import {
   type UpdateTableRequest,
 } from '@platform/contracts';
 import { z } from 'zod';
-import { apiClient } from '@/lib/api/client';
+import { apiClient, fetchPrivateBlob } from '@/lib/api/client';
 
 const enc = encodeURIComponent;
 const placeBase = (placeId: string) => `/business/places/${enc(placeId)}`;
@@ -35,6 +37,25 @@ export const ordersService = {
 
   placeFoodOrder: (dto: CreateFoodOrderRequest) =>
     apiClient.post('/orders', { body: dto, schema: orderSchema }),
+
+  /** `POST /uploads/documents`: a PDF to print or a photo for a request (private). */
+  uploadDocument: (file: File, signal?: AbortSignal) => {
+    const form = new FormData();
+    form.append('file', file);
+    return apiClient.post('/uploads/documents', {
+      body: form,
+      schema: privateDocumentSchema,
+      signal,
+    });
+  },
+
+  placePrintOrder: (dto: CreatePrintOrderRequest) =>
+    apiClient.post('/orders/print', { body: dto, schema: orderSchema }),
+
+  myDocument: (orderId: string) => fetchPrivateBlob(`/me/orders/${enc(orderId)}/document`),
+
+  businessDocument: (orderId: string) =>
+    fetchPrivateBlob(`/business/orders/${enc(orderId)}/document`),
 
   myOrders: (
     params: { kind?: OrderKind; active?: boolean; page?: number } = {},

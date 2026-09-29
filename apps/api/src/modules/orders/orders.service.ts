@@ -5,6 +5,10 @@ import {
   PAYMENT_LABELS,
   type BusinessOrder,
   type CreateFoodOrderRequest,
+  type CreatePrintOrderRequest,
+  type PrintDetails,
+  type PrintOrderConfig,
+  pricePrintJob,
   type ListBusinessOrdersQuery,
   type ListMyOrdersQuery,
   type Order,
@@ -23,6 +27,7 @@ import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { BusinessAccessService } from '../business/business-access.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { OffersService, type OrderOfferQuote } from '../offers/offers.service.js';
+import { DocumentsService } from '../uploads/documents.service.js';
 import { LIVE_SERVICE_WHERE, SERVICE_PLACE_WHERE, configOf } from '../services/service-rules.js';
 import { TablesQrService } from '../services/tables-qr.service.js';
 import {
@@ -52,6 +57,9 @@ export const ORDER_SELECT = {
   statusReason: true,
   createdAt: true,
   updatedAt: true,
+  documentId: true,
+  printOptions: true,
+  document: { select: { fileName: true, pageCount: true } },
   place: { select: { id: true, slug: true, name: true } },
   user: { select: { name: true } },
   items: {
@@ -86,6 +94,7 @@ export class OrdersService {
     private readonly tablesQr: TablesQrService,
     private readonly notifications: NotificationsService,
     private readonly offers: OffersService,
+    private readonly documents: DocumentsService,
     private readonly audit: AuditService,
   ) {}
 
@@ -170,31 +179,175 @@ export class OrdersService {
     const discount = quote?.discount ?? 0;
     const businessProfileId = place.businessProfileId;
 
+    return this.persist(
+      actor,
+      {
+        kind: 'FOOD',
+        placeId: place.id,
+        businessProfileId: place.businessProfileId,
+        userId: actor.id,
+        tableId: table?.id ?? null,
+        tableLabel: table?.label ?? null,
+        subtotal,
+        discount,
+        total: subtotal - discount,
+        paymentMethod: dto.paymentMethod,
+        note: dto.note ?? null,
+        idempotencyKey: dto.idempotencyKey,
+      },
+      lines,
+      quote,
+      client,
+    );
+  }
+
+  /**
+   * Places a print order: the student's own uploaded PDF, the options chosen, priced by the server
+   * from the shop's price list and the page count it read from the file.
+   */
+  async createPrint(
+    actor: AuthenticatedUser,
+    dto: CreatePrintOrderRequest,
+    client: ClientContext,
+  ): Promise<Order> {
+    const repeat = await this.byIdempotencyKey(actor.id, dto.idempotencyKey);
+    if (repeat) return repeat;
+    const place = await this.prisma.place.findFirst({
+      where: { id: dto.placeId, ...SERVICE_PLACE_WHERE },
+      select: {
+        id: true,
+        name: true,
+        businessProfileId: true,
+        services: {
+          where: { ...LIVE_SERVICE_WHERE, serviceType: { kind: 'PRINT_ORDER', status: 'ACTIVE' } },
+          select: { config: true },
+          take: 1,
+        },
+      },
+    });
+    if (!place?.businessProfileId) throw AppException.notFound('Place not found');
+    const service = place.services[0];
+    if (!service)
+      throw AppException.conflict(
+        'SERVICE_UNAVAILABLE_NOW',
+        `${place.name} does not take print orders on CampusPin.`,
+      );
+    const config = configOf('PRINT_ORDER', service.config) as PrintOrderConfig;
+    if (!config.acceptingOrders) {
+      throw AppException.conflict(
+        'SERVICE_UNAVAILABLE_NOW',
+        `${place.name} is not taking print orders right now.`,
+      );
+    }
+    const document = await this.prisma.privateDocument.findFirst({
+      where: { id: dto.documentId, userId: actor.id, kind: 'PRINT', usedAt: null, deletedAt: null },
+      select: { pageCount: true, fileName: true },
+    });
+    if (!document?.pageCount)
+      throw AppException.validation({
+        documentId: ['Upload the PDF again: this one is not available'],
+      });
+    const priced = pricePrintJob(config, document.pageCount, dto);
+    if ('problem' in priced) throw AppException.validation({ options: [priced.problem] });
+    const lines = priced.lines.map((line) => ({
+      serviceItemId: null,
+      name: line.name,
+      unitPrice: line.unitPrice,
+      quantity: line.quantity,
+      options: [],
+      lineTotal: line.unitPrice * line.quantity,
+    }));
+    const quote: OrderOfferQuote | null = dto.offerId
+      ? await this.offers.quoteForOrder(dto.offerId, actor.id, place.id, priced.subtotal)
+      : null;
+    const discount = quote?.discount ?? 0;
+    const printOptions = {
+      copies: dto.copies,
+      color: dto.color,
+      doubleSided: dto.doubleSided,
+      paperSize: dto.paperSize,
+      binding: dto.binding,
+      lamination: dto.lamination,
+      pickupAt: dto.pickupAt ?? null,
+    };
+    return this.persist(
+      actor,
+      {
+        kind: 'PRINT',
+        placeId: place.id,
+        businessProfileId: place.businessProfileId,
+        userId: actor.id,
+        subtotal: priced.subtotal,
+        discount,
+        total: priced.subtotal - discount,
+        paymentMethod: 'PAY_AT_COUNTER',
+        note: dto.note ?? null,
+        idempotencyKey: dto.idempotencyKey,
+        printOptions,
+      },
+      lines,
+      quote,
+      client,
+      async (tx) => {
+        const claimed = await this.documents.claim(tx, actor.id, dto.documentId, 'PRINT');
+        return { documentId: claimed.id };
+      },
+    );
+  }
+
+  /** The student's own print document, streamed to them. */
+  async myDocument(actor: AuthenticatedUser, id: string, client: ClientContext) {
+    const row = await this.prisma.serviceOrder.findFirst({
+      where: { id, userId: actor.id },
+      select: { documentId: true },
+    });
+    if (!row?.documentId) throw AppException.notFound('No document for this order');
+    return this.documents.read(row.documentId, actor, client);
+  }
+
+  /** A print order's document, streamed only to the business it was sent to. */
+  async businessDocument(actor: AuthenticatedUser, id: string, client: ClientContext) {
+    const businessIds = await this.access.businessIdsOf(actor);
+    const row = await this.prisma.serviceOrder.findFirst({
+      where: { id, businessProfileId: { in: businessIds } },
+      select: { documentId: true },
+    });
+    if (!row?.documentId) throw AppException.notFound('No document for this order');
+    return this.documents.read(row.documentId, actor, client);
+  }
+
+  /** Writes an order and its lines (and an offer use, and any attached file) in one transaction. */
+  private async persist(
+    actor: AuthenticatedUser,
+    data: Omit<Prisma.ServiceOrderUncheckedCreateInput, 'code' | 'items'>,
+    lines: ReadonlyArray<{
+      serviceItemId: string | null;
+      name: string;
+      unitPrice: number;
+      quantity: number;
+      options: unknown[];
+      lineTotal: number;
+    }>,
+    quote: OrderOfferQuote | null,
+    client: ClientContext,
+    attach?: (tx: Prisma.TransactionClient) => Promise<{ documentId: string }>,
+  ): Promise<Order> {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
         const order = await this.prisma.$transaction(async (tx) => {
+          const extra = attach ? await attach(tx) : {};
           const created = await tx.serviceOrder.create({
             data: {
+              ...data,
+              ...extra,
               code: orderCode(),
-              kind: 'FOOD',
-              placeId: place.id,
-              businessProfileId,
-              userId: actor.id,
-              tableId: table?.id ?? null,
-              tableLabel: table?.label ?? null,
-              subtotal,
-              discount,
-              total: subtotal - discount,
-              paymentMethod: dto.paymentMethod,
-              note: dto.note ?? null,
-              idempotencyKey: dto.idempotencyKey,
               items: {
                 create: lines.map((line) => ({
                   serviceItemId: line.serviceItemId,
                   name: line.name,
                   unitPrice: line.unitPrice,
                   quantity: line.quantity,
-                  options: line.options,
+                  options: line.options as Prisma.InputJsonValue,
                   lineTotal: line.lineTotal,
                 })),
               },
@@ -211,8 +364,9 @@ export class OrdersService {
               metadata: {
                 to: 'PENDING',
                 code: created.code,
+                kind: created.kind,
                 total: created.total,
-                table: table?.label ?? null,
+                table: created.tableLabel,
               },
               client,
             },
@@ -220,12 +374,16 @@ export class OrdersService {
           );
           return created;
         });
-        await this.notifyBusiness(order, `New order ${order.code}`, this.orderSummary(order));
+        await this.notifyBusiness(
+          order,
+          `New ${order.kind === 'PRINT' ? 'print order' : 'order'} ${order.code}`,
+          this.orderSummary(order),
+        );
         return this.toOrder(order, await this.historyOf([order.id]));
       } catch (error) {
         if (!isUniqueViolation(error)) throw error;
         // Either the same key raced in (return that order) or the random code collided (try again).
-        const raced = await this.byIdempotencyKey(actor.id, dto.idempotencyKey);
+        const raced = await this.byIdempotencyKey(actor.id, String(data.idempotencyKey));
         if (raced) return raced;
       }
     }
@@ -388,30 +546,37 @@ export class OrdersService {
     actor: AuthenticatedUser,
     client: ClientContext,
   ): Promise<OrderRow> {
-    return this.prisma.$transaction(async (tx) => {
-      const changed = await tx.serviceOrder.updateMany({
-        where: { id: row.id, status: row.status },
-        data: { status: to, statusReason: reason, statusChangedAt: new Date() },
-      });
-      if (changed.count === 0) {
-        throw AppException.conflict(
-          'STATUS_CHANGED',
-          'This order changed meanwhile. Refresh and try again.',
+    return this.prisma
+      .$transaction(async (tx) => {
+        const changed = await tx.serviceOrder.updateMany({
+          where: { id: row.id, status: row.status },
+          data: { status: to, statusReason: reason, statusChangedAt: new Date() },
+        });
+        if (changed.count === 0) {
+          throw AppException.conflict(
+            'STATUS_CHANGED',
+            'This order changed meanwhile. Refresh and try again.',
+          );
+        }
+        await this.audit.record(
+          {
+            action: 'ORDER_STATUS_CHANGED',
+            actorId: actor.id,
+            entityType: 'ServiceOrder',
+            entityId: row.id,
+            metadata: { from: row.status, to, reason },
+            client,
+          },
+          tx,
         );
-      }
-      await this.audit.record(
-        {
-          action: 'ORDER_STATUS_CHANGED',
-          actorId: actor.id,
-          entityType: 'ServiceOrder',
-          entityId: row.id,
-          metadata: { from: row.status, to, reason },
-          client,
-        },
-        tx,
-      );
-      return tx.serviceOrder.findUniqueOrThrow({ where: { id: row.id }, select: ORDER_SELECT });
-    });
+        return tx.serviceOrder.findUniqueOrThrow({ where: { id: row.id }, select: ORDER_SELECT });
+      })
+      .then(async (updated) => {
+        // Nobody needs the student's document once the job is over: delete the file.
+        if (updated.kind === 'PRINT' && FINAL_ORDER_STATUSES.includes(to))
+          await this.documents.discard(updated.documentId);
+        return updated;
+      });
   }
 
   private async ownedByBusiness(actor: AuthenticatedUser, id: string): Promise<OrderRow> {
@@ -478,7 +643,7 @@ export class OrdersService {
       paymentMethod: row.paymentMethod,
       note: row.note,
       statusReason: row.statusReason,
-      print: null,
+      print: printDetailsOf(row),
       cancellable: studentCanCancel(row.status),
       history: history.get(row.id) ?? [],
       createdAt: row.createdAt.toISOString(),
@@ -519,6 +684,22 @@ export class OrdersService {
       link: '/dashboard?tab=orders',
     });
   }
+}
+
+function printDetailsOf(row: OrderRow): PrintDetails | null {
+  if (row.kind !== 'PRINT' || !row.printOptions) return null;
+  const options = row.printOptions as Omit<PrintDetails, 'fileName' | 'pageCount'>;
+  return {
+    fileName: row.document?.fileName ?? 'document.pdf',
+    pageCount: row.document?.pageCount ?? 0,
+    copies: options.copies,
+    color: options.color,
+    doubleSided: options.doubleSided,
+    paperSize: options.paperSize,
+    binding: options.binding,
+    lamination: options.lamination,
+    pickupAt: options.pickupAt ?? null,
+  };
 }
 
 /** The instant today began in India. */

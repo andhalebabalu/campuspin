@@ -30,6 +30,8 @@ export const ROUTES = {
   /** Where a printed CampusPin QR code leads. */
   qr: (token: string) => `/q/${token}`,
   placeOrder: (slug: string) => `/places/${slug}/order`,
+  placePrint: (slug: string) => `/places/${slug}/print`,
+  placeRequest: (slug: string, key: string) => `/places/${slug}/request/${key}`,
   orders: '/orders',
   order: (id: string) => `/orders/${id}`,
   request: (id: string) => `/requests/${id}`,

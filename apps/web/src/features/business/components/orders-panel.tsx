@@ -18,6 +18,7 @@ import { Icon } from '@/components/ui/icon';
 import { useToast } from '@/components/ui/toast';
 import { rupees } from '@/features/orders/lib/use-cart';
 import { statusTone } from '@/features/orders/components/order-tracking';
+import { openPrivateFile } from '@/features/files/private-file';
 import { ordersService } from '@/services/orders.service';
 
 /** The board refreshes this often while it is on screen. */
@@ -111,6 +112,36 @@ function OrderTicket({
           </li>
         ))}
       </ul>
+      {order.print && (
+        <p className="rounded-md bg-primary-50 px-3 py-2 text-sm text-primary-800">
+          {order.print.fileName} · {order.print.pageCount} pages × {order.print.copies} ·{' '}
+          {order.print.color ? 'colour' : 'B/W'} · {order.print.paperSize}
+          {order.print.doubleSided ? ' · double-sided' : ''}
+          {order.print.binding ? ' · binding' : ''}
+          {order.print.lamination ? ' · lamination' : ''}
+          {order.print.pickupAt
+            ? ` · pickup ${new Date(order.print.pickupAt).toLocaleString('en-IN')}`
+            : ''}
+        </p>
+      )}
+      {order.print &&
+        order.status !== 'COMPLETED' &&
+        order.status !== 'CANCELLED' &&
+        order.status !== 'REJECTED' && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="self-start"
+            onClick={() =>
+              void openPrivateFile(
+                () => ordersService.businessDocument(order.id),
+                order.print?.fileName,
+              ).catch(() => toast.show('The file could not be opened.', 'error'))
+            }
+          >
+            <Icon name="download" className="size-4" /> Download PDF
+          </Button>
+        )}
       {order.note && (
         <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-600">
           Note: {order.note}

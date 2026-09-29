@@ -16,7 +16,7 @@ import {
   type UpdateTableRequestTypeRequest,
 } from '@platform/contracts';
 import { z } from 'zod';
-import { apiClient } from '@/lib/api/client';
+import { apiClient, fetchPrivateBlob } from '@/lib/api/client';
 
 const enc = encodeURIComponent;
 const typeList = z.array(ownerTableRequestTypeSchema);
@@ -98,6 +98,10 @@ export const engagementService = {
 
   cancelRequest: (id: string) =>
     apiClient.post(`/me/service-requests/${enc(id)}/cancel`, { schema: serviceRequestSchema }),
+
+  myRequestPhoto: (id: string) => fetchPrivateBlob(`/me/service-requests/${enc(id)}/photo`),
+
+  businessRequestPhoto: (id: string) => fetchPrivateBlob(`/business/requests/${enc(id)}/photo`),
 
   approveEstimate: (id: string) =>
     apiClient.post(`/me/service-requests/${enc(id)}/approve`, { schema: serviceRequestSchema }),

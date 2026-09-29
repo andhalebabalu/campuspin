@@ -20,10 +20,12 @@ export const SUPPORTED_KINDS: ReadonlySet<ConfigurableServiceKind> = new Set([
   'DAILY_MENU',
   'FOOD_ORDER',
   'TABLE_SERVICE',
+  'PRINT_ORDER',
+  'SERVICE_REQUEST',
 ]);
 
 /** Kinds whose students order or pick from the place's catalogue. */
-export const CATALOG_KINDS: ReadonlySet<string> = new Set(['FOOD_ORDER']);
+export const CATALOG_KINDS: ReadonlySet<string> = new Set(['FOOD_ORDER', 'SERVICE_REQUEST']);
 
 export const isSupportedKind = (kind: ServiceKind): kind is ConfigurableServiceKind =>
   isConfigurableKind(kind) && SUPPORTED_KINDS.has(kind);

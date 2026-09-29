@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
 import { useToast } from '@/components/ui/toast';
 import { ROUTES } from '@/constants/routes';
+import { openPrivateFile } from '@/features/files/private-file';
 import { ordersService } from '@/services/orders.service';
 import { rupees } from '../lib/use-cart';
 
@@ -189,6 +190,33 @@ export function OrderTracking({ orderId }: { orderId: string }) {
           </div>
         </dl>
         {order.note && <p className="text-sm text-body">Note: {order.note}</p>}
+        {order.print && (
+          <p className="rounded-md bg-primary-50 px-3 py-2 text-sm text-primary-800">
+            {order.print.fileName} · {order.print.pageCount} pages × {order.print.copies} ·{' '}
+            {order.print.color ? 'colour' : 'B/W'} · {order.print.paperSize}
+            {order.print.doubleSided ? ' · double-sided' : ''}
+            {order.print.binding ? ' · binding' : ''}
+            {order.print.lamination ? ' · lamination' : ''}
+            {order.print.pickupAt
+              ? ` · pickup ${new Date(order.print.pickupAt).toLocaleString('en-IN')}`
+              : ''}
+          </p>
+        )}
+        {order.print && !finished && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="self-start"
+            onClick={() =>
+              void openPrivateFile(
+                () => ordersService.myDocument(order.id),
+                order.print?.fileName,
+              ).catch(() => toast.show('The file could not be opened.', 'error'))
+            }
+          >
+            <Icon name="download" className="size-4" /> My file
+          </Button>
+        )}
       </Card>
 
       {order.history.length > 0 && (

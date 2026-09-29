@@ -28,6 +28,8 @@ export default defineConfig({
       THROTTLE_LIMIT: '10000',
       // Uploaded test images go to a throwaway folder, never the real apps/api/uploads.
       UPLOAD_DIR: path.join(os.tmpdir(), 'campuspin-e2e-uploads'),
+      // Private files (ID photos, print PDFs, problem photos) also go to a throwaway folder.
+      PRIVATE_UPLOAD_DIR: path.join(os.tmpdir(), 'campuspin-e2e-private'),
     },
   },
 });

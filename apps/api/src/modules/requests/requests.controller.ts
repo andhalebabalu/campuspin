@@ -9,8 +9,10 @@ import {
   Patch,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import {
   businessServiceRequestSchema,
@@ -42,6 +44,7 @@ import { ResponseMessage } from '../../common/http/response-message.decorator.js
 import { ApiEnvelopeResponse, ApiErrorResponses } from '../../common/swagger/api-responses.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { sendPrivateFile } from '../uploads/send-private-file.js';
 import { Permissions } from '../auth/decorators/permissions.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { RequestsService } from './requests.service.js';
@@ -129,6 +132,26 @@ export class RequestsController {
     return this.requests.myRequest(actor, id);
   }
 
+  @Get('me/service-requests/:id/photo')
+  @ApiOperation({
+    summary: 'The photo of my request',
+    description:
+      'The file itself (not JSON), never cached. Only for the student who asked. Deleted once the job is finished; each opening is audited.',
+  })
+  @ApiOkResponse({
+    description: 'The file.',
+    content: { 'application/pdf': {}, 'image/jpeg': {}, 'image/png': {}, 'image/webp': {} },
+  })
+  @ApiErrorResponses(UNAUTHORIZED, NOT_FOUND)
+  async photo(
+    @Param('id', idParam) id: string,
+    @CurrentUser() actor: AuthenticatedUser,
+    @RequestClient() client: ClientContext,
+    @Res() res: Response,
+  ): Promise<void> {
+    sendPrivateFile(res, await this.requests.myPhoto(actor, id, client));
+  }
+
   @Post('me/service-requests/:id/cancel')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Request cancelled')
@@ -184,6 +207,26 @@ export class BusinessRequestsController {
     @CurrentUser() actor: AuthenticatedUser,
   ): Promise<Paginated<BusinessServiceRequest>> {
     return this.requests.businessList(actor, query);
+  }
+
+  @Get('requests/:id/photo')
+  @ApiOperation({
+    summary: 'A request’s photo',
+    description:
+      'The file itself (not JSON), never cached. Only for the business the request was sent to. Deleted once the job is finished; each opening is audited.',
+  })
+  @ApiOkResponse({
+    description: 'The file.',
+    content: { 'application/pdf': {}, 'image/jpeg': {}, 'image/png': {}, 'image/webp': {} },
+  })
+  @ApiErrorResponses(UNAUTHORIZED, NOT_FOUND)
+  async photo(
+    @Param('id', idParam) id: string,
+    @CurrentUser() actor: AuthenticatedUser,
+    @RequestClient() client: ClientContext,
+    @Res() res: Response,
+  ): Promise<void> {
+    sendPrivateFile(res, await this.requests.businessPhoto(actor, id, client));
   }
 
   @Patch('requests/:id/status')
