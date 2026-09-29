@@ -16,5 +16,7 @@ import { SavedPlacesService } from './saved-places.service.js';
   imports: [CollegesModule],
   controllers: [PlacesController, AdminPlacesController, SavedPlacesController],
   providers: [PlacesService, AdminPlacesService, SavedPlacesService],
+  // Business owners edit their own listings through the same validated, audited service.
+  exports: [AdminPlacesService],
 })
 export class PlacesModule {}

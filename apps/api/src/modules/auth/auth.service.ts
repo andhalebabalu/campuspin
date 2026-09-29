@@ -109,7 +109,8 @@ export class AuthService {
                     create: {
                       businessName,
                       slug: businessSlug,
-                      email: dto.email,
+                      // Not the sign-in email: the business email is shown on the public page, so
+                      // the owner adds one there only if they want it published.
                       categoryId: dto.categoryId ?? null,
                       phone: dto.phone ?? null,
                       whatsapp: dto.phone ?? null,

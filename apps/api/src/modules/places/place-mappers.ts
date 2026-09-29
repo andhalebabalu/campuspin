@@ -178,7 +178,37 @@ export function toPlaceCard(row: CardRow, distanceMeters: number | null): PlaceC
   };
 }
 
-export function toPlaceDetail(row: DetailRow): PlaceDetail {
+export interface PlaceBusinessRow {
+  slug: string;
+  businessName: string;
+  logoUrl: string | null;
+  status: string;
+  verificationStatus: string;
+  _count: { places: number };
+}
+
+/** The owning business, but only while its public page could be live (not suspended/rejected). */
+export function toPlaceBusiness(row: PlaceBusinessRow | null): PlaceDetail['business'] {
+  if (!row || row.status !== 'ACTIVE' || row.verificationStatus === 'REJECTED') return null;
+  return {
+    slug: row.slug,
+    name: row.businessName,
+    logoUrl: row.logoUrl,
+    verified: row.verificationStatus === 'VERIFIED',
+    placeCount: row._count.places,
+  };
+}
+
+export interface NearbyCollegeRow {
+  distanceMeters: number;
+  college: { id: string; slug: string; name: string; shortName: string | null };
+}
+
+export function toPlaceDetail(
+  row: DetailRow,
+  business: PlaceBusinessRow | null = null,
+  colleges: readonly NearbyCollegeRow[] = [],
+): PlaceDetail {
   return {
     id: row.id,
     slug: row.slug,
@@ -208,6 +238,8 @@ export function toPlaceDetail(row: DetailRow): PlaceDetail {
     priceOptions: row.priceOptions.map(toPriceOption),
     images: row.images.map(toImage),
     acceptsEnquiries: row.businessProfileId !== null,
+    nearbyColleges: colleges.map((link) => ({ ...link.college, distanceMeters: link.distanceMeters })),
+    business: toPlaceBusiness(business),
   };
 }
 

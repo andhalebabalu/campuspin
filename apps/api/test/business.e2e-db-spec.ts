@@ -156,9 +156,10 @@ describe('Business owners, enquiries and uploads (e2e, real database)', () => {
         select: { ownedBusinesses: { select: { businessName: true, slug: true, email: true } } },
       });
       expect(stored.ownedBusinesses).toHaveLength(1);
+      // The sign-in email is never copied to the (public) business email.
       expect(stored.ownedBusinesses[0]).toMatchObject({
         businessName: 'Ravi Tiffin Services',
-        email,
+        email: null,
       });
       expect(stored.ownedBusinesses[0]?.slug).toMatch(/^ravi-tiffin-services/);
     });

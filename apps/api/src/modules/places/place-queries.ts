@@ -73,6 +73,32 @@ export const DETAIL_SELECT = {
   businessProfileId: true,
 } satisfies Prisma.PlaceSelect;
 
+/**
+ * The business behind a place, for the public detail's `business` summary. Only public-safe
+ * fields; its status decides whether the summary is shown at all.
+ */
+export const PLACE_BUSINESS_SELECT = {
+  select: {
+    slug: true,
+    businessName: true,
+    logoUrl: true,
+    status: true,
+    verificationStatus: true,
+    _count: { select: { places: { where: { status: 'ACTIVE' } } } },
+  },
+} satisfies Prisma.Place$businessProfileArgs;
+
+/** The nearest active colleges a place serves, for the public detail. */
+export const NEARBY_COLLEGES_SELECT = {
+  where: { mode: { not: 'EXCLUDED' }, college: { status: 'ACTIVE' } },
+  orderBy: { distanceMeters: 'asc' },
+  take: 5,
+  select: {
+    distanceMeters: true,
+    college: { select: { id: true, slug: true, name: true, shortName: true } },
+  },
+} satisfies Prisma.Place$collegesArgs;
+
 export const ADMIN_SELECT = {
   ...DETAIL_SELECT,
   status: true,

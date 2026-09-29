@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { emailSchema } from './auth.js';
 import { verificationStatusSchema } from './colleges.js';
 import { paginationQuerySchema } from './pagination.js';
-import { placeStatusSchema } from './places.js';
+import { placeDetailSchema, placeStatusSchema } from './places.js';
 import { publicReviewSchema, reviewPlaceSummarySchema } from './reviews.js';
 import { submissionStatusSchema } from './submissions.js';
 import { httpUrlField, multiLineField, phoneSchema, singleLineField, uuidSchema } from './text.js';
@@ -215,3 +215,110 @@ export const listBusinessReviewsQuerySchema = paginationQuerySchema.extend({
   placeId: uuidSchema.optional(),
 });
 export type ListBusinessReviewsQuery = z.output<typeof listBusinessReviewsQuerySchema>;
+
+// ── Public business page ─────────────────────────────────────────────────────────────────────────
+
+/** A live place of the business, as a branch card on its public page. */
+export const businessBranchSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  address: z.string(),
+  city: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  coverImageUrl: z.string().nullable(),
+  primaryCategory: businessCategoryRefSchema.nullable(),
+  ratingAverage: z.number().min(0).max(5),
+  ratingCount: z.number().int(),
+});
+export type BusinessBranch = z.infer<typeof businessBranchSchema>;
+
+/**
+ * `GET /businesses/:slug`: what everyone may see about a business. Only businesses whose page is
+ * live (active, not rejected, at least one approved listing) answer; anything else is a 404. Never
+ * carries the owner's name, account email or any id beyond the places'.
+ */
+export const publicBusinessSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  category: businessCategoryRefSchema.nullable(),
+  city: z.string().nullable(),
+  logoUrl: z.string().nullable(),
+  coverUrl: z.string().nullable(),
+  phone: z.string().nullable(),
+  whatsapp: z.string().nullable(),
+  email: z.string().nullable(),
+  website: z.string().nullable(),
+  instagramUrl: z.string().nullable(),
+  facebookUrl: z.string().nullable(),
+  /** Staff have verified this business. */
+  verified: z.boolean(),
+  /** Across its live places, weighted by review count; 0 when there are none. */
+  ratingAverage: z.number().min(0).max(5),
+  ratingCount: z.number().int(),
+  /** Live places, the most reviewed first. The first is the page's main place. */
+  branches: z.array(businessBranchSchema).min(1),
+});
+export type PublicBusiness = z.infer<typeof publicBusinessSchema>;
+
+// ── Page analytics ───────────────────────────────────────────────────────────────────────────────
+
+/** Matches the Prisma `BusinessEventType` enum exactly. */
+export const BUSINESS_EVENT_TYPES = [
+  'PAGE_VIEW',
+  'PHONE_CLICK',
+  'WHATSAPP_CLICK',
+  'DIRECTION_CLICK',
+  'SHARE_CLICK',
+] as const;
+export type BusinessEventType = (typeof BUSINESS_EVENT_TYPES)[number];
+export const businessEventTypeSchema = z.enum(BUSINESS_EVENT_TYPES);
+
+/**
+ * `POST /businesses/:slug/events`: one visit or tap on the public page. Anonymous: no user, IP or
+ * device is stored, only the business, the place (when the tap was about one) and the time.
+ */
+export const trackBusinessEventSchema = z.strictObject({
+  type: businessEventTypeSchema,
+  placeId: uuidSchema.optional(),
+});
+export type TrackBusinessEventRequest = z.output<typeof trackBusinessEventSchema>;
+
+export const BUSINESS_ANALYTICS_RANGES = ['7', '30', '90'] as const;
+
+export const businessAnalyticsQuerySchema = z.object({
+  days: z.enum(BUSINESS_ANALYTICS_RANGES).default('30').transform(Number),
+});
+export type BusinessAnalyticsQuery = z.output<typeof businessAnalyticsQuerySchema>;
+
+const eventCountsSchema = z.object({
+  PAGE_VIEW: z.number().int(),
+  PHONE_CLICK: z.number().int(),
+  WHATSAPP_CLICK: z.number().int(),
+  DIRECTION_CLICK: z.number().int(),
+  SHARE_CLICK: z.number().int(),
+});
+
+/** `GET /business/analytics?days=`: the caller's page numbers, counted from real events only. */
+export const businessAnalyticsSchema = z.object({
+  days: z.number().int(),
+  totals: eventCountsSchema,
+  /** The previous period of the same length, for "up/down vs last period". */
+  previousTotals: eventCountsSchema,
+  /** One row per IST day, oldest first, zero-filled. */
+  daily: z.array(eventCountsSchema.extend({ day: z.string() })),
+  reviews: z.object({ count: z.number().int(), inPeriod: z.number().int() }),
+  enquiries: z.object({ inPeriod: z.number().int() }),
+});
+export type BusinessAnalytics = z.infer<typeof businessAnalyticsSchema>;
+
+// ── The owner's own places ───────────────────────────────────────────────────────────────────────
+
+/** `GET /business/places/:placeId`: one of the caller's places with everything they can edit. */
+export const ownedPlaceSchema = placeDetailSchema.omit({ business: true, nearbyColleges: true }).extend({
+  status: placeStatusSchema,
+  updatedAt: z.string(),
+});
+export type OwnedPlace = z.infer<typeof ownedPlaceSchema>;

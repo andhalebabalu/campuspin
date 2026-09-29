@@ -30,6 +30,7 @@ const BUSINESS = [
   ['get', '/api/v1/business/enquiries', false, '200'],
   ['patch', '/api/v1/business/enquiries/{id}', true, '200'],
   ['get', '/api/v1/business/reviews', false, '200'],
+  ['get', '/api/v1/business/analytics', false, '200'],
 ] as const;
 
 describe('Swagger documentation of business owners, enquiries and uploads (e2e)', () => {
@@ -58,13 +59,13 @@ describe('Swagger documentation of business owners, enquiries and uploads (e2e)'
     'bookings',
   ];
 
-  it('documents exactly the 7 business routes', () => {
+  it('documents exactly the 8 business routes', () => {
     const documented = Object.entries(doc.paths)
       // Services, orders, QR codes and insights under /business belong to the daily-use services
       // feature (tagged "Business: Services" / "Business: Orders").
       .filter(
         ([path]) =>
-          path.startsWith('/api/v1/business') &&
+          path.startsWith('/api/v1/business/') &&
           !SERVICE_SEGMENTS.some((segment) => path.startsWith(`/api/v1/business/${segment}`)),
       )
       .flatMap(([path, operations]) =>

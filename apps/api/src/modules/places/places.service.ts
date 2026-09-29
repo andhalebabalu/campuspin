@@ -9,6 +9,8 @@ import {
   CARD_ORDER_BY,
   CARD_SELECT,
   DETAIL_SELECT,
+  NEARBY_COLLEGES_SELECT,
+  PLACE_BUSINESS_SELECT,
   NEWEST_ORDER_BY,
   idOrSlugFilter,
   priceFilter,
@@ -108,10 +110,14 @@ export class PlacesService {
   async getOne(idOrSlug: string): Promise<PlaceDetail> {
     const place = await this.prisma.place.findFirst({
       where: { status: 'ACTIVE', ...idOrSlugFilter(idOrSlug) },
-      select: DETAIL_SELECT,
+      select: {
+        ...DETAIL_SELECT,
+        businessProfile: PLACE_BUSINESS_SELECT,
+        colleges: NEARBY_COLLEGES_SELECT,
+      },
     });
     if (!place) throw AppException.notFound('Place not found');
-    return toPlaceDetail(place);
+    return toPlaceDetail(place, place.businessProfile, place.colleges);
   }
 
   private async activeCollege(slug: string): Promise<Point & { id: string }> {

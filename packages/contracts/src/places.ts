@@ -255,12 +255,33 @@ export const placeDetailSchema = placeCardSchema.omit({ distanceMeters: true }).
   images: z.array(placeImageSchema),
   /** A business manages this place, so students can send it an enquiry. */
   acceptsEnquiries: z.boolean(),
+  /** The nearest active colleges this place serves (up to 5), nearest first. */
+  nearbyColleges: z.array(
+    z.object({
+      id: z.string(),
+      slug: z.string(),
+      name: z.string(),
+      shortName: z.string().nullable(),
+      distanceMeters: z.number().int(),
+    }),
+  ),
+  /** The business behind the place when its public page is live (`/business/<slug>`), else null. */
+  business: z
+    .object({
+      slug: z.string(),
+      name: z.string(),
+      logoUrl: z.string().nullable(),
+      verified: z.boolean(),
+      /** Its live places; with just this one, the business page is the place's main page. */
+      placeCount: z.number().int(),
+    })
+    .nullable(),
 });
 export type PlaceDetail = z.infer<typeof placeDetailSchema>;
 
 // ── Admin ────────────────────────────────────────────────────────────────────────────────────────
 
-export const adminPlaceSchema = placeDetailSchema.extend({
+export const adminPlaceSchema = placeDetailSchema.omit({ business: true, nearbyColleges: true }).extend({
   status: placeStatusSchema,
   verificationStatus: verificationStatusSchema,
   lastVerifiedAt: z.string().nullable(),
@@ -441,9 +462,8 @@ export type CreatePlaceRequest = z.output<typeof createPlaceRequestSchema>;
  * REPLACE the whole list when sent, and are left untouched when omitted. Status and verification
  * are not editable here (they have their own endpoints).
  */
-export const updatePlaceRequestSchema = z
-  .strictObject({
-    name: placeFields.name.optional(),
+const updatePlaceFields = {
+  name: placeFields.name.optional(),
     description: placeFields.description.nullable().optional(),
     address: placeFields.address.optional(),
     city: placeFields.city.optional(),
@@ -455,31 +475,50 @@ export const updatePlaceRequestSchema = z
     email: placeFields.email.nullable().optional(),
     website: placeFields.website.nullable().optional(),
     googleMapsUrl: placeFields.googleMapsUrl.nullable().optional(),
+  categoryIds: categoryIdsSchema.optional(),
+  amenityIds: amenityIdsSchema.optional(),
+  hours: hoursListSchema.optional(),
+  priceOptions: priceOptionsListSchema.optional(),
+};
+
+function checkPlaceUpdate(ctx: {
+  value: { latitude?: number; longitude?: number };
+  issues: z.core.$ZodRawIssue[];
+}) {
+  if (Object.keys(ctx.value).length === 0) {
+    ctx.issues.push({
+      code: 'custom',
+      message: 'Send at least one field to change',
+      input: ctx.value,
+    });
+  }
+  if (isNullIsland(ctx.value.latitude, ctx.value.longitude)) {
+    ctx.issues.push({
+      code: 'custom',
+      message: NULL_ISLAND_MESSAGE,
+      input: ctx.value,
+      path: ['latitude'],
+    });
+  }
+}
+
+export const updatePlaceRequestSchema = z
+  .strictObject({
+    ...updatePlaceFields,
     /** Only while the place is still a DRAFT (published slugs are public links). */
     slug: placeSlugSchema.optional(),
-    categoryIds: categoryIdsSchema.optional(),
-    amenityIds: amenityIdsSchema.optional(),
-    hours: hoursListSchema.optional(),
-    priceOptions: priceOptionsListSchema.optional(),
   })
-  .check((ctx) => {
-    if (Object.keys(ctx.value).length === 0) {
-      ctx.issues.push({
-        code: 'custom',
-        message: 'Send at least one field to change',
-        input: ctx.value,
-      });
-    }
-    if (isNullIsland(ctx.value.latitude, ctx.value.longitude)) {
-      ctx.issues.push({
-        code: 'custom',
-        message: NULL_ISLAND_MESSAGE,
-        input: ctx.value,
-        path: ['latitude'],
-      });
-    }
-  });
+  .check(checkPlaceUpdate);
 export type UpdatePlaceRequest = z.output<typeof updatePlaceRequestSchema>;
+
+/**
+ * `PATCH /business/places/:placeId`: what an owner may change on their own listing. The same
+ * fields as a staff edit minus the slug (their public link); status and verification stay staff-only.
+ */
+export const updateOwnedPlaceRequestSchema = z
+  .strictObject(updatePlaceFields)
+  .check(checkPlaceUpdate);
+export type UpdateOwnedPlaceRequest = z.output<typeof updateOwnedPlaceRequestSchema>;
 
 /** Optional body of the activate / deactivate / verify / unverify actions. */
 export const placeActionRequestSchema = z

@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
+import { PlacesModule } from '../places/places.module.js';
 import { SubmissionsModule } from '../submissions/submissions.module.js';
 import { BusinessAccessService } from './business-access.service.js';
+import { BusinessPagesController, BusinessPlacesController } from './business-pages.controller.js';
+import { BusinessPagesService } from './business-pages.service.js';
+import { BusinessPlacesService } from './business-places.service.js';
 import { BusinessController } from './business.controller.js';
 import { BusinessService } from './business.service.js';
 import { EnquiriesController } from './enquiries.controller.js';
@@ -12,9 +16,20 @@ import { LeadsService } from './leads.service.js';
  * same moderated pipeline as a student's suggestion.
  */
 @Module({
-  imports: [SubmissionsModule],
-  controllers: [BusinessController, EnquiriesController],
-  providers: [BusinessService, LeadsService, BusinessAccessService],
+  imports: [SubmissionsModule, PlacesModule],
+  controllers: [
+    BusinessController,
+    EnquiriesController,
+    BusinessPagesController,
+    BusinessPlacesController,
+  ],
+  providers: [
+    BusinessService,
+    LeadsService,
+    BusinessAccessService,
+    BusinessPagesService,
+    BusinessPlacesService,
+  ],
   exports: [BusinessAccessService],
 })
 export class BusinessModule {}

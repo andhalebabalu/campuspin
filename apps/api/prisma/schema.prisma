@@ -680,6 +680,7 @@ model Place {
   redemptions     OfferRedemption[]
   schedules       BookingSchedule[]
   bookings        Booking[]
+  businessEvents  BusinessEvent[]
   createdFrom     PlaceSubmission[]     @relation("SubmissionResultingPlace")
   duplicatesOf    PlaceSubmission[]     @relation("SubmissionDuplicateOfPlace")
 
@@ -845,6 +846,7 @@ model BusinessProfile {
   offers          StudentOffer[]
   redemptions     OfferRedemption[]
   bookings        Booking[]
+  events          BusinessEvent[]
 
   @@index([ownerId])
   @@index([status, verificationStatus])
@@ -852,6 +854,33 @@ model BusinessProfile {
   @@index([city])
   @@index([createdAt])
   @@map("business_profiles")
+}
+
+enum BusinessEventType {
+  PAGE_VIEW
+  PHONE_CLICK
+  WHATSAPP_CLICK
+  DIRECTION_CLICK
+  SHARE_CLICK
+}
+
+// One visit or tap on a public business page, for the owner's analytics. Deliberately anonymous:
+// no user, IP or device, only what happened, where and when. `day` is the IST calendar day, so
+// "per day" charts are a plain indexed GROUP BY.
+model BusinessEvent {
+  id                String            @id @default(uuid(7)) @db.Char(36)
+  businessProfileId String            @db.Char(36)
+  placeId           String?           @db.Char(36)
+  type              BusinessEventType
+  day               DateTime          @db.Date
+  createdAt         DateTime          @default(now())
+
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  place           Place?          @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  @@index([businessProfileId, day, type])
+  @@index([placeId])
+  @@map("business_events")
 }
 
 // Lets several people manage one business. A user can appear at most once per business.
