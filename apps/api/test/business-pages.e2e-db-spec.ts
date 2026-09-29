@@ -1,5 +1,7 @@
 import {
   businessAnalyticsSchema,
+  businessDashboardSchema,
+  mySubscriptionSchema,
   ownedPlaceSchema,
   placeDetailSchema,
   publicBusinessSchema,
@@ -152,6 +154,44 @@ describe('Business pages (e2e, real database)', () => {
     });
   });
 
+  describe('plans and the dashboard of a suspended business', () => {
+    it('puts every business on the free plan until staff assign another', async () => {
+      const mine = successOf(
+        mySubscriptionSchema,
+        await as(mess.owner, ctx.get(`${API}/business/subscription`)).expect(200),
+      ).data;
+      expect(mine.current).toMatchObject({
+        isDefault: true,
+        status: 'ACTIVE',
+        plan: { key: 'FREE' },
+      });
+      // Paid plans are listed but not on sale, and never carry an invented price.
+      const paid = mine.plans.filter((plan) => !plan.isDefault);
+      expect(paid.length).toBeGreaterThan(0);
+      for (const plan of paid)
+        expect(plan).toMatchObject({ isAvailable: false, priceMonthly: null });
+      await as(student, ctx.get(`${API}/business/subscription`)).expect(403);
+    });
+
+    it('still shows a suspended owner their dashboard, with the reason', async () => {
+      await setBusiness({ status: 'SUSPENDED', statusReason: 'Fake photos reported' });
+      const dashboard = successOf(
+        businessDashboardSchema,
+        await as(mess.owner, ctx.get(`${API}/business/dashboard`)).expect(200),
+      ).data;
+      expect(dashboard.profile).toMatchObject({
+        status: 'SUSPENDED',
+        statusReason: 'Fake photos reported',
+        isPublic: false,
+      });
+      // ...but cannot change anything.
+      await as(mess.owner, ctx.patch(`${API}/business/profile`))
+        .send({ city: 'Pune' })
+        .expect(404);
+      await setBusiness({ status: 'ACTIVE', statusReason: null });
+    });
+  });
+
   describe('owners editing their own place', () => {
     const base = (placeId: string) => `${API}/business/places/${placeId}`;
 
@@ -207,18 +247,26 @@ describe('Business pages (e2e, real database)', () => {
     });
 
     it('never lets an owner change the slug or touch another business’s place', async () => {
-      await as(mess.owner, ctx.patch(base(mess.place.id))).send({ slug: 'mine-now' }).expect(400);
-      await as(mess.owner, ctx.patch(base(other.place.id))).send({ description: 'x' }).expect(404);
+      await as(mess.owner, ctx.patch(base(mess.place.id)))
+        .send({ slug: 'mine-now' })
+        .expect(400);
+      await as(mess.owner, ctx.patch(base(other.place.id)))
+        .send({ description: 'x' })
+        .expect(404);
       await as(mess.owner, ctx.get(base(other.place.id))).expect(404);
       await as(mess.owner, ctx.post(`${base(other.place.id)}/images`))
         .send({ imageUrl: IMAGE })
         .expect(404);
-      await as(student, ctx.patch(base(mess.place.id))).send({ description: 'x' }).expect(403);
+      await as(student, ctx.patch(base(mess.place.id)))
+        .send({ description: 'x' })
+        .expect(403);
     });
 
     it('stops a suspended business from editing', async () => {
       await setBusiness({ status: 'SUSPENDED' });
-      await as(mess.owner, ctx.patch(base(mess.place.id))).send({ description: 'x' }).expect(404);
+      await as(mess.owner, ctx.patch(base(mess.place.id)))
+        .send({ description: 'x' })
+        .expect(404);
       await setBusiness({ status: 'ACTIVE' });
     });
   });

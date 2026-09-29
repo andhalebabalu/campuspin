@@ -1,19 +1,15 @@
-import type { Metadata } from 'next';
-import { BusinessDashboard } from '@/features/business/components/business-dashboard';
-import { BusinessGate } from '@/features/business/components/business-gate';
-import { ROUTES } from '@/constants/routes';
+import { redirect } from 'next/navigation';
+import { TAB_TO_SECTION } from '@/features/business-dashboard/routes';
+import { Overview } from '@/features/business-dashboard/sections/overview';
 
-export const metadata: Metadata = {
-  title: 'Business dashboard',
-  robots: { index: false, follow: false },
-};
-
-export default function DashboardPage() {
-  return (
-    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
-      <BusinessGate next={ROUTES.dashboard}>
-        <BusinessDashboard />
-      </BusinessGate>
-    </main>
-  );
+export default async function DashboardHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  // Old links (notifications still carry them): /business/dashboard?tab=orders → Orders.
+  const { tab } = await searchParams;
+  const section = tab ? TAB_TO_SECTION[tab] : undefined;
+  if (section) redirect(section);
+  return <Overview />;
 }

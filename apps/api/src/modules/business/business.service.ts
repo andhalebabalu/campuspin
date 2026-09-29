@@ -52,7 +52,8 @@ export class BusinessService {
   ) {}
 
   async dashboard(actor: AuthenticatedUser): Promise<BusinessDashboard> {
-    const businessProfileId = await this.businessIdOf(actor);
+    // Readable whatever the business's status, so a suspended or rejected owner sees why.
+    const businessProfileId = await this.businessIdOf(actor, { anyStatus: true });
     const [profile, places, enquiriesTotal, enquiriesNew] = await Promise.all([
       this.prisma.businessProfile.findUniqueOrThrow({
         where: { id: businessProfileId },
@@ -134,7 +135,7 @@ export class BusinessService {
 
   /** Every place of the business, whatever its status, newest first. */
   async listings(actor: AuthenticatedUser): Promise<BusinessListing[]> {
-    const businessProfileId = await this.businessIdOf(actor);
+    const businessProfileId = await this.businessIdOf(actor, { anyStatus: true });
     const [rows, leadCounts] = await Promise.all([
       this.prisma.place.findMany({
         where: { businessProfileId },
@@ -266,10 +267,14 @@ export class BusinessService {
   }
 
   /** The business the caller owns or belongs to (the oldest one, should there be several). */
-  private async businessIdOf(actor: AuthenticatedUser): Promise<string> {
+  /** The caller's business. Changes need it ACTIVE; `anyStatus` is for read-only views. */
+  private async businessIdOf(
+    actor: AuthenticatedUser,
+    { anyStatus = false }: { anyStatus?: boolean } = {},
+  ): Promise<string> {
     const business = await this.prisma.businessProfile.findFirst({
       where: {
-        status: 'ACTIVE',
+        ...(anyStatus ? {} : { status: 'ACTIVE' as const }),
         OR: [{ ownerId: actor.id }, { members: { some: { userId: actor.id } } }],
       },
       select: { id: true },

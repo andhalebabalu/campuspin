@@ -33,6 +33,9 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       { source: '/student/dashboard', destination: '/home', permanent: false },
+      // The spec's short addresses for the owner's own tools (reserved business slugs).
+      { source: '/business/profile', destination: '/business/dashboard/profile', permanent: false },
+      { source: '/business/preview', destination: '/business/dashboard/preview', permanent: false },
       { source: '/admin/dashboard', destination: '/admin', permanent: false },
     ];
   },

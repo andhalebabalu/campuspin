@@ -3,6 +3,7 @@ import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { Footer } from '@/components/layout/footer';
 import { Navbar } from '@/components/layout/navbar';
+import { SiteChrome } from '@/components/layout/site-chrome';
 import { ToastProvider } from '@/components/ui/toast';
 import { BRAND } from '@/constants/brand';
 import { VisitTracker } from '@/lib/analytics/visit-tracker';
@@ -39,9 +40,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <SessionProvider>
           <ToastProvider>
             <VisitTracker />
-            <Navbar />
+            <SiteChrome>
+              <Navbar />
+            </SiteChrome>
             {children}
-            <Footer />
+            <SiteChrome>
+              <Footer />
+            </SiteChrome>
           </ToastProvider>
         </SessionProvider>
       </body>

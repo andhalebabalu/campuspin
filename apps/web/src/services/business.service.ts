@@ -5,6 +5,7 @@ import {
   businessListingSchema,
   businessProfileSchema,
   businessReviewSchema,
+  mySubscriptionSchema,
   ownedPlaceSchema,
   placeSubmissionSchema,
   publicBusinessSchema,
@@ -60,6 +61,9 @@ export const businessService = {
       schema: businessAnalyticsSchema,
       signal,
     }),
+
+  subscription: (signal?: AbortSignal) =>
+    apiClient.get('/business/subscription', { schema: mySubscriptionSchema, signal }),
 
   place: (placeId: string, signal?: AbortSignal) =>
     apiClient.get(`/business/places/${enc(placeId)}`, { schema: ownedPlaceSchema, signal }),

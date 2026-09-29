@@ -322,3 +322,43 @@ export const ownedPlaceSchema = placeDetailSchema.omit({ business: true, nearbyC
   updatedAt: z.string(),
 });
 export type OwnedPlace = z.infer<typeof ownedPlaceSchema>;
+
+// ── Plans and subscriptions ──────────────────────────────────────────────────────────────────────
+
+/**
+ * A plan. Listing on CampusPin is free; paid plans are prepared but not on sale (`isAvailable`
+ * false) and carry no price until one is decided: a card never shows an invented price.
+ */
+export const businessPlanSchema = z.object({
+  key: z.string(),
+  name: z.string(),
+  description: z.string(),
+  /** Whole rupees a month; null = no price yet. */
+  priceMonthly: z.number().int().nullable(),
+  features: z.array(z.string()),
+  isAvailable: z.boolean(),
+  isDefault: z.boolean(),
+});
+export type BusinessPlan = z.infer<typeof businessPlanSchema>;
+
+export const SUBSCRIPTION_STATUSES = ['ACTIVE', 'CANCELLED', 'EXPIRED'] as const;
+export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
+export const subscriptionStatusSchema = z.enum(SUBSCRIPTION_STATUSES);
+
+export const businessSubscriptionSchema = z.object({
+  plan: businessPlanSchema,
+  status: subscriptionStatusSchema,
+  /** Null while on the default plan (no subscription was ever started). */
+  startedAt: z.string().nullable(),
+  endsAt: z.string().nullable(),
+  /** True when this is simply the default plan, not an assigned one. */
+  isDefault: z.boolean(),
+});
+export type BusinessSubscription = z.infer<typeof businessSubscriptionSchema>;
+
+/** `GET /business/subscription`: the caller's plan and every plan there is. */
+export const mySubscriptionSchema = z.object({
+  current: businessSubscriptionSchema,
+  plans: z.array(businessPlanSchema),
+});
+export type MySubscription = z.infer<typeof mySubscriptionSchema>;

@@ -120,7 +120,9 @@ export class BusinessPagesService {
           latitude: place.latitude,
           longitude: place.longitude,
           coverImageUrl: coverImageUrl(place.images),
-          primaryCategory: primary ? { id: primary.id, slug: primary.slug, name: primary.name } : null,
+          primaryCategory: primary
+            ? { id: primary.id, slug: primary.slug, name: primary.name }
+            : null,
           ratingAverage: place.ratingAverage,
           ratingCount: place.ratingCount,
         };
@@ -159,7 +161,8 @@ export class BusinessPagesService {
     actor: AuthenticatedUser,
   ): Promise<BusinessAnalytics> {
     const [businessId] = await this.access.businessIdsOf(actor);
-    if (!businessId) throw AppException.notFound('No business profile is linked to this account yet.');
+    if (!businessId)
+      throw AppException.notFound('No business profile is linked to this account yet.');
     const today = istDay(new Date());
     const from = daysBefore(today, query.days - 1);
     const previousFrom = daysBefore(from, query.days);
@@ -186,7 +189,9 @@ export class BusinessPagesService {
           createdAt: { gte: since },
         },
       }),
-      this.prisma.lead.count({ where: { businessProfileId: businessId, createdAt: { gte: since } } }),
+      this.prisma.lead.count({
+        where: { businessProfileId: businessId, createdAt: { gte: since } },
+      }),
     ]);
 
     const daily = new Map<string, Counts>();

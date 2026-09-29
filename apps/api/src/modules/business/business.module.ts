@@ -5,6 +5,7 @@ import { BusinessAccessService } from './business-access.service.js';
 import { BusinessPagesController, BusinessPlacesController } from './business-pages.controller.js';
 import { BusinessPagesService } from './business-pages.service.js';
 import { BusinessPlacesService } from './business-places.service.js';
+import { SubscriptionsService } from './subscriptions.service.js';
 import { BusinessController } from './business.controller.js';
 import { BusinessService } from './business.service.js';
 import { EnquiriesController } from './enquiries.controller.js';
@@ -29,7 +30,8 @@ import { LeadsService } from './leads.service.js';
     BusinessAccessService,
     BusinessPagesService,
     BusinessPlacesService,
+    SubscriptionsService,
   ],
-  exports: [BusinessAccessService],
+  exports: [BusinessAccessService, SubscriptionsService],
 })
 export class BusinessModule {}

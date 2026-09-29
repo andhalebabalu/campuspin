@@ -244,56 +244,57 @@ model User {
   college         College? @relation("StudentCollege", fields: [collegeId], references: [id], onDelete: SetNull)
   verifiedCollege College? @relation("VerifiedStudentCollege", fields: [verifiedCollegeId], references: [id], onDelete: SetNull)
 
-  userRoles                    UserRole[]            @relation("UserRoleUser")
-  assignedRoles                UserRole[]            @relation("UserRoleAssignedBy")
-  createdColleges              College[]             @relation("CollegeCreatedBy")
-  createdPlaces                Place[]               @relation("PlaceCreatedBy")
-  verifiedPlaces               Place[]               @relation("PlaceVerifiedBy")
-  ownedBusinesses              BusinessProfile[]     @relation("BusinessOwner")
+  userRoles                    UserRole[]             @relation("UserRoleUser")
+  assignedRoles                UserRole[]             @relation("UserRoleAssignedBy")
+  createdColleges              College[]              @relation("CollegeCreatedBy")
+  createdPlaces                Place[]                @relation("PlaceCreatedBy")
+  verifiedPlaces               Place[]                @relation("PlaceVerifiedBy")
+  ownedBusinesses              BusinessProfile[]      @relation("BusinessOwner")
   businessMemberships          BusinessMember[]
-  requestedClaims              PlaceClaim[]          @relation("ClaimRequestedBy")
-  reviewedClaims               PlaceClaim[]          @relation("ClaimReviewedBy")
-  submissions                  PlaceSubmission[]     @relation("SubmissionSubmittedBy")
-  reviewedSubmissions          PlaceSubmission[]     @relation("SubmissionReviewedBy")
-  contributions                PlaceContribution[]   @relation("ContributionContributedBy")
-  reviewedContributions        PlaceContribution[]   @relation("ContributionReviewedBy")
-  reviews                      Review[]              @relation("ReviewAuthor")
-  moderatedReviews             Review[]              @relation("ReviewModeratedBy")
-  reviewReports                ReviewReport[]        @relation("ReviewReportReportedBy")
-  handledReviewReports         ReviewReport[]        @relation("ReviewReportReviewedBy")
+  requestedClaims              PlaceClaim[]           @relation("ClaimRequestedBy")
+  reviewedClaims               PlaceClaim[]           @relation("ClaimReviewedBy")
+  submissions                  PlaceSubmission[]      @relation("SubmissionSubmittedBy")
+  reviewedSubmissions          PlaceSubmission[]      @relation("SubmissionReviewedBy")
+  contributions                PlaceContribution[]    @relation("ContributionContributedBy")
+  reviewedContributions        PlaceContribution[]    @relation("ContributionReviewedBy")
+  reviews                      Review[]               @relation("ReviewAuthor")
+  moderatedReviews             Review[]               @relation("ReviewModeratedBy")
+  reviewReports                ReviewReport[]         @relation("ReviewReportReportedBy")
+  handledReviewReports         ReviewReport[]         @relation("ReviewReportReviewedBy")
   savedPlaces                  SavedPlace[]
-  leads                        Lead[]                @relation("LeadSender")
-  reports                      Report[]              @relation("ReportReporter")
-  resolvedReports              Report[]              @relation("ReportResolvedBy")
+  leads                        Lead[]                 @relation("LeadSender")
+  reports                      Report[]               @relation("ReportReporter")
+  resolvedReports              Report[]               @relation("ReportResolvedBy")
   notifications                Notification[]
   communityPosts               CommunityPost[]
   communityComments            CommunityComment[]
   communityReactions           CommunityReaction[]
-  blocking                     UserBlock[]           @relation("UserBlockBlocker")
-  blockedBy                    UserBlock[]           @relation("UserBlockBlocked")
+  blocking                     UserBlock[]            @relation("UserBlockBlocker")
+  blockedBy                    UserBlock[]            @relation("UserBlockBlocked")
   marketplaceListings          MarketplaceListing[]
-  buyerConversations           Conversation[]        @relation("ConversationBuyer")
-  sellerConversations          Conversation[]        @relation("ConversationSeller")
+  buyerConversations           Conversation[]         @relation("ConversationBuyer")
+  sellerConversations          Conversation[]         @relation("ConversationSeller")
   conversationMessages         ConversationMessage[]
   auditLogs                    AuditLog[]
   settings                     UserSettings?
-  studentVerifications         StudentVerification[] @relation("StudentVerificationUser")
-  reviewedStudentVerifications StudentVerification[] @relation("StudentVerificationReviewer")
+  studentVerifications         StudentVerification[]  @relation("StudentVerificationUser")
+  reviewedStudentVerifications StudentVerification[]  @relation("StudentVerificationReviewer")
   addedEmailDomains            CollegeEmailDomain[]
-  createdPromotions            Promotion[]           @relation("PromotionCreatedBy")
-  creditEntries                ListingCreditEntry[]  @relation("CreditEntryUser")
-  creditEntriesMade            ListingCreditEntry[]  @relation("CreditEntryActor")
+  createdPromotions            Promotion[]            @relation("PromotionCreatedBy")
+  creditEntries                ListingCreditEntry[]   @relation("CreditEntryUser")
+  creditEntriesMade            ListingCreditEntry[]   @relation("CreditEntryActor")
   updatedSettings              PlatformSetting[]
   dailyVisits                  DailyVisit[]
-  createdDailyMenus            DailyMenu[]           @relation("DailyMenuCreatedBy")
-  serviceOrders                ServiceOrder[]        @relation("ServiceOrderStudent")
-  createdQrCodes               PlaceQrCode[]         @relation("QrCreatedBy")
-  serviceRequests              ServiceRequest[]      @relation("ServiceRequestStudent")
+  createdDailyMenus            DailyMenu[]            @relation("DailyMenuCreatedBy")
+  serviceOrders                ServiceOrder[]         @relation("ServiceOrderStudent")
+  createdQrCodes               PlaceQrCode[]          @relation("QrCreatedBy")
+  serviceRequests              ServiceRequest[]       @relation("ServiceRequestStudent")
   privateDocuments             PrivateDocument[]
-  bookings                     Booking[]             @relation("BookingStudent")
-  createdOffers                StudentOffer[]        @relation("OfferCreatedBy")
-  offerRedemptions             OfferRedemption[]     @relation("RedemptionStudent")
-  verifiedRedemptions          OfferRedemption[]     @relation("RedemptionVerifiedBy")
+  bookings                     Booking[]              @relation("BookingStudent")
+  createdOffers                StudentOffer[]         @relation("OfferCreatedBy")
+  offerRedemptions             OfferRedemption[]      @relation("RedemptionStudent")
+  verifiedRedemptions          OfferRedemption[]      @relation("RedemptionVerifiedBy")
+  assignedSubscriptions        BusinessSubscription[] @relation("SubscriptionAssignedBy")
 
   refreshTokens           RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -835,8 +836,8 @@ model BusinessProfile {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  owner           User              @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: Restrict)
-  category        Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  owner           User                   @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  category        Category?              @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   members         BusinessMember[]
   places          Place[]
   claims          PlaceClaim[]
@@ -847,6 +848,7 @@ model BusinessProfile {
   redemptions     OfferRedemption[]
   bookings        Booking[]
   events          BusinessEvent[]
+  subscriptions   BusinessSubscription[]
 
   @@index([ownerId])
   @@index([status, verificationStatus])
@@ -854,6 +856,64 @@ model BusinessProfile {
   @@index([city])
   @@index([createdAt])
   @@map("business_profiles")
+}
+
+// ── Plans (no payments yet: every business is on FREE unless staff assign another plan) ───────────
+
+// A plan a business can be on. Data, not code: staff can prepare a plan (`isAvailable = false`)
+// before it goes on sale. `priceMonthly` stays NULL until a real price is decided.
+model BusinessPlan {
+  id           String   @id @default(uuid(7)) @db.Char(36)
+  key          String   @unique @db.VarChar(40)
+  name         String   @db.VarChar(80)
+  description  String   @db.VarChar(500)
+  // Whole rupees a month; NULL = no price decided yet (shown as "coming soon", never as ₹0).
+  priceMonthly Int?
+  // What the plan includes, as short lines for the plan card.
+  features     Json
+  isAvailable  Boolean  @default(false)
+  // The plan every business is on when it has no active subscription row.
+  isDefault    Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  subscriptions BusinessSubscription[]
+
+  @@map("business_plans")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+// A business on a plan for a period. At most one ACTIVE row per business (see `activeKey`); the
+// ended rows are the history. A payment gateway would later create these rows instead of staff.
+model BusinessSubscription {
+  id                String             @id @default(uuid(7)) @db.Char(36)
+  businessProfileId String             @db.Char(36)
+  planId            String             @db.Char(36)
+  status            SubscriptionStatus @default(ACTIVE)
+  startedAt         DateTime           @default(now())
+  // NULL = until changed.
+  endsAt            DateTime?
+  endedAt           DateTime?
+  assignedById      String?            @db.Char(36)
+  note              String?            @db.VarChar(500)
+  // The business id while ACTIVE, NULL once ended: UNIQUE, so two active plans can never coexist.
+  activeKey         String?            @unique @db.Char(36)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  plan            BusinessPlan    @relation(fields: [planId], references: [id], onDelete: Restrict)
+  assignedBy      User?           @relation("SubscriptionAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@index([businessProfileId, createdAt])
+  @@index([planId, status])
+  @@map("business_subscriptions")
 }
 
 enum BusinessEventType {

@@ -17,6 +17,8 @@ import {
   type AddPlaceImageRequest,
   type BusinessAnalytics,
   type BusinessAnalyticsQuery,
+  type MySubscription,
+  mySubscriptionSchema,
   type OwnedPlace,
   type PublicBusiness,
   type TrackBusinessEventRequest,
@@ -42,6 +44,7 @@ import { Public } from '../auth/decorators/public.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { BusinessPagesService } from './business-pages.service.js';
 import { BusinessPlacesService } from './business-places.service.js';
+import { SubscriptionsService } from './subscriptions.service.js';
 
 const slugParam = { schema: z.string().trim().min(1).max(200) };
 const idParam = { schema: uuidSchema };
@@ -58,6 +61,15 @@ const FORBIDDEN = {
   message: 'You do not have permission to perform this action',
 } as const;
 const PLACE_NOT_FOUND = { status: 404, code: 'NOT_FOUND', message: 'Place not found' } as const;
+const EXAMPLE_PLAN = {
+  key: 'FREE',
+  name: 'Free',
+  description: 'Everything a business needs to be found by students.',
+  priceMonthly: null,
+  features: ['Your own business page with a shareable link'],
+  isAvailable: true,
+  isDefault: true,
+};
 const EXAMPLE_COUNTS = {
   PAGE_VIEW: 42,
   PHONE_CLICK: 5,
@@ -115,13 +127,42 @@ export class BusinessPlacesController {
   constructor(
     private readonly places: BusinessPlacesService,
     private readonly pages: BusinessPagesService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
+
+  @Get('subscription')
+  @ResponseMessage('Subscription retrieved')
+  @ApiOperation({
+    summary: 'My plan',
+    description: 'The plan the business is on (Free unless staff assigned another) and all plans.',
+  })
+  @ApiEnvelopeResponse(mySubscriptionSchema, {
+    description: 'The current plan and the plan list.',
+    example: {
+      message: 'Subscription retrieved',
+      data: {
+        current: {
+          plan: EXAMPLE_PLAN,
+          status: 'ACTIVE',
+          startedAt: null,
+          endsAt: null,
+          isDefault: true,
+        },
+        plans: [EXAMPLE_PLAN],
+      },
+    },
+  })
+  @ApiErrorResponses(UNAUTHORIZED, FORBIDDEN)
+  subscription(@CurrentUser() actor: AuthenticatedUser): Promise<MySubscription> {
+    return this.subscriptions.mine(actor);
+  }
 
   @Get('analytics')
   @ResponseMessage('Analytics retrieved')
   @ApiOperation({
     summary: 'My business page analytics',
-    description: 'Visits and taps for the last `days` days (7, 30 or 90), counted from real events.',
+    description:
+      'Visits and taps for the last `days` days (7, 30 or 90), counted from real events.',
   })
   @ApiEnvelopeResponse(businessAnalyticsSchema, {
     description: 'Totals and a daily series.',

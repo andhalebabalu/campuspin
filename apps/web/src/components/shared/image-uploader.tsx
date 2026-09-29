@@ -3,6 +3,7 @@
 import { ApiClientError } from '@platform/api-client';
 import { UPLOAD_IMAGE_MAX_BYTES, UPLOAD_IMAGE_TYPES } from '@platform/contracts';
 import { useId, useRef, useState, type ChangeEvent } from 'react';
+import { compressImage } from '@/lib/images/compress-image';
 import { uploadsService } from '@/services/uploads.service';
 
 const MAX_MB = UPLOAD_IMAGE_MAX_BYTES / (1024 * 1024);
@@ -67,7 +68,7 @@ export function ImageUploader({
     let urls = value;
     for (const file of valid) {
       try {
-        const result = await uploadsService.uploadImage(file);
+        const result = await uploadsService.uploadImage(await compressImage(file));
         urls = max === 1 ? [result.data.url] : [...urls, result.data.url];
         onChange(urls);
       } catch (caught) {

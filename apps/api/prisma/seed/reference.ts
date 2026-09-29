@@ -6,6 +6,7 @@ import {
   ROLE_PERMISSIONS,
 } from '@platform/contracts';
 import { AMENITIES } from './data/amenities.js';
+import { BUSINESS_PLANS } from './data/business-plans.js';
 import { CATEGORY_GROUPS } from './data/categories.js';
 import { SERVICE_TYPES } from './data/service-types.js';
 import { type Db, required } from './db.js';
@@ -21,6 +22,17 @@ export async function seedReference(db: Db): Promise<void> {
   await seedCategories(db);
   await seedAmenities(db);
   await seedServiceTypes(db);
+  await seedBusinessPlans(db);
+}
+
+async function seedBusinessPlans(db: Db): Promise<void> {
+  for (const [index, plan] of BUSINESS_PLANS.entries()) {
+    await db.businessPlan.upsert({
+      where: { key: plan.key },
+      update: {},
+      create: { ...plan, priceMonthly: null, sortOrder: index },
+    });
+  }
 }
 
 async function seedRolesAndPermissions(db: Db): Promise<void> {
