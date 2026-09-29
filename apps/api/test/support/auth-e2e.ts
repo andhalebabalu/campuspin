@@ -88,6 +88,7 @@ export async function removeAuthTestData(db: PrismaClient): Promise<void> {
   };
   await db.serviceOrder.deleteMany({ where: orderFilter });
   await db.serviceRequest.deleteMany({ where: orderFilter });
+  await db.booking.deleteMany({ where: orderFilter });
   await db.place.deleteMany({ where: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } });
   await db.college.deleteMany({ where: { slug: { startsWith: TEST_COLLEGE_SLUG_PREFIX } } });
   // A business profile blocks deleting its owner (RESTRICT). Its enquiries cascade with it; its

@@ -290,6 +290,7 @@ model User {
   createdQrCodes               PlaceQrCode[]         @relation("QrCreatedBy")
   serviceRequests              ServiceRequest[]      @relation("ServiceRequestStudent")
   privateDocuments             PrivateDocument[]
+  bookings                     Booking[]             @relation("BookingStudent")
   createdOffers                StudentOffer[]        @relation("OfferCreatedBy")
   offerRedemptions             OfferRedemption[]     @relation("RedemptionStudent")
   verifiedRedemptions          OfferRedemption[]     @relation("RedemptionVerifiedBy")
@@ -676,7 +677,9 @@ model Place {
   serviceRequests ServiceRequest[]
   offers          StudentOffer[]
   redemptions     OfferRedemption[]
-  createdFrom    PlaceSubmission[]     @relation("SubmissionResultingPlace")
+  schedules       BookingSchedule[]
+  bookings        Booking[]
+  createdFrom     PlaceSubmission[]     @relation("SubmissionResultingPlace")
   duplicatesOf    PlaceSubmission[]     @relation("SubmissionDuplicateOfPlace")
 
   @@index([status, city])
@@ -818,15 +821,16 @@ model BusinessProfile {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  owner   User             @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: Restrict)
-  members BusinessMember[]
-  places  Place[]
-  claims  PlaceClaim[]
-  leads   Lead[]
-  serviceOrders ServiceOrder[]
+  owner           User              @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  members         BusinessMember[]
+  places          Place[]
+  claims          PlaceClaim[]
+  leads           Lead[]
+  serviceOrders   ServiceOrder[]
   serviceRequests ServiceRequest[]
-  offers        StudentOffer[]
-  redemptions   OfferRedemption[]
+  offers          StudentOffer[]
+  redemptions     OfferRedemption[]
+  bookings        Booking[]
 
   @@index([ownerId])
   @@index([status, verificationStatus])
@@ -1653,6 +1657,8 @@ model ServiceType {
   placeServices PlaceService[]
   items         ServiceItem[]
   requests      ServiceRequest[]
+  schedules     BookingSchedule[]
+  bookings      Booking[]
 
   @@index([status, sortOrder])
   @@map("service_types")
@@ -1732,28 +1738,33 @@ model DailyMenuItem {
 // One thing a place sells through a service: a dish on the food menu, a repair, a haircut, a study
 // seat. Reused by every kind that has a price list: one catalogue, not one per business type.
 model ServiceItem {
-  id            String   @id @default(uuid(7)) @db.Char(36)
-  placeId       String   @db.Char(36)
-  serviceTypeId String   @db.Char(36)
+  id              String   @id @default(uuid(7)) @db.Char(36)
+  placeId         String   @db.Char(36)
+  serviceTypeId   String   @db.Char(36)
   // Menu category / group, e.g. "Breakfast", "Beverages".
-  section       String   @default("") @db.VarChar(60)
-  name          String   @db.VarChar(100)
-  description   String?  @db.VarChar(300)
+  section         String   @default("") @db.VarChar(60)
+  name            String   @db.VarChar(100)
+  description     String?  @db.VarChar(300)
   // Whole rupees.
-  price         Int
+  price           Int
   // Food only: true = veg, false = non-veg, null = not said.
-  isVeg         Boolean?
+  isVeg           Boolean?
   // Add-ons the student may pick: [{ "name": "Extra cheese", "price": 20 }]
-  options       Json?
-  available     Boolean  @default(true)
-  sortOrder     Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  options         Json?
+  available       Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  // Bookable items: minutes per slot (null = a whole-day booking, e.g. a study seat for the day).
+  durationMinutes Int?
+  // Bookable items: bookings allowed in one slot (chairs, seats, courts).
+  capacity        Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   place       Place              @relation(fields: [placeId], references: [id], onDelete: Cascade)
   serviceType ServiceType        @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
   orderItems  ServiceOrderItem[]
   requests    ServiceRequest[]
+  bookings    Booking[]
 
   @@index([placeId, serviceTypeId, sortOrder])
   @@map("service_items")
@@ -1769,9 +1780,9 @@ model PlaceTable {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  place   Place          @relation(fields: [placeId], references: [id], onDelete: Cascade)
-  qrCodes PlaceQrCode[]
-  orders  ServiceOrder[]
+  place    Place            @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  qrCodes  PlaceQrCode[]
+  orders   ServiceOrder[]
   requests ServiceRequest[]
 
   @@unique([placeId, label])
@@ -2141,4 +2152,75 @@ model PrivateDocument {
 
   @@index([userId, createdAt])
   @@map("private_documents")
+}
+
+// When a bookable service is open, per weekday. Several windows a day are allowed (10-13, 16-20).
+// Times are "HH:mm" in India time.
+model BookingSchedule {
+  id            String   @id @default(uuid(7)) @db.Char(36)
+  placeId       String   @db.Char(36)
+  serviceTypeId String   @db.Char(36)
+  // ISO weekday: 1 = Monday ... 7 = Sunday.
+  dayOfWeek     Int      @db.TinyInt
+  openTime      String   @db.VarChar(5)
+  closeTime     String   @db.VarChar(5)
+  createdAt     DateTime @default(now())
+
+  place       Place       @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  serviceType ServiceType @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
+
+  @@unique([placeId, serviceTypeId, dayOfWeek, openTime])
+  @@map("booking_schedules")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// A student's booking of one slot of a bookable item (a haircut at 18:30, a study seat for a day).
+// While it is live, slotKey ("<item>|<start>|<seat>") is set and UNIQUE, so the same seat can never
+// be booked twice even by simultaneous requests; studentKey stops one student booking a slot twice.
+model Booking {
+  id                String        @id @default(uuid(7)) @db.Char(36)
+  code              String        @unique @db.VarChar(12)
+  placeId           String        @db.Char(36)
+  businessProfileId String        @db.Char(36)
+  userId            String        @db.Char(36)
+  serviceTypeId     String        @db.Char(36)
+  serviceItemId     String?       @db.Char(36)
+  // Copied so the booking reads right if the item changes.
+  itemName          String        @db.VarChar(100)
+  // India date of the slot.
+  date              DateTime      @db.Date
+  startAt           DateTime
+  endAt             DateTime
+  seatNo            Int
+  // Whole rupees, copied from the item; paid at the place.
+  price             Int
+  status            BookingStatus @default(PENDING)
+  note              String?       @db.VarChar(300)
+  statusReason      String?       @db.VarChar(255)
+  slotKey           String?       @unique @db.VarChar(100)
+  studentKey        String?       @unique @db.VarChar(100)
+  idempotencyKey    String        @db.VarChar(64)
+  statusChangedAt   DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  place           Place           @relation(fields: [placeId], references: [id], onDelete: Restrict)
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Restrict)
+  user            User            @relation("BookingStudent", fields: [userId], references: [id], onDelete: Restrict)
+  serviceType     ServiceType     @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
+  serviceItem     ServiceItem?    @relation(fields: [serviceItemId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, idempotencyKey])
+  @@index([businessProfileId, startAt])
+  @@index([serviceItemId, startAt, status])
+  @@index([userId, startAt])
+  @@index([status, startAt])
+  @@map("bookings")
 }

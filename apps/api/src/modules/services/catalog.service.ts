@@ -29,6 +29,8 @@ export const ITEM_SELECT = {
   options: true,
   available: true,
   sortOrder: true,
+  durationMinutes: true,
+  capacity: true,
   serviceType: { select: { key: true, kind: true } },
 } satisfies Prisma.ServiceItemSelect;
 export type ItemRow = Prisma.ServiceItemGetPayload<{ select: typeof ITEM_SELECT }>;
@@ -44,8 +46,8 @@ export const toServiceItem = (row: ItemRow): ServiceItem => ({
   options: optionsOf(row.options),
   available: row.available,
   sortOrder: row.sortOrder,
-  durationMinutes: null,
-  capacity: null,
+  durationMinutes: row.durationMinutes,
+  capacity: row.capacity,
 });
 
 /** Items grouped by section, sections in the order their first item appears. */
@@ -119,6 +121,8 @@ export class CatalogService {
           options: dto.options,
           available: dto.available,
           sortOrder: dto.sortOrder,
+          durationMinutes: dto.durationMinutes ?? null,
+          capacity: dto.capacity ?? null,
         },
         select: ITEM_SELECT,
       });
@@ -163,6 +167,8 @@ export class CatalogService {
           ...(dto.options !== undefined ? { options: dto.options } : {}),
           ...(dto.available !== undefined ? { available: dto.available } : {}),
           ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
+          ...(dto.durationMinutes !== undefined ? { durationMinutes: dto.durationMinutes } : {}),
+          ...(dto.capacity !== undefined ? { capacity: dto.capacity } : {}),
         },
         select: ITEM_SELECT,
       });

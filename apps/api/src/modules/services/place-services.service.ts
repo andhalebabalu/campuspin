@@ -73,9 +73,14 @@ export class PlaceServicesService {
       .filter((type) => isSupportedKind(type.kind))
       .map((type) => {
         const row = byType.get(type.id);
-        const { id: _id, ...serviceType } = type;
         return {
-          serviceType,
+          serviceType: {
+            key: type.key,
+            name: type.name,
+            icon: type.icon,
+            kind: type.kind,
+            description: type.description,
+          },
           enabled: row?.enabled ?? false,
           config: configOf(type.kind, row?.config),
           disabledByAdmin: row?.disabledByAdmin ?? false,
@@ -153,9 +158,14 @@ export class PlaceServicesService {
       );
       return saved;
     });
-    const { id: _id, ...serviceType } = row.serviceType;
     return {
-      serviceType,
+      serviceType: {
+        key: row.serviceType.key,
+        name: row.serviceType.name,
+        icon: row.serviceType.icon,
+        kind: row.serviceType.kind,
+        description: row.serviceType.description,
+      },
       enabled: row.enabled,
       config,
       disabledByAdmin: row.disabledByAdmin,

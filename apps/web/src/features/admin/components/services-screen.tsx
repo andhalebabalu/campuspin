@@ -14,6 +14,7 @@ import { useToast } from '@/components/ui/toast';
 import { ROUTES } from '@/constants/routes';
 import { dayLabel, mealLines, serviceIcon } from '@/features/services/lib/service-meta';
 import { useSession } from '@/lib/auth/session-context';
+import { bookingsService } from '@/services/bookings.service';
 import { engagementService } from '@/services/engagement.service';
 import { ordersService } from '@/services/orders.service';
 import { servicesService } from '@/services/services.service';
@@ -29,7 +30,7 @@ import {
   type ReasonRequest,
 } from './admin-ui';
 
-type Tab = 'types' | 'places' | 'orders' | 'requests' | 'menus' | 'offers' | 'qr';
+type Tab = 'types' | 'places' | 'orders' | 'requests' | 'bookings' | 'menus' | 'offers' | 'qr';
 
 const KIND_LABELS: Record<ServiceKind, string> = {
   FOOD_ORDER: 'Food ordering',
@@ -681,6 +682,69 @@ function RequestsTab() {
   );
 }
 
+function BookingsTab() {
+  const [qInput, setQInput] = useState('');
+  const [q, setQ] = useState('');
+  const [page, setPage] = useState(1);
+  const list = useAdminList(
+    (signal) => bookingsService.adminList({ page, ...(q ? { q } : {}) }, signal),
+    [q, page],
+  );
+  return (
+    <div className="flex flex-col gap-4">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          setQ(qInput.trim());
+          setPage(1);
+        }}
+        className="flex flex-wrap gap-2"
+      >
+        <input
+          aria-label="Booking code or place"
+          placeholder="Booking code or place name"
+          value={qInput}
+          onChange={(event) => setQInput(event.target.value)}
+          className={`${SEARCH_CLASSES} w-64`}
+        />
+        <Button type="submit" size="sm" variant="secondary">
+          Search
+        </Button>
+      </form>
+      {list.error ? (
+        <ErrorState
+          message={list.error.message}
+          requestId={list.error.requestId}
+          onRetry={list.reload}
+        />
+      ) : !list.items ? (
+        <Skeleton className="h-64 w-full" />
+      ) : list.items.length === 0 ? (
+        <EmptyState title="No bookings" description="Nothing matches this search." />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {list.items.map((booking) => (
+            <li key={booking.id}>
+              <Card className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
+                <div>
+                  <p className="font-semibold text-ink">
+                    {booking.code} · {booking.itemName} · {booking.place.name}
+                  </p>
+                  <p className="text-body">
+                    {booking.student.name} · {new Date(booking.startAt).toLocaleString('en-IN')}
+                  </p>
+                </div>
+                <Badge>{booking.statusLabel}</Badge>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Pagination meta={list.meta} page={page} onPage={setPage} />
+    </div>
+  );
+}
+
 function OffersTab() {
   const [qInput, setQInput] = useState('');
   const [q, setQ] = useState('');
@@ -817,6 +881,7 @@ export function ServicesScreen() {
           { id: 'places' as const, label: 'Business services' },
           { id: 'orders' as const, label: 'Order log' },
           { id: 'requests' as const, label: 'Request log' },
+          { id: 'bookings' as const, label: 'Booking log' },
         ]
       : []),
     { id: 'menus', label: 'Mess menus' },
@@ -854,6 +919,7 @@ export function ServicesScreen() {
       {tab === 'orders' && <OrdersTab />}
       {tab === 'menus' && <MenusTab />}
       {tab === 'requests' && <RequestsTab />}
+      {tab === 'bookings' && <BookingsTab />}
       {tab === 'offers' && <OffersTab />}
       {tab === 'qr' && <QrTab />}
     </div>

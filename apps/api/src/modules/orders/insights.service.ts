@@ -51,6 +51,8 @@ export class InsightsService {
       pendingRequests,
       offerRedemptions,
       activeOffers,
+      bookings,
+      upcomingBookings,
     ] = await Promise.all([
       this.prisma.serviceOrder.count({ where: { ...inPlaces, createdAt: { gte: from } } }),
       this.prisma.serviceOrder.count({
@@ -81,6 +83,14 @@ export class InsightsService {
           OR: [{ validUntil: null }, { validUntil: { gte: today } }],
         },
       }),
+      this.prisma.booking.count({ where: { ...inPlaces, createdAt: { gte: from } } }),
+      this.prisma.booking.count({
+        where: {
+          ...inPlaces,
+          status: { in: ['PENDING', 'CONFIRMED'] },
+          endAt: { gte: new Date() },
+        },
+      }),
     ]);
 
     return {
@@ -89,8 +99,8 @@ export class InsightsService {
       activeOrders,
       pendingRequests,
       requests,
-      bookings: 0,
-      upcomingBookings: 0,
+      bookings,
+      upcomingBookings,
       offerRedemptions,
       activeOffers,
       profileViews: stats._sum.views ?? 0,

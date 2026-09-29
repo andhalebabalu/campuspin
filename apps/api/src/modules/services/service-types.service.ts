@@ -117,8 +117,16 @@ export class ServiceTypesService {
     });
     const counts = await Promise.all(types.map((type) => this.availability(type)));
     return types.map((type, index) => {
-      const { id: _id, showOnHome: _home, ...rest } = toServiceType(type);
-      return { ...rest, available: counts[index] ?? 0 };
+      return {
+        key: type.key,
+        name: type.name,
+        description: type.description,
+        icon: type.icon,
+        kind: type.kind,
+        categorySlug: type.categorySlug,
+        sortOrder: type.sortOrder,
+        available: counts[index] ?? 0,
+      };
     });
   }
 

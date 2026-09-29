@@ -28,7 +28,6 @@ import { shortCode } from '../orders/order-rules.js';
 import { metersFrom } from '../places/place-rules.js';
 import { dateFromKey } from '../services/service-rules.js';
 import {
-  type OfferTerms,
   discountFor,
   isAvailableOn,
   isExpired,
@@ -539,7 +538,7 @@ export class OffersService {
       where: { id: offerId, placeId, ...visibleOfferWhere(today) },
       select: OFFER_SELECT,
     });
-    if (!offer || !isAvailableOn(offer as OfferTerms, today)) throw notAvailable();
+    if (!offer || !isAvailableOn(offer, today)) throw notAvailable();
     if (offer.discountType === 'FREEBIE') {
       throw AppException.validation({
         offerId: ['Show this offer at the counter instead: it is a free item'],

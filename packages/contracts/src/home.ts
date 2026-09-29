@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { bookingSchema } from './bookings.js';
 import { studentOfferSchema } from './offers.js';
 import { orderSchema } from './orders.js';
 import { serviceRequestSchema } from './requests.js';
@@ -20,6 +21,8 @@ export const studentHomeSchema = z.object({
   quickActions: z.array(quickActionSchema),
   /** Orders still in progress, newest first. */
   activeOrders: z.array(orderSchema),
+  /** Bookings still ahead (confirmed or waiting), soonest first. */
+  upcomingBookings: z.array(bookingSchema),
   /** Requests still open (table requests, repairs). */
   activeRequests: z.array(serviceRequestSchema),
   /** Live offers nearby (or best), usable today. */

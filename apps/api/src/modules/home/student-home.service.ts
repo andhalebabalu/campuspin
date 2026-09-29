@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { StudentHome, StudentHomeQuery } from '@platform/contracts';
 import { PrismaService } from '../../infra/database/prisma.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { BookingsService } from '../bookings/bookings.service.js';
 import { OffersService } from '../offers/offers.service.js';
 import { OrdersService } from '../orders/orders.service.js';
 import { RequestsService } from '../requests/requests.service.js';
@@ -32,15 +33,17 @@ export class StudentHomeService {
     private readonly orders: OrdersService,
     private readonly requests: RequestsService,
     private readonly offers: OffersService,
+    private readonly bookings: BookingsService,
   ) {}
 
   async home(actor: AuthenticatedUser, query: StudentHomeQuery): Promise<StudentHome> {
     const point = pointOf(query);
-    const [quickActions, active, requests, offers, todaysMenus, savedRows, recentRows] =
+    const [quickActions, active, requests, bookings, offers, todaysMenus, savedRows, recentRows] =
       await Promise.all([
         this.types.quickActions(),
         this.orders.myOrders(actor, { page: 1, limit: HOME_ACTIVE, active: true }),
         this.requests.mine(actor, { page: 1, limit: HOME_ACTIVE, active: true }),
+        this.bookings.mine(actor, { page: 1, limit: HOME_ACTIVE, upcoming: true }),
         this.offers.nearby({ ...query, limit: HOME_OFFERS }),
         this.menus.todaysMenus({ ...query, saved: false, limit: HOME_MENUS }, actor.id),
         this.prisma.savedPlace.findMany({
@@ -61,6 +64,7 @@ export class StudentHomeService {
       quickActions,
       activeOrders: [...active.items],
       activeRequests: [...requests.items],
+      upcomingBookings: [...bookings.items],
       nearbyOffers: offers,
       todaysMenus,
       saved: savedRows.map((row) => cardWithDistance(row.place, point)),

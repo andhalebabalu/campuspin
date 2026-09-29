@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
 import { businessService } from '@/services/business.service';
+import { BookingsPanel } from './bookings-panel';
 import { DailyMenuPanel } from './daily-menu-panel';
 import { EnquiriesPanel } from './enquiries-panel';
 import { FoodMenuPanel } from './food-menu-panel';
@@ -26,6 +27,7 @@ import { ServicesPanel } from './services-panel';
 type Tab =
   | 'orders'
   | 'requests'
+  | 'bookings'
   | 'menu'
   | 'food'
   | 'offers'
@@ -39,6 +41,7 @@ type Tab =
 const TABS: ReadonlyArray<{ id: Tab; label: string }> = [
   { id: 'orders', label: 'Orders' },
   { id: 'requests', label: 'Requests' },
+  { id: 'bookings', label: 'Bookings' },
   { id: 'menu', label: 'Daily menu' },
   { id: 'food', label: 'Food menu' },
   { id: 'services', label: 'Services' },
@@ -219,7 +222,7 @@ export function BusinessDashboard() {
         />
       </div>
 
-      <InsightsPanel onOpen={(target) => setTab(target === 'bookings' ? 'services' : target)} />
+      <InsightsPanel onOpen={(target) => setTab(target)} />
 
       <div className="flex flex-col gap-5">
         <div
@@ -282,6 +285,7 @@ export function BusinessDashboard() {
           {tab === 'food' && <FoodMenuPanel listings={listings} />}
           {tab === 'qr' && <QrPanel listings={listings} />}
           {tab === 'requests' && <RequestsPanel listings={listings} />}
+          {tab === 'bookings' && <BookingsPanel listings={listings} />}
           {tab === 'offers' && <OffersPanel listings={listings} />}
           {tab === 'services' && <ServicesPanel listings={listings} />}
           {tab === 'reviews' && <ReviewsPanel />}

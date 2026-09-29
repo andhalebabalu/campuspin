@@ -2,6 +2,7 @@ export * from './admin.js';
 export * from './analytics.js';
 export * from './api.js';
 export * from './auth.js';
+export * from './bookings.js';
 export * from './business.js';
 export * from './categories.js';
 export * from './colleges.js';

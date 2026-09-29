@@ -10,6 +10,7 @@ import { ROUTES } from '@/constants/routes';
 import { ordersService } from '@/services/orders.service';
 import { servicesService } from '@/services/services.service';
 import { OfferCard } from '@/features/offers/components/offer-card';
+import { BookingPanel } from '@/features/bookings/components/booking-panel';
 import { MealLines } from './menu-card';
 
 /**
@@ -43,6 +44,7 @@ export function PlaceServicesSection({ placeSlug }: { placeSlug: string }) {
   const food = data.services.find((service) => service.kind === 'FOOD_ORDER');
   const print = data.services.find((service) => service.kind === 'PRINT_ORDER');
   const jobs = data.services.filter((service) => service.kind === 'SERVICE_REQUEST');
+  const bookable = data.services.filter((service) => service.kind === 'BOOKING');
 
   return (
     <section className="flex flex-col gap-4" aria-labelledby="services-heading">
@@ -93,6 +95,15 @@ export function PlaceServicesSection({ placeSlug }: { placeSlug: string }) {
           ))}
         </div>
       )}
+
+      {bookable.map((service) => (
+        <BookingPanel
+          key={service.key}
+          placeSlug={data.slug}
+          service={service}
+          items={(data.catalog[service.key] ?? []).flatMap((section) => section.items)}
+        />
+      ))}
 
       {data.offers.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2">

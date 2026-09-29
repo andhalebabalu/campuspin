@@ -22,10 +22,15 @@ export const SUPPORTED_KINDS: ReadonlySet<ConfigurableServiceKind> = new Set([
   'TABLE_SERVICE',
   'PRINT_ORDER',
   'SERVICE_REQUEST',
+  'BOOKING',
 ]);
 
 /** Kinds whose students order or pick from the place's catalogue. */
-export const CATALOG_KINDS: ReadonlySet<string> = new Set(['FOOD_ORDER', 'SERVICE_REQUEST']);
+export const CATALOG_KINDS: ReadonlySet<string> = new Set([
+  'FOOD_ORDER',
+  'SERVICE_REQUEST',
+  'BOOKING',
+]);
 
 export const isSupportedKind = (kind: ServiceKind): kind is ConfigurableServiceKind =>
   isConfigurableKind(kind) && SUPPORTED_KINDS.has(kind);
@@ -38,7 +43,7 @@ export function configOf(kind: ServiceKind, raw: unknown): Record<string, unknow
   if (!isConfigurableKind(kind)) return {};
   const schema = serviceConfigSchemas[kind];
   const parsed = schema.safeParse(raw ?? {});
-  return (parsed.success ? parsed.data : schema.parse({})) as Record<string, unknown>;
+  return parsed.success ? parsed.data : schema.parse({});
 }
 
 /** Validates a config sent by an owner: 400 with field errors when it does not fit the kind. */
@@ -53,7 +58,7 @@ export function parseSubmittedConfig(
       Object.fromEntries(Object.entries(fields).map(([key, value]) => [`config.${key}`, value])),
     );
   }
-  return parsed.data as Record<string, unknown>;
+  return parsed.data;
 }
 
 /** The Prisma filter for a place service students can use right now. */

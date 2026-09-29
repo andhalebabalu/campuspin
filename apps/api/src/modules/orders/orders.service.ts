@@ -177,7 +177,6 @@ export class OrdersService {
       ? await this.offers.quoteForOrder(dto.offerId, actor.id, place.id, subtotal)
       : null;
     const discount = quote?.discount ?? 0;
-    const businessProfileId = place.businessProfileId;
 
     return this.persist(
       actor,

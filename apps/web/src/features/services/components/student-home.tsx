@@ -10,6 +10,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Skeleton } from '@/components/shared/skeleton';
 import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
+import { BookingCard } from '@/features/bookings/components/my-bookings';
 import { OfferCard } from '@/features/offers/components/offer-card';
 import { OrderCard } from '@/features/orders/components/my-orders';
 import { RequestCard } from '@/features/requests/components/request-views';
@@ -194,7 +195,9 @@ export function StudentHome() {
             )}
           </Section>
 
-          {(home.activeOrders.length > 0 || home.activeRequests.length > 0) && (
+          {(home.activeOrders.length > 0 ||
+            home.activeRequests.length > 0 ||
+            home.upcomingBookings.length > 0) && (
             <Section
               title="On the way"
               action={
@@ -207,6 +210,11 @@ export function StudentHome() {
                 {home.activeOrders.map((order) => (
                   <li key={order.id}>
                     <OrderCard order={order} />
+                  </li>
+                ))}
+                {home.upcomingBookings.map((booking) => (
+                  <li key={booking.id}>
+                    <BookingCard booking={booking} />
                   </li>
                 ))}
                 {home.activeRequests.map((request) => (
