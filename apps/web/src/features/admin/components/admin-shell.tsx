@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/shared/skeleton';
 import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
+import { LoginForm } from '@/features/auth/components/login-form';
 import { useSession } from '@/lib/auth/session-context';
 import { ADMIN_SECTIONS, can, isStaff } from '../lib/access';
 
@@ -32,19 +33,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   if (status === 'unauthenticated' || !user) {
     return (
-      <main className="mx-auto w-full max-w-xl flex-1 px-4 py-16">
-        <EmptyState
-          title="Staff sign-in required"
-          description="The admin panel is for CampusPin staff."
-          action={
-            <Link
-              href={`${ROUTES.login}?next=${encodeURIComponent(pathname || ROUTES.admin)}`}
-              className={LINK_CLASSES}
-            >
-              Sign in
-            </Link>
-          }
-        />
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-4 py-16">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-bold text-ink">Staff sign-in</h1>
+          <p className="text-body">The admin panel is for the CampusPin team.</p>
+        </div>
+        <LoginForm next={pathname || ROUTES.admin} />
       </main>
     );
   }

@@ -184,6 +184,18 @@ export function jwtPayload(token: string): Record<string, unknown> {
   return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as Record<string, unknown>;
 }
 
+/** The details a business sign-up needs besides its name: a real active category, phone and city. */
+export async function businessSignupFields(
+  db: PrismaClient,
+): Promise<{ categoryId: string; phone: string; city: string }> {
+  const category = await db.category.findFirstOrThrow({
+    where: { status: 'ACTIVE' },
+    select: { id: true },
+    orderBy: { sortOrder: 'asc' },
+  });
+  return { categoryId: category.id, phone: '+91 98765 43210', city: 'Ahilyanagar' };
+}
+
 /** Registers an account and completes email verification, as a real user would. */
 export async function registerAndVerify(
   ctx: AuthTestContext,
@@ -204,7 +216,11 @@ export async function registerAndVerify(
       email,
       password,
       ...(options.businessName
-        ? { accountType: 'BUSINESS', businessName: options.businessName }
+        ? {
+            accountType: 'BUSINESS',
+            businessName: options.businessName,
+            ...(await businessSignupFields(ctx.db)),
+          }
         : {}),
     })
     .expect(201);

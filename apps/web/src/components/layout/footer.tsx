@@ -28,7 +28,7 @@ const COLUMNS = [
     links: [
       { href: ROUTES.suggestPlace, label: 'Suggest a place' },
       { href: ROUTES.register, label: 'Create an account' },
-      { href: ROUTES.login, label: 'Log in' },
+      { href: ROUTES.signIn, label: 'Log in' },
     ],
   },
 ];

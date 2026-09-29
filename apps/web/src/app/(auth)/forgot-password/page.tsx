@@ -12,7 +12,7 @@ export default function ForgotPasswordPage() {
         <h1 className="text-3xl font-bold text-ink">Reset your password</h1>
         <p className="text-body">
           Remembered it?{' '}
-          <Link href={ROUTES.login} className="font-medium text-action hover:text-action-hover">
+          <Link href={ROUTES.signIn} className="font-medium text-action hover:text-action-hover">
             Sign in
           </Link>
         </p>

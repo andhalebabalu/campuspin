@@ -8,15 +8,23 @@ export const ROUTES = {
   placeReview: (slug: string) => `/places/${slug}/review`,
   search: '/search',
   suggestPlace: '/suggest-a-place',
-  login: '/login',
+  /** "Continue as": picks the student or business sign-in. */
+  signIn: '/login',
+  /** Student sign-in; also where `?next=` links from student pages go. */
+  login: '/student/login',
+  businessLogin: '/business/login',
+  /** "Continue as": picks the student or business sign-up. */
   register: '/register',
-  /** Sign-up with the business account type preselected. */
-  registerBusiness: '/register?type=business',
+  registerStudent: '/student/register',
+  registerBusiness: '/business/register',
   verifyEmail: '/verify-email',
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
-  dashboard: '/dashboard',
-  dashboardNewListing: '/dashboard/listings/new',
+  /** The business owner's dashboard. `/business/<slug>` is the public page, so these come first. */
+  dashboard: '/business/dashboard',
+  dashboardNewListing: '/business/dashboard/listings/new',
+  /** A business's public page. */
+  businessPage: (slug: string) => `/business/${slug}`,
   me: '/me',
   meVerification: '/me/verification',
   meSettings: '/me/settings',

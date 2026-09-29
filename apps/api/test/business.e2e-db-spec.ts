@@ -19,6 +19,7 @@ import {
   STRONG_PASSWORD,
   TEST_CATEGORY_SLUG_PREFIX,
   bearer,
+  businessSignupFields,
   createAuthTestContext,
   errorOf,
   grantRole,
@@ -143,6 +144,7 @@ describe('Business owners, enquiries and uploads (e2e, real database)', () => {
           password: STRONG_PASSWORD,
           accountType: 'BUSINESS',
           businessName: '  Ravi   Tiffin Services ',
+          ...(await businessSignupFields(ctx.db)),
         })
         .expect(201);
 
@@ -172,6 +174,7 @@ describe('Business owners, enquiries and uploads (e2e, real database)', () => {
             password: STRONG_PASSWORD,
             accountType: 'BUSINESS',
             businessName: name,
+            ...(await businessSignupFields(ctx.db)),
           })
           .expect(201);
       }
@@ -195,6 +198,75 @@ describe('Business owners, enquiries and uploads (e2e, real database)', () => {
         .post(`${API}/auth/register`)
         .send({ ...base, email: testEmail('biz-admin-type'), accountType: 'ADMIN' })
         .expect(400);
+    });
+
+    it('stores the sign-up details on the business, which starts pending and not public', async () => {
+      const email = testEmail('biz-details');
+      const fields = await businessSignupFields(ctx.db);
+      await ctx
+        .post(`${API}/auth/register`)
+        .send({
+          name: 'Meera Joshi',
+          email,
+          password: STRONG_PASSWORD,
+          accountType: 'BUSINESS',
+          businessName: `E2E Details Mess ${run}`,
+          ...fields,
+          description: 'Home-style veg thali near the college gate.',
+        })
+        .expect(201);
+      const stored = await ctx.db.businessProfile.findFirstOrThrow({
+        where: { owner: { email } },
+        select: {
+          categoryId: true,
+          phone: true,
+          whatsapp: true,
+          city: true,
+          description: true,
+          status: true,
+          verificationStatus: true,
+          owner: { select: { collegeId: true } },
+        },
+      });
+      expect(stored).toEqual({
+        categoryId: fields.categoryId,
+        phone: fields.phone,
+        whatsapp: fields.phone,
+        city: 'Ahilyanagar',
+        description: 'Home-style veg thali near the college gate.',
+        status: 'ACTIVE',
+        verificationStatus: 'PENDING',
+        owner: { collegeId: null },
+      });
+    });
+
+    it('refuses an unknown category and never uses an app page as the slug', async () => {
+      const fields = await businessSignupFields(ctx.db);
+      const base = { name: 'Owner', password: STRONG_PASSWORD, accountType: 'BUSINESS', ...fields };
+      const unknown = await ctx
+        .post(`${API}/auth/register`)
+        .send({
+          ...base,
+          email: testEmail('biz-badcat'),
+          businessName: 'Anything',
+          categoryId: '0199c3b2-7d41-7000-8000-00000000abcd',
+        })
+        .expect(400);
+      expect(Object.keys((errorOf(unknown).error.details as { fields: object }).fields)).toEqual([
+        'categoryId',
+      ]);
+
+      const email = testEmail('biz-reserved');
+      await ctx
+        .post(`${API}/auth/register`)
+        .send({ ...base, email, businessName: 'Dashboard' })
+        .expect(201);
+      const { slug } = await ctx.db.businessProfile.findFirstOrThrow({
+        where: { owner: { email } },
+        select: { slug: true },
+      });
+      expect(slug).not.toBe('dashboard');
+      expect(slug).toMatch(/^dashboard-business/);
     });
   });
 

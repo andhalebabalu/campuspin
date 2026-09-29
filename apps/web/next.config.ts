@@ -15,6 +15,27 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },
+  // Old and alias addresses of the account pages, so links already shared keep working.
+  async redirects() {
+    return [
+      { source: '/dashboard', destination: '/business/dashboard', permanent: true },
+      { source: '/dashboard/:path*', destination: '/business/dashboard/:path*', permanent: true },
+      {
+        source: '/register',
+        has: [{ type: 'query', key: 'type', value: 'business' }],
+        destination: '/business/register',
+        permanent: false,
+      },
+      {
+        source: '/register',
+        has: [{ type: 'query', key: 'type', value: 'student' }],
+        destination: '/student/register',
+        permanent: false,
+      },
+      { source: '/student/dashboard', destination: '/home', permanent: false },
+      { source: '/admin/dashboard', destination: '/admin', permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;

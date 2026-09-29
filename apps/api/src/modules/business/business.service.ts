@@ -98,8 +98,17 @@ export class BusinessService {
       where: { id: businessProfileId },
       select: PROFILE_SELECT,
     });
-    const changed = diffFields(current, dto);
+    // The slug never follows a rename: links already shared on WhatsApp must keep working.
+    const changed = diffFields({ ...current, categoryId: current.category?.id ?? null }, dto);
     if (changed.length === 0) return toBusinessProfile(current);
+    if (dto.categoryId && changed.includes('categoryId')) {
+      const found = await this.prisma.category.count({
+        where: { id: dto.categoryId, status: 'ACTIVE' },
+      });
+      if (found === 0) {
+        throw AppException.validation({ categoryId: ['Choose a category from the list'] });
+      }
+    }
 
     const updated = await this.prisma.$transaction(async (tx) => {
       const row = await tx.businessProfile.update({

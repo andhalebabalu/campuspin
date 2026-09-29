@@ -4,7 +4,6 @@ import {
   duplicateCandidateSchema,
   MAX_SUBMISSION_IMAGES,
   PRICE_UNITS,
-  type CategoryGroup,
   type CategorySummary,
   type DuplicateCandidate,
   type PlaceSubmission,
@@ -14,7 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import MapView, { Marker, type LatLng, type Region } from 'react-native-maps';
 import { z } from 'zod';
 import { FormAlert } from '@/components/form-alert';
@@ -25,14 +24,13 @@ import {
   Chip,
   Icon,
   Screen,
-  Sheet,
-  SheetOption,
   TextField,
   useToast,
 } from '@/components/ui';
 import { errorMessage, flattenZodErrors, serverFieldErrors } from '@/lib/errors';
 import { categoriesService } from '@/services/categories.service';
 import { colors, radius, space } from '@/theme/tokens';
+import { CategorySheet } from './category-sheet';
 import { iconFor, UNIT_LABELS } from './meta';
 
 /** Ahilyanagar: where CampusPin starts. Only the first view of the map; the user moves the pin. */
@@ -344,49 +342,6 @@ export function PlaceForm({
   );
 }
 
-function CategorySheet({
-  visible,
-  groups,
-  loading,
-  selectedId,
-  onClose,
-  onPick,
-}: {
-  visible: boolean;
-  groups: CategoryGroup[];
-  loading: boolean;
-  selectedId: string | null;
-  onClose: () => void;
-  onPick: (category: CategorySummary) => void;
-}) {
-  return (
-    <Sheet visible={visible} onClose={onClose} title="Category">
-      {loading ? (
-        <ActivityIndicator color={colors.action} style={{ margin: space.xl }} />
-      ) : (
-        <ScrollView style={{ maxHeight: 520 }}>
-          {groups.map((group) => (
-            <View key={group.id}>
-              <AppText variant="caption" style={styles.groupLabel}>
-                {group.name.toUpperCase()}
-              </AppText>
-              {group.children.map((leaf) => (
-                <SheetOption
-                  key={leaf.id}
-                  icon={iconFor(leaf.icon, 'pricetag-outline')}
-                  label={leaf.name}
-                  selected={leaf.id === selectedId}
-                  onPress={() => onPick(leaf)}
-                />
-              ))}
-            </View>
-          ))}
-        </ScrollView>
-      )}
-    </Sheet>
-  );
-}
-
 function Block({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <View style={styles.block}>
@@ -433,7 +388,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(11,18,32,0.7)',
   },
   units: { gap: space.sm },
-  groupLabel: { paddingHorizontal: space.md, paddingTop: space.md, paddingBottom: space.xs },
   dupes: { gap: space.sm, padding: space.lg, borderRadius: radius.lg, backgroundColor: colors.warningSoft },
   dupe: {
     flexDirection: 'row',

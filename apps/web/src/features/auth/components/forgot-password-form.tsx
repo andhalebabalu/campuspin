@@ -50,7 +50,7 @@ export function ForgotPasswordForm() {
           link has been sent.
         </p>
         <Link
-          href={ROUTES.login}
+          href={ROUTES.signIn}
           className="text-sm font-medium text-action hover:text-action-hover"
         >
           Back to sign in

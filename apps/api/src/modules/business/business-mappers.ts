@@ -1,4 +1,5 @@
 import type {
+  BusinessStatus,
   BusinessLead,
   BusinessListing,
   BusinessProfile,
@@ -23,17 +24,39 @@ import {
 
 const PLACE_SUMMARY = { select: { id: true, slug: true, name: true } } as const;
 
+/**
+ * When `/business/<slug>` is visible to everyone: the business is active (not suspended or closed),
+ * staff have not rejected it, and at least one of its listings has passed staff review. The
+ * "Verified" badge is separate: a business can be public before staff verify it.
+ */
+export const PUBLIC_BUSINESS_WHERE = {
+  status: 'ACTIVE',
+  verificationStatus: { not: 'REJECTED' },
+  places: { some: { status: 'ACTIVE' } },
+} satisfies Prisma.BusinessProfileWhereInput;
+
 export const PROFILE_SELECT = {
   id: true,
   businessName: true,
   slug: true,
   description: true,
+  category: { select: { id: true, slug: true, name: true } },
+  city: true,
   phone: true,
+  whatsapp: true,
   email: true,
   website: true,
+  instagramUrl: true,
+  facebookUrl: true,
   logoUrl: true,
+  coverUrl: true,
+  status: true,
   verificationStatus: true,
+  statusReason: true,
+  verifiedAt: true,
   createdAt: true,
+  // Only whether a live listing exists, for `isPublic`.
+  places: { where: { status: 'ACTIVE' }, select: { id: true }, take: 1 },
 } satisfies Prisma.BusinessProfileSelect;
 
 export interface ProfileRow {
@@ -41,12 +64,29 @@ export interface ProfileRow {
   businessName: string;
   slug: string;
   description: string | null;
+  category: { id: string; slug: string; name: string } | null;
+  city: string | null;
   phone: string | null;
+  whatsapp: string | null;
   email: string | null;
   website: string | null;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
   logoUrl: string | null;
+  coverUrl: string | null;
+  status: BusinessStatus;
   verificationStatus: VerificationStatus;
+  statusReason: string | null;
+  verifiedAt: Date | null;
   createdAt: Date;
+  places: Array<{ id: string }>;
+}
+
+/** Mirrors `PUBLIC_BUSINESS_WHERE` for a row already loaded with `PROFILE_SELECT`. */
+export function isBusinessPublic(
+  row: Pick<ProfileRow, 'status' | 'verificationStatus' | 'places'>,
+): boolean {
+  return row.status === 'ACTIVE' && row.verificationStatus !== 'REJECTED' && row.places.length > 0;
 }
 
 export function toBusinessProfile(row: ProfileRow): BusinessProfile {
@@ -55,11 +95,21 @@ export function toBusinessProfile(row: ProfileRow): BusinessProfile {
     businessName: row.businessName,
     slug: row.slug,
     description: row.description,
+    category: row.category,
+    city: row.city,
     phone: row.phone,
+    whatsapp: row.whatsapp,
     email: row.email,
     website: row.website,
+    instagramUrl: row.instagramUrl,
+    facebookUrl: row.facebookUrl,
     logoUrl: row.logoUrl,
+    coverUrl: row.coverUrl,
+    status: row.status,
     verificationStatus: row.verificationStatus,
+    statusReason: row.statusReason,
+    verifiedAt: row.verifiedAt?.toISOString() ?? null,
+    isPublic: isBusinessPublic(row),
     createdAt: row.createdAt.toISOString(),
   };
 }

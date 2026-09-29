@@ -71,7 +71,7 @@ function AccountActions({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex items-center gap-2">
       <Link
-        href={ROUTES.login}
+        href={ROUTES.signIn}
         onClick={onNavigate}
         className="inline-flex h-9 items-center justify-center rounded-full border border-control px-4 text-sm font-semibold text-primary-800 transition-colors hover:bg-subtle"
       >

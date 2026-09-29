@@ -84,16 +84,56 @@ export type UpdateLeadRequest = z.output<typeof updateLeadRequestSchema>;
 
 // ── Business profile ─────────────────────────────────────────────────────────────────────────────
 
+// Matches the Prisma `BusinessStatus` enum exactly.
+export const BUSINESS_STATUSES = ['ACTIVE', 'INACTIVE', 'SUSPENDED'] as const;
+export type BusinessStatus = (typeof BUSINESS_STATUSES)[number];
+export const businessStatusSchema = z.enum(BUSINESS_STATUSES);
+
+/**
+ * Words a business slug can never be, because `/business/<word>` is an app page (the dashboard,
+ * sign-in...). The public page lives at `/business/<slug>`.
+ */
+export const RESERVED_BUSINESS_SLUGS = [
+  'dashboard',
+  'login',
+  'register',
+  'profile',
+  'preview',
+  'settings',
+  'new',
+  'edit',
+  'admin',
+  'api',
+] as const;
+
+export const businessCategoryRefSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  name: z.string(),
+});
+
 export const businessProfileSchema = z.object({
   id: z.string(),
   businessName: z.string(),
   slug: z.string(),
   description: z.string().nullable(),
+  category: businessCategoryRefSchema.nullable(),
+  city: z.string().nullable(),
   phone: z.string().nullable(),
+  whatsapp: z.string().nullable(),
   email: z.string().nullable(),
   website: z.string().nullable(),
+  instagramUrl: z.string().nullable(),
+  facebookUrl: z.string().nullable(),
   logoUrl: z.string().nullable(),
+  coverUrl: z.string().nullable(),
+  status: businessStatusSchema,
   verificationStatus: verificationStatusSchema,
+  /** Why staff rejected or suspended the business; null otherwise. */
+  statusReason: z.string().nullable(),
+  verifiedAt: z.string().nullable(),
+  /** True when `/business/<slug>` is visible to everyone (see the public page rules). */
+  isPublic: z.boolean(),
   createdAt: z.string(),
 });
 export type BusinessProfile = z.infer<typeof businessProfileSchema>;
@@ -103,10 +143,24 @@ export const updateBusinessProfileRequestSchema = z
   .strictObject({
     businessName: singleLineField('Business name', 200),
     description: multiLineField('Description', 2000).nullable(),
+    categoryId: uuidSchema,
+    city: singleLineField('City', 100),
     phone: phoneSchema.nullable(),
+    whatsapp: phoneSchema.nullable(),
     email: emailSchema.nullable(),
     website: httpUrlField(500).nullable(),
+    instagramUrl: httpUrlField(500)
+      .refine((value) => /^https:\/\/(www\.)?instagram\.com\//i.test(value), {
+        message: 'Use your instagram.com link',
+      })
+      .nullable(),
+    facebookUrl: httpUrlField(500)
+      .refine((value) => /^https:\/\/(www\.|m\.)?(facebook|fb)\.com\//i.test(value), {
+        message: 'Use your facebook.com link',
+      })
+      .nullable(),
     logoUrl: httpUrlField(1000).nullable(),
+    coverUrl: httpUrlField(1000).nullable(),
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, { message: 'Send at least one field' });

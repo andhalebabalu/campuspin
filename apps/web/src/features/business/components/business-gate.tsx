@@ -39,7 +39,7 @@ export function BusinessGate({ next, children }: { next: string; children: React
         action={
           <div className="flex flex-wrap justify-center gap-3">
             <Link
-              href={`${ROUTES.login}?next=${encodeURIComponent(next)}`}
+              href={`${ROUTES.businessLogin}?next=${encodeURIComponent(next)}`}
               className={LINK_CLASSES}
             >
               Sign in

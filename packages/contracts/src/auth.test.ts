@@ -101,17 +101,26 @@ describe('registerRequestSchema', () => {
     expect(registerRequestSchema.safeParse({ ...valid, accountType: 'ADMIN' }).success).toBe(false);
   });
 
-  it('requires a business name for a business account only', () => {
+  it('requires the business details for a business account only', () => {
     const business = registerRequestSchema.safeParse({ ...valid, accountType: 'BUSINESS' });
     expect(business.success).toBe(false);
-    expect(business.error?.issues.map((issue) => issue.path.join('.'))).toContain('businessName');
+    expect(business.error?.issues.map((issue) => issue.path.join('.')).sort()).toEqual([
+      'businessName',
+      'categoryId',
+      'city',
+      'phone',
+    ]);
 
     const named = registerRequestSchema.parse({
       ...valid,
       accountType: 'BUSINESS',
       businessName: '  Sai   Krupa Mess ',
+      categoryId: '0199c3b2-7d41-7000-8000-000000000001',
+      phone: '+91 98765 43210',
+      city: 'Ahilyanagar',
     });
     expect(named.businessName).toBe('Sai Krupa Mess');
+    expect(registerRequestSchema.safeParse(valid).success).toBe(true);
   });
 
   it('accepts names in other scripts', () => {

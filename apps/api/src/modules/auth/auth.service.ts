@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { RESERVED_BUSINESS_SLUGS } from '@platform/contracts';
 import type {
   AccountType,
   AuthUser,
@@ -40,7 +41,11 @@ const ROLE_FOR_ACCOUNT_TYPE: Readonly<Record<AccountType, RoleKey>> = {
   BUSINESS: 'BUSINESS_OWNER',
 };
 
-const BUSINESS_SLUG_OPTIONS = { reservedWords: [], fallback: 'business' } as const;
+// `/business/dashboard` and friends are app pages, so a business can never take those slugs.
+const BUSINESS_SLUG_OPTIONS = {
+  reservedWords: RESERVED_BUSINESS_SLUGS,
+  fallback: 'business',
+} as const;
 
 @Injectable()
 export class AuthService {
@@ -64,6 +69,7 @@ export class AuthService {
       select: { id: true },
     });
     if (existing) throw this.emailTaken();
+    await this.checkReferences(dto);
 
     const roleKey = ROLE_FOR_ACCOUNT_TYPE[dto.accountType];
     const role = await this.prisma.role.findUnique({
@@ -80,7 +86,8 @@ export class AuthService {
     }
 
     const passwordHash = await hashPassword(dto.password);
-    const businessName = dto.accountType === 'BUSINESS' ? dto.businessName : undefined;
+    const isBusiness = dto.accountType === 'BUSINESS';
+    const businessName = isBusiness ? dto.businessName : undefined;
     let businessSlug = businessName ? await this.freeBusinessSlug(businessName) : undefined;
     let user;
     for (let attempt = 0; ; attempt += 1) {
@@ -92,11 +99,23 @@ export class AuthService {
             name: dto.name,
             email: dto.email,
             passwordHash,
+            // A student may name their college now; a business account never has one.
+            ...(!isBusiness && dto.collegeId ? { collegeId: dto.collegeId } : {}),
             userRoles: { create: { roleId: role.id } },
             ...(businessName && businessSlug
               ? {
+                  // PENDING until staff approve it; the public page appears once a listing is live.
                   ownedBusinesses: {
-                    create: { businessName, slug: businessSlug, email: dto.email },
+                    create: {
+                      businessName,
+                      slug: businessSlug,
+                      email: dto.email,
+                      categoryId: dto.categoryId ?? null,
+                      phone: dto.phone ?? null,
+                      whatsapp: dto.phone ?? null,
+                      city: dto.city ?? null,
+                      description: dto.description ?? null,
+                    },
                   },
                 }
               : {}),
@@ -289,6 +308,22 @@ export class AuthService {
 
   resetPassword(dto: ResetPasswordRequest, client: ClientContext): Promise<void> {
     return this.passwordReset.reset(dto.token, dto.newPassword, client);
+  }
+
+  /** The category (business) and college (student) must be real, active rows. */
+  private async checkReferences(dto: RegisterRequest): Promise<void> {
+    if (dto.accountType === 'BUSINESS' && dto.categoryId) {
+      const found = await this.prisma.category.count({
+        where: { id: dto.categoryId, status: 'ACTIVE' },
+      });
+      if (found === 0) throw AppException.validation({ categoryId: ['Choose a category from the list'] });
+    }
+    if (dto.accountType === 'STUDENT' && dto.collegeId) {
+      const found = await this.prisma.college.count({
+        where: { id: dto.collegeId, status: 'ACTIVE' },
+      });
+      if (found === 0) throw AppException.validation({ collegeId: ['Choose a college from the list'] });
+    }
   }
 
   private async freeBusinessSlug(businessName: string): Promise<string> {

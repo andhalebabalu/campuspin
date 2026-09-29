@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { collegeRefSchema, studentBadgeSchema } from './members.js';
 import { permissionKeySchema, roleKeySchema } from './rbac.js';
-import { singleLineField } from './text.js';
+import { multiLineField, phoneSchema, singleLineField, uuidSchema } from './text.js';
 
 /**
  * Authentication contracts: request bodies, response data and the password policy. The API
@@ -188,7 +188,8 @@ const emailTokenSchema = z
 
 /**
  * Who is signing up. `STUDENT` gets the STUDENT role; `BUSINESS` gets BUSINESS_OWNER plus a business
- * profile named `businessName`. Only these two are self-service: staff roles are never chosen here.
+ * profile (name, category, phone, city). Only these two are self-service: staff roles are never
+ * chosen here, and one account is never both.
  */
 export const ACCOUNT_TYPES = ['STUDENT', 'BUSINESS'] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
@@ -200,10 +201,17 @@ export const registerRequestSchema = z
     email: emailSchema,
     password: passwordSchema,
     accountType: accountTypeSchema.default('STUDENT'),
-    /** Required for a `BUSINESS` account, ignored for a `STUDENT` one. */
+    /** Student only, optional: the college they study at (browsing preference, not verification). */
+    collegeId: uuidSchema.optional(),
+    // Business only; required for a `BUSINESS` account, ignored for a `STUDENT` one.
     businessName: singleLineField('Business name', 200)
       .optional()
       .meta({ example: 'Sai Krupa Mess' }),
+    /** A top-level category (Mess, PG, Library...). */
+    categoryId: uuidSchema.optional(),
+    phone: phoneSchema.optional(),
+    city: singleLineField('City', 100).optional().meta({ example: 'Ahilyanagar' }),
+    description: multiLineField('Description', 1000).optional(),
   })
   .check((ctx) => {
     if (passwordContainsEmailName(ctx.value.password, ctx.value.email)) {
@@ -214,13 +222,18 @@ export const registerRequestSchema = z
         path: ['password'],
       });
     }
-    if (ctx.value.accountType === 'BUSINESS' && !ctx.value.businessName) {
-      ctx.issues.push({
-        code: 'custom',
-        message: 'Enter your business name',
-        input: ctx.value.businessName,
-        path: ['businessName'],
-      });
+    if (ctx.value.accountType === 'BUSINESS') {
+      const required = [
+        ['businessName', 'Enter your business name'],
+        ['categoryId', 'Choose what kind of business it is'],
+        ['phone', 'Enter a phone number students can call'],
+        ['city', 'Enter your city'],
+      ] as const;
+      for (const [field, message] of required) {
+        if (!ctx.value[field]) {
+          ctx.issues.push({ code: 'custom', message, input: ctx.value[field], path: [field] });
+        }
+      }
     }
   });
 export type RegisterRequest = z.output<typeof registerRequestSchema>;

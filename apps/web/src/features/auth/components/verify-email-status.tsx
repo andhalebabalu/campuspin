@@ -116,7 +116,7 @@ export function VerifyEmailStatus({
       <div className="flex flex-col items-start gap-3">
         <p className="text-body">Your email is verified. You can now sign in.</p>
         <Link
-          href={ROUTES.login}
+          href={ROUTES.signIn}
           className="text-sm font-medium text-action hover:text-action-hover"
         >
           Go to sign in

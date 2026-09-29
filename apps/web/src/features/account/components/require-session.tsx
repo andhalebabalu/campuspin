@@ -36,7 +36,7 @@ export function RequireSession({
         description={description}
         action={
           <Link
-            href={`${ROUTES.login}?next=${encodeURIComponent(pathname)}`}
+            href={`${ROUTES.signIn}?next=${encodeURIComponent(pathname)}`}
             className="inline-flex h-11 items-center justify-center rounded-md bg-action px-5 text-sm font-medium text-white hover:bg-action-hover"
           >
             Sign in

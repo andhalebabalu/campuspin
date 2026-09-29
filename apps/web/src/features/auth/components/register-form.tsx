@@ -1,84 +1,84 @@
 'use client';
 
 import { ApiClientError } from '@platform/api-client';
-import { registerRequestSchema, type AccountType } from '@platform/contracts';
+import {
+  PAGE_LIMIT_MAX,
+  registerRequestSchema,
+  type AccountType,
+  type CategoryGroup,
+  type CollegeCard,
+} from '@platform/contracts';
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { FormAlert } from '@/components/ui/form-alert';
-import { Icon, type IconName } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { ROUTES } from '@/constants/routes';
 import { firstFieldErrors, flattenZodErrors } from '@/lib/forms/errors';
 import { useSession } from '@/lib/auth/session-context';
+import { categoriesService } from '@/services/categories.service';
+import { collegesService } from '@/services/colleges.service';
 
 interface RegisterValues {
   name: string;
   email: string;
   password: string;
+  confirmPassword: string;
+  collegeId: string;
   businessName: string;
+  categoryId: string;
+  phone: string;
+  city: string;
+  description: string;
 }
 
-const INITIAL: RegisterValues = { name: '', email: '', password: '', businessName: '' };
+const INITIAL: RegisterValues = {
+  name: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  collegeId: '',
+  businessName: '',
+  categoryId: '',
+  phone: '',
+  city: 'Ahilyanagar',
+  description: '',
+};
 
-const ACCOUNT_CHOICES: ReadonlyArray<{
-  type: AccountType;
-  icon: IconName;
-  title: string;
-  description: string;
-}> = [
-  {
-    type: 'STUDENT',
-    icon: 'user',
-    title: "I'm a student",
-    description: 'Find messes, PGs, libraries and more around your college. Save, review, enquire.',
-  },
-  {
-    type: 'BUSINESS',
-    icon: 'store',
-    title: 'I run a business',
-    description:
-      'List your place, answer student enquiries and follow your reviews on a dashboard.',
-  },
-];
+export const SELECT_CLASS =
+  'h-11 rounded-md border bg-surface px-3.5 text-base text-ink disabled:opacity-60';
 
 /**
- * Sign-up in two steps: first who you are (student or business), then the details. A business
- * account also names its business; it gets the business dashboard instead of the student features.
+ * Sign-up for one account type. A student names their college (optional); a business gives what
+ * students need to find it (category, phone, city). Both confirm their email before signing in.
  */
-export function RegisterForm({ initialType = null }: { initialType?: AccountType | null }) {
+export function RegisterForm({ accountType }: { accountType: AccountType }) {
   const router = useRouter();
   const { register } = useSession();
-  const [accountType, setAccountType] = useState<AccountType | null>(initialType);
+  const isBusiness = accountType === 'BUSINESS';
   const [values, setValues] = useState(INITIAL);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<{ message: string; requestId?: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [categories, setCategories] = useState<CategoryGroup[] | null>(null);
+  const [colleges, setColleges] = useState<CollegeCard[] | null>(null);
+  const [optionsError, setOptionsError] = useState(false);
 
-  if (!accountType) {
-    return (
-      <div className="flex flex-col gap-3">
-        {ACCOUNT_CHOICES.map((choice) => (
-          <button
-            key={choice.type}
-            type="button"
-            onClick={() => setAccountType(choice.type)}
-            className="flex items-start gap-4 rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:border-primary-400 hover:bg-subtle focus-visible:outline-2 focus-visible:outline-ring"
-          >
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-accent-50 text-accent-700">
-              <Icon name={choice.icon} className="size-5" />
-            </span>
-            <span className="flex flex-col gap-1">
-              <span className="font-semibold text-ink">{choice.title}</span>
-              <span className="text-sm text-body">{choice.description}</span>
-            </span>
-          </button>
-        ))}
-      </div>
-    );
-  }
+  useEffect(() => {
+    const controller = new AbortController();
+    const load = isBusiness
+      ? categoriesService.list(controller.signal).then((result) => setCategories(result.data))
+      : collegesService
+          .list({ limit: PAGE_LIMIT_MAX }, controller.signal)
+          .then((result) => setColleges(result.data));
+    load.catch(() => {
+      if (!controller.signal.aborted) setOptionsError(true);
+    });
+    return () => controller.abort();
+  }, [isBusiness]);
 
-  const isBusiness = accountType === 'BUSINESS';
+  const set = (key: keyof RegisterValues) => (value: string) =>
+    setValues((current) => ({ ...current, [key]: value }));
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -89,10 +89,22 @@ export function RegisterForm({ initialType = null }: { initialType?: AccountType
       email: values.email,
       password: values.password,
       accountType,
-      ...(isBusiness ? { businessName: values.businessName } : {}),
+      ...(isBusiness
+        ? {
+            businessName: values.businessName,
+            categoryId: values.categoryId || undefined,
+            phone: values.phone || undefined,
+            city: values.city || undefined,
+            description: values.description.trim() || undefined,
+          }
+        : { collegeId: values.collegeId || undefined }),
     });
-    if (!parsed.success) {
-      setErrors(flattenZodErrors(parsed.error));
+    const fieldErrors = parsed.success ? {} : flattenZodErrors(parsed.error);
+    if (values.password && values.confirmPassword !== values.password) {
+      fieldErrors.confirmPassword = 'The passwords do not match';
+    }
+    if (!parsed.success || Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors);
       return;
     }
     setErrors({});
@@ -115,63 +127,186 @@ export function RegisterForm({ initialType = null }: { initialType?: AccountType
     }
   }
 
-  return (
-    <form onSubmit={(event) => void handleSubmit(event)} noValidate className="flex flex-col gap-5">
-      <div className="flex items-center justify-between gap-3 rounded-md bg-subtle px-4 py-3 text-sm">
-        <span className="flex items-center gap-2 font-medium text-ink">
-          <Icon name={isBusiness ? 'store' : 'user'} className="size-4" />
-          {isBusiness ? 'Business account' : 'Student account'}
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            setAccountType(null);
-            setErrors({});
-            setFormError(null);
-          }}
-          className="font-medium text-action hover:text-action-hover"
-        >
-          Change
-        </button>
-      </div>
-
-      {formError && <FormAlert message={formError.message} requestId={formError.requestId} />}
-      {isBusiness && (
-        <Input
-          label="Business name"
-          autoComplete="organization"
-          value={values.businessName}
-          onChange={(event) => setValues((v) => ({ ...v, businessName: event.target.value }))}
-          error={errors.businessName}
-          hint="As students know it, e.g. “Sai Krupa Mess”. You can add your places after signing up."
-        />
-      )}
-      <Input
-        label={isBusiness ? 'Your name' : 'Full name'}
-        autoComplete="name"
-        value={values.name}
-        onChange={(event) => setValues((v) => ({ ...v, name: event.target.value }))}
-        error={errors.name}
-      />
-      <Input
-        label="Email"
-        type="email"
-        autoComplete="email"
-        value={values.email}
-        onChange={(event) => setValues((v) => ({ ...v, email: event.target.value }))}
-        error={errors.email}
-      />
+  const passwordFields = (
+    <div className="grid gap-5 sm:grid-cols-2">
       <Input
         label="Password"
         type="password"
         autoComplete="new-password"
-        hint="At least 10 characters mixing letters, numbers or symbols (or a 16+ character passphrase)."
         value={values.password}
-        onChange={(event) => setValues((v) => ({ ...v, password: event.target.value }))}
+        onChange={(event) => set('password')(event.target.value)}
         error={errors.password}
       />
+      <Input
+        label="Confirm password"
+        type="password"
+        autoComplete="new-password"
+        value={values.confirmPassword}
+        onChange={(event) => set('confirmPassword')(event.target.value)}
+        error={errors.confirmPassword}
+      />
+      {!errors.password && (
+        <p className="-mt-3 text-sm text-muted sm:col-span-2">
+          At least 10 characters mixing letters, numbers or symbols (or a 16+ character passphrase).
+        </p>
+      )}
+    </div>
+  );
+
+  return (
+    <form onSubmit={(event) => void handleSubmit(event)} noValidate className="flex flex-col gap-5">
+      {formError && <FormAlert message={formError.message} requestId={formError.requestId} />}
+
+      {isBusiness ? (
+        <>
+          <Input
+            label="Business name"
+            autoComplete="organization"
+            placeholder="e.g. Shree Ganesh Student Mess"
+            value={values.businessName}
+            onChange={(event) => set('businessName')(event.target.value)}
+            error={errors.businessName}
+          />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="categoryId" className="text-sm font-medium text-ink">
+                Business category
+              </label>
+              <select
+                id="categoryId"
+                value={values.categoryId}
+                onChange={(event) => set('categoryId')(event.target.value)}
+                disabled={!categories}
+                aria-invalid={errors.categoryId ? true : undefined}
+                className={`${SELECT_CLASS} ${errors.categoryId ? 'border-danger-600' : 'border-control'}`}
+              >
+                <option value="">{categories ? 'Choose a category' : 'Loading…'}</option>
+                {categories?.map((group) => (
+                  <optgroup key={group.id} label={group.name}>
+                    {group.children.map((leaf) => (
+                      <option key={leaf.id} value={leaf.id}>
+                        {leaf.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              {errors.categoryId && (
+                <p className="text-sm text-danger-700">{errors.categoryId}</p>
+              )}
+            </div>
+            <Input
+              label="City"
+              autoComplete="address-level2"
+              value={values.city}
+              onChange={(event) => set('city')(event.target.value)}
+              error={errors.city}
+            />
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Input
+              label="Your name"
+              autoComplete="name"
+              value={values.name}
+              onChange={(event) => set('name')(event.target.value)}
+              error={errors.name}
+            />
+            <Input
+              label="Phone"
+              type="tel"
+              autoComplete="tel"
+              placeholder="+91 98765 43210"
+              value={values.phone}
+              onChange={(event) => set('phone')(event.target.value)}
+              error={errors.phone}
+            />
+          </div>
+          <Input
+            label="Email"
+            type="email"
+            autoComplete="email"
+            value={values.email}
+            onChange={(event) => set('email')(event.target.value)}
+            error={errors.email}
+          />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="description" className="text-sm font-medium text-ink">
+              Short description <span className="font-normal text-muted">(optional)</span>
+            </label>
+            <textarea
+              id="description"
+              rows={3}
+              maxLength={1000}
+              placeholder="What students get: e.g. home-style veg thali, monthly plans, near the college gate."
+              value={values.description}
+              onChange={(event) => set('description')(event.target.value)}
+              className="rounded-md border border-control bg-surface px-3.5 py-2.5 text-base text-ink placeholder:text-muted"
+            />
+            {errors.description && (
+              <p className="text-sm text-danger-700">{errors.description}</p>
+            )}
+          </div>
+          {passwordFields}
+          <p className="text-sm text-muted">
+            After you confirm your email, add your location and photos. Our team reviews every new
+            business before its page goes live.
+          </p>
+        </>
+      ) : (
+        <>
+          <Input
+            label="Full name"
+            autoComplete="name"
+            value={values.name}
+            onChange={(event) => set('name')(event.target.value)}
+            error={errors.name}
+          />
+          <Input
+            label="Email"
+            type="email"
+            autoComplete="email"
+            value={values.email}
+            onChange={(event) => set('email')(event.target.value)}
+            error={errors.email}
+          />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="collegeId" className="text-sm font-medium text-ink">
+              College <span className="font-normal text-muted">(optional)</span>
+            </label>
+            <select
+              id="collegeId"
+              value={values.collegeId}
+              onChange={(event) => set('collegeId')(event.target.value)}
+              disabled={!colleges}
+              className={`${SELECT_CLASS} ${errors.collegeId ? 'border-danger-600' : 'border-control'}`}
+            >
+              <option value="">{colleges ? 'Choose later' : 'Loading…'}</option>
+              {colleges?.map((college) => (
+                <option key={college.id} value={college.id}>
+                  {college.name}, {college.city}
+                </option>
+              ))}
+            </select>
+            {errors.collegeId ? (
+              <p className="text-sm text-danger-700">{errors.collegeId}</p>
+            ) : (
+              <p className="text-sm text-muted">
+                Shows places near it first. Verify your student ID later from your profile.
+              </p>
+            )}
+          </div>
+          {passwordFields}
+        </>
+      )}
+
+      {optionsError && (
+        <p className="text-sm text-danger-700">
+          Could not load the {isBusiness ? 'categories' : 'colleges'}. Reload the page.
+        </p>
+      )}
+
       <Button type="submit" loading={submitting} fullWidth>
-        {isBusiness ? 'Create business account' : 'Create account'}
+        {isBusiness ? 'Create business account' : 'Create student account'}
       </Button>
     </form>
   );

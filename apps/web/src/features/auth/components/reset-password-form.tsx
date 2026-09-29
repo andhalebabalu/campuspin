@@ -83,7 +83,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
           Your password has been reset. Please sign in with your new password.
         </p>
         <Link
-          href={ROUTES.login}
+          href={ROUTES.signIn}
           className="text-sm font-medium text-action hover:text-action-hover"
         >
           Go to sign in

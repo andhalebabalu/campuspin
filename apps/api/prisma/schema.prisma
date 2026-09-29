@@ -539,6 +539,7 @@ model Category {
   ratingDimensions CategoryRatingDimension[]
   places           PlaceCategory[]
   submissions      PlaceSubmission[]
+  businesses       BusinessProfile[]
 
   @@index([parentId, sortOrder])
   @@index([status])
@@ -815,13 +816,26 @@ model BusinessProfile {
   email              String?            @db.VarChar(254)
   website            String?            @db.VarChar(500)
   logoUrl            String?            @db.VarChar(1000)
+  // Wide banner at the top of the public business page.
+  coverUrl           String?            @db.VarChar(1000)
+  // What kind of business this is; chosen at sign-up. The listing's own categories may be several.
+  categoryId         String?            @db.Char(36)
+  city               String?            @db.VarChar(100)
+  // Digits as typed; the page builds the wa.me link. Often the same number as `phone`.
+  whatsapp           String?            @db.VarChar(20)
+  instagramUrl       String?            @db.VarChar(500)
+  facebookUrl        String?            @db.VarChar(500)
   status             BusinessStatus     @default(ACTIVE)
   verificationStatus VerificationStatus @default(PENDING)
+  // Why staff rejected or suspended the business, shown to the owner. Cleared when reinstated.
+  statusReason       String?            @db.VarChar(500)
+  verifiedAt         DateTime?
   isDemo             Boolean            @default(false)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
   owner           User              @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  category        Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   members         BusinessMember[]
   places          Place[]
   claims          PlaceClaim[]
@@ -834,6 +848,9 @@ model BusinessProfile {
 
   @@index([ownerId])
   @@index([status, verificationStatus])
+  @@index([categoryId])
+  @@index([city])
+  @@index([createdAt])
   @@map("business_profiles")
 }
 
