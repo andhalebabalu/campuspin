@@ -48,6 +48,11 @@ const collapseStore = {
   },
 };
 
+function subscribeToHistory(onChange: () => void) {
+  window.addEventListener('popstate', onChange);
+  return () => window.removeEventListener('popstate', onChange);
+}
+
 /**
  * The frame of a workspace (business dashboard, admin panel): a grouped sidebar that collapses to
  * icons on desktop and slides in as a drawer on phones, a top bar, and the page.
@@ -71,6 +76,12 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const collapsed = useSyncExternalStore(collapseStore.subscribe, collapseStore.get, () => false);
+  // Re-read on every render (each navigation re-renders through usePathname); '' on the server.
+  const search = useSyncExternalStore(
+    subscribeToHistory,
+    () => window.location.search,
+    () => '',
+  );
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Close the drawer on navigation and with Escape.
@@ -88,10 +99,22 @@ export function AppShell({
     return () => document.removeEventListener('keydown', onKey);
   }, [drawerOpen]);
 
-  const isActive = (item: ShellItem) =>
-    item.exact
-      ? pathname === item.href
-      : pathname === item.href || pathname.startsWith(`${item.href}/`);
+  const isActive = (item: ShellItem) => {
+    const [path = '', query] = item.href.split('?');
+    if (query) {
+      // An entry with a query (e.g. ?role=STUDENT) is active only when those values match.
+      const current = new URLSearchParams(search);
+      return (
+        pathname === path &&
+        [...new URLSearchParams(query)].every(([key, value]) => current.get(key) === value)
+      );
+    }
+    const siblingWithQuery = groups.some((group) =>
+      group.items.some((other) => other.href.startsWith(`${path}?`) && isActive(other)),
+    );
+    if (siblingWithQuery) return false;
+    return item.exact ? pathname === path : pathname === path || pathname.startsWith(`${path}/`);
+  };
 
   const nav = (compact: boolean) => (
     <nav aria-label={title} className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-4">

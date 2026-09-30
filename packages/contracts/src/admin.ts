@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { verificationStatusSchema } from './colleges.js';
 import { paginationQuerySchema } from './pagination.js';
 import { roleKeySchema, ROLE_KEYS } from './rbac.js';
-import { singleLineField } from './text.js';
+import { businessCategoryRefSchema, businessStatusSchema } from './business.js';
+import { singleLineField, uuidSchema } from './text.js';
 
 /**
  * Staff administration (Phase 11): the admin home's queue counts, user management (suspend,
@@ -41,7 +42,29 @@ export const adminDashboardSchema = z.object({
     activeColleges: z.number().int(),
     reviewsLast7Days: z.number().int(),
     enquiriesLast7Days: z.number().int(),
+    /** Business profiles by what staff decided (every status, not only active ones). */
+    verifiedBusinesses: z.number().int(),
+    pendingBusinesses: z.number().int(),
+    rejectedBusinesses: z.number().int(),
+    suspendedBusinesses: z.number().int(),
+    communityPosts: z.number().int(),
+    /** Every marketplace listing ever posted (any status). */
+    marketplaceListings: z.number().int(),
+    /** Published reviews. */
+    reviews: z.number().int(),
   }),
+  /** The last 30 India days, oldest first, zero-filled: real rows counted per day. */
+  series: z.array(
+    z.object({
+      day: z.string(),
+      studentSignups: z.number().int(),
+      businessSignups: z.number().int(),
+      businessVerifications: z.number().int(),
+      placesPublished: z.number().int(),
+      marketplaceListings: z.number().int(),
+      communityPosts: z.number().int(),
+    }),
+  ),
 });
 export type AdminDashboard = z.infer<typeof adminDashboardSchema>;
 
@@ -72,6 +95,11 @@ export const adminListUsersQuerySchema = paginationQuerySchema.extend({
   /** Matches name or email. */
   q: z.string().trim().max(100).optional(),
   role: roleKeySchema.optional(),
+  /** `true`: only staff accounts (moderators, admins, super admins). */
+  staff: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((value) => value === 'true'),
   status: userStatusSchema.optional(),
 });
 export type AdminListUsersQuery = z.output<typeof adminListUsersQuerySchema>;
@@ -119,7 +147,15 @@ export const adminBusinessSchema = z.object({
   email: z.string().nullable(),
   website: z.string().nullable(),
   logoUrl: z.string().nullable(),
+  category: businessCategoryRefSchema.nullable(),
+  city: z.string().nullable(),
+  status: businessStatusSchema,
   verificationStatus: verificationStatusSchema,
+  statusReason: z.string().nullable(),
+  /** Its page is live (see the public page rules). */
+  isPublic: z.boolean(),
+  /** The plan it is on (the default FREE when none was assigned). */
+  plan: z.object({ key: z.string(), name: z.string() }),
   /** All the business's places, whatever their status. */
   listingCount: z.number().int(),
   liveListingCount: z.number().int(),
@@ -127,10 +163,19 @@ export const adminBusinessSchema = z.object({
 });
 export type AdminBusiness = z.infer<typeof adminBusinessSchema>;
 
+export const ADMIN_BUSINESS_SORTS = ['newest', 'oldest', 'name'] as const;
+
 export const adminListBusinessesQuerySchema = paginationQuerySchema.extend({
-  /** Matches the business name or the owner's email. */
+  /** Matches the business name, its slug, or the owner's name or email. */
   q: z.string().trim().max(100).optional(),
   verification: verificationStatusSchema.optional(),
+  status: businessStatusSchema.optional(),
+  categoryId: uuidSchema.optional(),
+  city: z.string().trim().max(100).optional(),
+  /** Created on or after / on or before this day (YYYY-MM-DD, India time). */
+  from: z.iso.date().optional(),
+  to: z.iso.date().optional(),
+  sort: z.enum(ADMIN_BUSINESS_SORTS).default('newest'),
 });
 export type AdminListBusinessesQuery = z.output<typeof adminListBusinessesQuerySchema>;
 

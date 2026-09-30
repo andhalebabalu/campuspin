@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/shared/skeleton';
 import { Icon } from '@/components/ui/icon';
 import { useToast } from '@/components/ui/toast';
 import { BRAND } from '@/constants/brand';
-import { DailyBars, Delta, ShareBars } from '../charts';
+import { DailyBars, Delta, ShareBars } from '@/components/shared/charts';
 import { ACTION_ROWS, useAnalytics } from '../use-analytics';
 import { useWorkspace } from '../workspace';
 import { EmptyAnalytics, Panel } from './overview';

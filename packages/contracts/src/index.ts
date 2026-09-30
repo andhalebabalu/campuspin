@@ -1,4 +1,5 @@
 export * from './admin.js';
+export * from './admin-crm.js';
 export * from './analytics.js';
 export * from './api.js';
 export * from './auth.js';

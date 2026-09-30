@@ -45,14 +45,15 @@ export function UsersScreen({
   initialQuery = '',
 }: {
   initialStatus: UserStatus | '';
-  initialRole: RoleKey | '';
+  /** A role, or 'STAFF' for every staff account. */
+  initialRole: RoleKey | 'STAFF' | '';
   initialQuery?: string;
 }) {
   const { user: me } = useSession();
   const [qInput, setQInput] = useState(initialQuery);
   const [q, setQ] = useState(initialQuery);
   const [status, setStatus] = useState<UserStatus | ''>(initialStatus);
-  const [role, setRole] = useState<RoleKey | ''>(initialRole);
+  const [role, setRole] = useState<RoleKey | 'STAFF' | ''>(initialRole);
   const [page, setPage] = useState(1);
   const [dialog, setDialog] = useState<ReasonRequest | null>(null);
   const [editingRoles, setEditingRoles] = useState<string | null>(null);
@@ -61,7 +62,12 @@ export function UsersScreen({
   const list = useAdminList(
     (signal) =>
       adminService.users(
-        { page, ...(q ? { q } : {}), ...(status ? { status } : {}), ...(role ? { role } : {}) },
+        {
+          page,
+          ...(q ? { q } : {}),
+          ...(status ? { status } : {}),
+          ...(role === 'STAFF' ? { staff: true } : role ? { role } : {}),
+        },
         signal,
       ),
     [q, status, role, page],
@@ -76,7 +82,16 @@ export function UsersScreen({
 
   return (
     <div>
-      <AdminHeader title="Users" description="Every account, newest first." />
+      <AdminHeader
+        title={
+          initialRole === 'STUDENT' ? 'Students' : initialRole === 'STAFF' ? 'Admin users' : 'Users'
+        }
+        description={
+          initialRole === 'STAFF'
+            ? 'Moderators, admins and super admins. Super admins change roles.'
+            : 'Every account, newest first.'
+        }
+      />
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -97,12 +112,13 @@ export function UsersScreen({
           aria-label="Role"
           value={role}
           onChange={(event) => {
-            setRole(event.target.value as RoleKey | '');
+            setRole(event.target.value as RoleKey | 'STAFF' | '');
             setPage(1);
           }}
           className={SELECT_CLASSES}
         >
           <option value="">All roles</option>
+          <option value="STAFF">Staff (all)</option>
           {ROLE_KEYS.map((key) => (
             <option key={key} value={key}>
               {ROLES[key].name}

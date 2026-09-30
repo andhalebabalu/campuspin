@@ -75,6 +75,9 @@ export class AdminUsersService {
     const where: Prisma.UserWhereInput = {
       ...(like ? { OR: [{ name: { contains: like } }, { email: { contains: like } }] } : {}),
       ...(query.role ? { userRoles: { some: { role: { key: query.role } } } } : {}),
+      ...(query.staff
+        ? { userRoles: { some: { role: { key: { in: ['MODERATOR', 'ADMIN', 'SUPER_ADMIN'] } } } } }
+        : {}),
       ...(query.status ? { status: query.status } : {}),
     };
     const [rows, total] = await Promise.all([

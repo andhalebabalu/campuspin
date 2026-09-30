@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 /** Workspaces with their own sidebar and top bar: the site's navbar and footer stay out of them. */
-const WORKSPACE_PREFIXES = ['/business/dashboard'];
+const WORKSPACE_PREFIXES = ['/business/dashboard', '/admin'];
 
 export function isWorkspacePath(pathname: string | null): boolean {
   return WORKSPACE_PREFIXES.some(

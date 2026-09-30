@@ -75,4 +75,9 @@ export const ROUTES = {
   adminListingLimits: '/admin/listing-limits',
   adminAnalytics: '/admin/analytics',
   adminServices: '/admin/services',
+  adminBusiness: (id: string) => `/admin/businesses/${id}`,
+  adminPlans: '/admin/plans',
+  adminSubscriptions: '/admin/subscriptions',
+  adminAuditLogs: '/admin/audit-logs',
+  adminBusinessAnalytics: '/admin/business-analytics',
 } as const;

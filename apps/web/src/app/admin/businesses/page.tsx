@@ -1,4 +1,4 @@
-import { VERIFICATION_STATUSES } from '@platform/contracts';
+import { BUSINESS_STATUSES, VERIFICATION_STATUSES } from '@platform/contracts';
 import type { Metadata } from 'next';
 import { BusinessesScreen } from '@/features/admin/components/businesses-screen';
 import { pickParam, type AdminSearchParams } from '@/features/admin/lib/params';
@@ -10,6 +10,14 @@ export default async function AdminBusinessesPage({
 }: {
   searchParams: AdminSearchParams;
 }) {
-  const { verification } = await searchParams;
-  return <BusinessesScreen initialVerification={pickParam(VERIFICATION_STATUSES, verification)} />;
+  const { verification, status } = await searchParams;
+  const initialVerification = pickParam(VERIFICATION_STATUSES, verification);
+  const initialStatus = pickParam(BUSINESS_STATUSES, status);
+  return (
+    <BusinessesScreen
+      key={`${initialVerification}|${initialStatus}`}
+      initialVerification={initialVerification}
+      initialStatus={initialStatus}
+    />
+  );
 }

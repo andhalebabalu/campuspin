@@ -831,6 +831,9 @@ model BusinessProfile {
   verificationStatus VerificationStatus @default(PENDING)
   // Why staff rejected or suspended the business, shown to the owner. Cleared when reinstated.
   statusReason       String?            @db.VarChar(500)
+  // The places switched off when staff suspended or rejected the business, so reinstating it
+  // brings back exactly those (and not a place staff deactivated for its own reasons).
+  hiddenPlaceIds     Json?
   verifiedAt         DateTime?
   isDemo             Boolean            @default(false)
   createdAt          DateTime           @default(now())

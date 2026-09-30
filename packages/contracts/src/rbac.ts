@@ -88,6 +88,10 @@ export const PERMISSIONS = {
     resource: 'services',
     description: 'Manage service types, switch business services off, view order and booking logs',
   },
+  'audit.read': {
+    resource: 'audit',
+    description: 'Read the audit log of staff and owner actions',
+  },
   'services.moderate': {
     resource: 'services',
     description: 'Remove inappropriate menus and offers, disable QR codes',

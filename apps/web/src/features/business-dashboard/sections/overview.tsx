@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/shared/skeleton';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { useSession } from '@/lib/auth/session-context';
 import { InsightsPanel, type DashboardTarget } from '@/features/business/components/insights-panel';
-import { Delta, DailyBars, ShareBars } from '../charts';
+import { Delta, DailyBars, ShareBars } from '@/components/shared/charts';
 import { DASHBOARD, TAB_TO_SECTION } from '../routes';
 import { ACTION_ROWS, useAnalytics } from '../use-analytics';
 import { useOwnedPlace } from '../use-owned-place';

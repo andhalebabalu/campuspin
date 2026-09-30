@@ -1,5 +1,13 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module.js';
+import { BusinessModule } from '../business/business.module.js';
+import {
+  AdminAuditController,
+  AdminBusinessAnalyticsController,
+  AdminBusinessCrmController,
+  AdminPlansController,
+} from './admin-crm.controller.js';
+import { AdminCrmService } from './admin-crm.service.js';
 import { AdminBusinessesService } from './admin-businesses.service.js';
 import {
   AdminBusinessesController,
@@ -15,8 +23,16 @@ import { AdminUsersService } from './admin-users.service.js';
  * or a lost role ends the user's sessions).
  */
 @Module({
-  imports: [AuthModule],
-  controllers: [AdminDashboardController, AdminUsersController, AdminBusinessesController],
-  providers: [AdminDashboardService, AdminUsersService, AdminBusinessesService],
+  imports: [AuthModule, BusinessModule],
+  controllers: [
+    AdminDashboardController,
+    AdminUsersController,
+    AdminBusinessesController,
+    AdminBusinessCrmController,
+    AdminPlansController,
+    AdminAuditController,
+    AdminBusinessAnalyticsController,
+  ],
+  providers: [AdminDashboardService, AdminUsersService, AdminBusinessesService, AdminCrmService],
 })
 export class AdminModule {}

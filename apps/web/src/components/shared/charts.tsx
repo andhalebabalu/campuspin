@@ -68,7 +68,10 @@ export function DailyBars({
       </div>
       <div className="flex gap-1 text-[11px] text-muted sm:gap-1.5">
         {days.map((entry, index) => (
-          <span key={entry.day} className="min-w-0 flex-1 overflow-visible text-center whitespace-nowrap">
+          <span
+            key={entry.day}
+            className="min-w-0 flex-1 overflow-visible text-center whitespace-nowrap"
+          >
             {index % every === 0 ? shortDay(entry.day) : ''}
           </span>
         ))}
