@@ -18,6 +18,8 @@
 | 07 | [Roles and permission matrix](07-rbac.md) | 9 |
 | 08 | [Roadmap, testing and quality gate](08-roadmap.md) | 10 |
 | 09 | [Environment variables and seed strategy](09-env-and-seed.md) | 11, 12 |
+| 10 | [Daily-use services](10-daily-use-services.md) (orders, menus, QR, offers, bookings) | — |
+| 11 | [Business accounts, public business pages and the admin CRM](11-business-pages.md) | — |
 
 ## The ten decisions that shape everything
 
