@@ -20,6 +20,7 @@
 | 09 | [Environment variables and seed strategy](09-env-and-seed.md) | 11, 12 |
 | 10 | [Daily-use services](10-daily-use-services.md) (orders, menus, QR, offers, bookings) | — |
 | 11 | [Business accounts, public business pages and the admin CRM](11-business-pages.md) | — |
+| 12 | [Business capabilities, orders, payments and invoices](12-business-capabilities.md) | — |
 
 ## The ten decisions that shape everything
 
