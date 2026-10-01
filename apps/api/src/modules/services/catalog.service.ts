@@ -6,6 +6,7 @@ import type {
   ServiceItem,
   UpdateServiceItemRequest,
 } from '@platform/contracts';
+import { CapabilitiesService } from '../capabilities/capabilities.service.js';
 import { AppException } from '../../common/http/app-exception.js';
 import type { ClientContext } from '../../common/http/request-client.decorator.js';
 import type { Prisma } from '../../generated/prisma/client.js';
@@ -70,6 +71,7 @@ export class CatalogService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly access: BusinessAccessService,
+    private readonly capabilities: CapabilitiesService,
     private readonly audit: AuditService,
   ) {}
 
@@ -99,9 +101,13 @@ export class CatalogService {
     const place = await this.access.placeOf(actor, placeId);
     const type = await this.prisma.serviceType.findFirst({
       where: { key: dto.serviceKey, status: 'ACTIVE' },
-      select: { id: true },
+      select: { id: true, kind: true },
     });
     if (!type) throw AppException.validation({ serviceKey: ['Unknown service'] });
+    await this.capabilities.require(
+      place.businessProfileId,
+      CapabilitiesService.forServiceKind(type.kind),
+    );
     const count = await this.prisma.serviceItem.count({ where: { placeId: place.id } });
     if (count >= MAX_ITEMS_PER_PLACE) {
       throw AppException.validation({

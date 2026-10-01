@@ -4,6 +4,7 @@ import { AppException } from '../../common/http/app-exception.js';
 import type { ClientContext } from '../../common/http/request-client.decorator.js';
 import { PrismaService } from '../../infra/database/prisma.service.js';
 import { AuditService } from '../audit/audit.service.js';
+import { CapabilitiesService } from '../capabilities/capabilities.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { idOrSlugFilter } from '../places/place-queries.js';
 import { LEAD_RECEIPT_SELECT, toLeadReceipt } from './business-mappers.js';
@@ -17,6 +18,7 @@ export class LeadsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly capabilities: CapabilitiesService,
   ) {}
 
   async create(
@@ -35,6 +37,12 @@ export class LeadsService {
       throw AppException.conflict(
         'CONFLICT',
         'This place is not managed by its business on CampusPin yet, so it cannot receive enquiries.',
+      );
+    }
+    if (!(await this.capabilities.has(businessProfileId, ['ENQUIRY']))) {
+      throw AppException.conflict(
+        'CONFLICT',
+        'This business does not take enquiries on CampusPin.',
       );
     }
 

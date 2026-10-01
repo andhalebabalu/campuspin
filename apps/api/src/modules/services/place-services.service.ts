@@ -10,6 +10,7 @@ import {
   DEFAULT_TABLE_REQUESTS,
   looksLikeUuid,
 } from '@platform/contracts';
+import { CapabilitiesService, capabilityRequired } from '../capabilities/capabilities.service.js';
 import { AppException } from '../../common/http/app-exception.js';
 import { Paginated, pageWindow } from '../../common/http/paginated.js';
 import type { ClientContext } from '../../common/http/request-client.decorator.js';
@@ -52,6 +53,7 @@ export class PlaceServicesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly access: BusinessAccessService,
+    private readonly capabilities: CapabilitiesService,
     private readonly menus: MenusService,
     private readonly catalog: CatalogService,
     private readonly audit: AuditService,
@@ -60,6 +62,7 @@ export class PlaceServicesService {
   /** Every service type the owner can switch on for the place, with its current state. */
   async ownerList(actor: AuthenticatedUser, placeId: string): Promise<PlaceService[]> {
     const place = await this.access.placeOf(actor, placeId);
+    const { capabilities } = await this.capabilities.forBusiness(place.businessProfileId);
     const [types, rows] = await Promise.all([
       this.prisma.serviceType.findMany({
         where: { status: 'ACTIVE' },
@@ -69,25 +72,34 @@ export class PlaceServicesService {
       this.prisma.placeService.findMany({ where: { placeId: place.id }, select: SERVICE_SELECT }),
     ]);
     const byType = new Map(rows.map((row) => [row.serviceType.id, row]));
-    return types
-      .filter((type) => isSupportedKind(type.kind))
-      .map((type) => {
-        const row = byType.get(type.id);
-        return {
-          serviceType: {
-            key: type.key,
-            name: type.name,
-            icon: type.icon,
-            kind: type.kind,
-            description: type.description,
-          },
-          enabled: row?.enabled ?? false,
-          config: configOf(type.kind, row?.config),
-          disabledByAdmin: row?.disabledByAdmin ?? false,
-          adminNote: row?.adminNote ?? null,
-          updatedAt: row?.updatedAt.toISOString() ?? null,
-        };
-      });
+    return (
+      types
+        .filter((type) => isSupportedKind(type.kind))
+        // Only services this kind of business offers (a PG never sees food ordering).
+        .filter((type) => {
+          const needs = CapabilitiesService.forServiceKind(type.kind);
+          return (
+            needs.length === 0 || needs.some((capability) => capabilities.includes(capability))
+          );
+        })
+        .map((type) => {
+          const row = byType.get(type.id);
+          return {
+            serviceType: {
+              key: type.key,
+              name: type.name,
+              icon: type.icon,
+              kind: type.kind,
+              description: type.description,
+            },
+            enabled: row?.enabled ?? false,
+            config: configOf(type.kind, row?.config),
+            disabledByAdmin: row?.disabledByAdmin ?? false,
+            adminNote: row?.adminNote ?? null,
+            updatedAt: row?.updatedAt.toISOString() ?? null,
+          };
+        })
+    );
   }
 
   async ownerUpdate(
@@ -113,6 +125,10 @@ export class PlaceServicesService {
       ? parseSubmittedConfig(type.kind, { ...configOf(type.kind, existing?.config), ...dto.config })
       : configOf(type.kind, existing?.config);
     const enabled = dto.enabled ?? existing?.enabled ?? true;
+    const needs = CapabilitiesService.forServiceKind(type.kind);
+    if (enabled && !(await this.capabilities.has(place.businessProfileId, needs))) {
+      throw capabilityRequired(needs);
+    }
     // Switching Table Service on for the first time adds the usual requests (Water, Bill, ...).
     if (type.kind === 'TABLE_SERVICE' && enabled) {
       const count = await this.prisma.tableRequestType.count({ where: { placeId: place.id } });

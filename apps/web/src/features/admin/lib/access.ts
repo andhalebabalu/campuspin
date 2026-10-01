@@ -115,6 +115,12 @@ export const ADMIN_GROUPS: readonly AdminGroup[] = [
       },
       { href: ROUTES.adminPlans, label: 'Plans', icon: 'receipt', permission: 'businesses.manage' },
       {
+        href: ROUTES.adminBusinessTypes,
+        label: 'Business types',
+        icon: 'layers',
+        permission: 'businesses.manage',
+      },
+      {
         href: ROUTES.adminServices,
         label: 'Offers & services',
         icon: 'utensils',

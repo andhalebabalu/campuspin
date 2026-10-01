@@ -37,6 +37,8 @@ import {
   type OrderStatus,
   type PaginationQuery,
   type UpdateOrderStatusRequest,
+  type RecordPaymentRequest,
+  recordPaymentSchema,
 } from '@platform/contracts';
 import { z } from 'zod';
 import type { Paginated } from '../../common/http/paginated.js';
@@ -48,6 +50,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { sendPrivateFile } from '../uploads/send-private-file.js';
 import { Permissions } from '../auth/decorators/permissions.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
+import { AnyBusiness, RequiresCapability } from '../capabilities/requires-capability.js';
 import { InsightsService } from './insights.service.js';
 import { OrdersService } from './orders.service.js';
 
@@ -201,6 +204,7 @@ export class OrdersController {
 @ApiTags('Business: Orders')
 @ApiBearerAuth()
 @Roles('BUSINESS_OWNER')
+@RequiresCapability('ORDER_MANAGEMENT')
 @Controller('business')
 export class BusinessOrdersController {
   constructor(
@@ -277,7 +281,28 @@ export class BusinessOrdersController {
     return this.orders.updateStatus(actor, id, body, client);
   }
 
+  @Post('orders/:id/payment')
+  @HttpCode(HttpStatus.OK)
+  @RequiresCapability('PAYMENT')
+  @ResponseMessage('Payment recorded')
+  @ApiOperation({
+    summary: 'Record that an order was paid',
+    description:
+      'Cash, UPI or card at the counter. Separate from the order status; its invoice (if any) becomes paid. 409 if already paid or the order was cancelled.',
+  })
+  @ApiEnvelopeResponse(businessOrderSchema, { description: 'The order.' })
+  @ApiErrorResponses(UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CHANGED)
+  recordPayment(
+    @Param('id', idParam) id: string,
+    @Body({ schema: recordPaymentSchema }) body: RecordPaymentRequest,
+    @CurrentUser() actor: AuthenticatedUser,
+    @RequestClient() client: ClientContext,
+  ): Promise<BusinessOrder> {
+    return this.orders.recordPayment(actor, id, body, client);
+  }
+
   @Get('insights')
+  @AnyBusiness()
   @ResponseMessage('Insights retrieved')
   @ApiOperation({
     summary: 'Dashboard numbers',

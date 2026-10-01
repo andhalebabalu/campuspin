@@ -15,6 +15,7 @@ import {
   type UpdateRequestStatusRequest,
   type UpdateTableRequestTypeRequest,
 } from '@platform/contracts';
+import { CapabilitiesService, capabilityRequired } from '../capabilities/capabilities.service.js';
 import { AppException } from '../../common/http/app-exception.js';
 import { Paginated, pageWindow } from '../../common/http/paginated.js';
 import type { ClientContext } from '../../common/http/request-client.decorator.js';
@@ -105,6 +106,7 @@ export class RequestsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly access: BusinessAccessService,
+    private readonly capabilities: CapabilitiesService,
     private readonly tablesQr: TablesQrService,
     private readonly notifications: NotificationsService,
     private readonly documents: DocumentsService,
@@ -341,10 +343,11 @@ export class RequestsService {
     query: ListBusinessRequestsQuery,
   ): Promise<Paginated<BusinessServiceRequest>> {
     const businessIds = await this.access.businessIdsOf(actor);
+    const kinds = await this.handledKinds(actor);
     const where: Prisma.ServiceRequestWhereInput = {
       businessProfileId: { in: businessIds },
       ...(query.placeId ? { placeId: query.placeId } : {}),
-      ...(query.kind ? { kind: query.kind } : {}),
+      kind: query.kind ? (kinds.includes(query.kind) ? query.kind : { in: [] }) : { in: kinds },
       ...(query.scope === 'active' ? ACTIVE_WHERE : {}),
       ...(query.scope === 'today' ? { createdAt: { gte: indiaDayStart() } } : {}),
     };
@@ -378,6 +381,9 @@ export class RequestsService {
       select: REQUEST_SELECT,
     });
     if (!row) throw AppException.notFound('Request not found');
+    if (!(await this.handledKinds(actor)).includes(row.kind)) {
+      throw capabilityRequired(row.kind === 'TABLE' ? ['TABLE_ORDER'] : ['SERVICE_REQUEST']);
+    }
     if (!businessCanMove(row.kind, row.status, dto.status)) {
       throw AppException.conflict(
         'STATUS_CHANGED',
@@ -400,6 +406,17 @@ export class RequestsService {
       });
     }
     return this.toBusiness(updated, await this.historyOf([id]));
+  }
+
+  /** Table requests need TABLE_ORDER; jobs (repair, laundry) need SERVICE_REQUEST. */
+  private async handledKinds(actor: AuthenticatedUser): Promise<Array<'TABLE' | 'GENERAL'>> {
+    const { capabilities } = await this.capabilities.forBusiness(
+      await this.capabilities.businessOf(actor),
+    );
+    return [
+      ...(capabilities.includes('TABLE_ORDER') ? (['TABLE'] as const) : []),
+      ...(capabilities.includes('SERVICE_REQUEST') ? (['GENERAL'] as const) : []),
+    ];
   }
 
   // ── Staff ──────────────────────────────────────────────────────────────────────────────────────

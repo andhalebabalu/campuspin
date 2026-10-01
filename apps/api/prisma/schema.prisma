@@ -244,57 +244,59 @@ model User {
   college         College? @relation("StudentCollege", fields: [collegeId], references: [id], onDelete: SetNull)
   verifiedCollege College? @relation("VerifiedStudentCollege", fields: [verifiedCollegeId], references: [id], onDelete: SetNull)
 
-  userRoles                    UserRole[]             @relation("UserRoleUser")
-  assignedRoles                UserRole[]             @relation("UserRoleAssignedBy")
-  createdColleges              College[]              @relation("CollegeCreatedBy")
-  createdPlaces                Place[]                @relation("PlaceCreatedBy")
-  verifiedPlaces               Place[]                @relation("PlaceVerifiedBy")
-  ownedBusinesses              BusinessProfile[]      @relation("BusinessOwner")
+  userRoles                    UserRole[]                   @relation("UserRoleUser")
+  assignedRoles                UserRole[]                   @relation("UserRoleAssignedBy")
+  createdColleges              College[]                    @relation("CollegeCreatedBy")
+  createdPlaces                Place[]                      @relation("PlaceCreatedBy")
+  verifiedPlaces               Place[]                      @relation("PlaceVerifiedBy")
+  ownedBusinesses              BusinessProfile[]            @relation("BusinessOwner")
   businessMemberships          BusinessMember[]
-  requestedClaims              PlaceClaim[]           @relation("ClaimRequestedBy")
-  reviewedClaims               PlaceClaim[]           @relation("ClaimReviewedBy")
-  submissions                  PlaceSubmission[]      @relation("SubmissionSubmittedBy")
-  reviewedSubmissions          PlaceSubmission[]      @relation("SubmissionReviewedBy")
-  contributions                PlaceContribution[]    @relation("ContributionContributedBy")
-  reviewedContributions        PlaceContribution[]    @relation("ContributionReviewedBy")
-  reviews                      Review[]               @relation("ReviewAuthor")
-  moderatedReviews             Review[]               @relation("ReviewModeratedBy")
-  reviewReports                ReviewReport[]         @relation("ReviewReportReportedBy")
-  handledReviewReports         ReviewReport[]         @relation("ReviewReportReviewedBy")
+  requestedClaims              PlaceClaim[]                 @relation("ClaimRequestedBy")
+  reviewedClaims               PlaceClaim[]                 @relation("ClaimReviewedBy")
+  submissions                  PlaceSubmission[]            @relation("SubmissionSubmittedBy")
+  reviewedSubmissions          PlaceSubmission[]            @relation("SubmissionReviewedBy")
+  contributions                PlaceContribution[]          @relation("ContributionContributedBy")
+  reviewedContributions        PlaceContribution[]          @relation("ContributionReviewedBy")
+  reviews                      Review[]                     @relation("ReviewAuthor")
+  moderatedReviews             Review[]                     @relation("ReviewModeratedBy")
+  reviewReports                ReviewReport[]               @relation("ReviewReportReportedBy")
+  handledReviewReports         ReviewReport[]               @relation("ReviewReportReviewedBy")
   savedPlaces                  SavedPlace[]
-  leads                        Lead[]                 @relation("LeadSender")
-  reports                      Report[]               @relation("ReportReporter")
-  resolvedReports              Report[]               @relation("ReportResolvedBy")
+  leads                        Lead[]                       @relation("LeadSender")
+  reports                      Report[]                     @relation("ReportReporter")
+  resolvedReports              Report[]                     @relation("ReportResolvedBy")
   notifications                Notification[]
   communityPosts               CommunityPost[]
   communityComments            CommunityComment[]
   communityReactions           CommunityReaction[]
-  blocking                     UserBlock[]            @relation("UserBlockBlocker")
-  blockedBy                    UserBlock[]            @relation("UserBlockBlocked")
+  blocking                     UserBlock[]                  @relation("UserBlockBlocker")
+  blockedBy                    UserBlock[]                  @relation("UserBlockBlocked")
   marketplaceListings          MarketplaceListing[]
-  buyerConversations           Conversation[]         @relation("ConversationBuyer")
-  sellerConversations          Conversation[]         @relation("ConversationSeller")
+  buyerConversations           Conversation[]               @relation("ConversationBuyer")
+  sellerConversations          Conversation[]               @relation("ConversationSeller")
   conversationMessages         ConversationMessage[]
   auditLogs                    AuditLog[]
   settings                     UserSettings?
-  studentVerifications         StudentVerification[]  @relation("StudentVerificationUser")
-  reviewedStudentVerifications StudentVerification[]  @relation("StudentVerificationReviewer")
+  studentVerifications         StudentVerification[]        @relation("StudentVerificationUser")
+  reviewedStudentVerifications StudentVerification[]        @relation("StudentVerificationReviewer")
   addedEmailDomains            CollegeEmailDomain[]
-  createdPromotions            Promotion[]            @relation("PromotionCreatedBy")
-  creditEntries                ListingCreditEntry[]   @relation("CreditEntryUser")
-  creditEntriesMade            ListingCreditEntry[]   @relation("CreditEntryActor")
+  createdPromotions            Promotion[]                  @relation("PromotionCreatedBy")
+  creditEntries                ListingCreditEntry[]         @relation("CreditEntryUser")
+  creditEntriesMade            ListingCreditEntry[]         @relation("CreditEntryActor")
   updatedSettings              PlatformSetting[]
   dailyVisits                  DailyVisit[]
-  createdDailyMenus            DailyMenu[]            @relation("DailyMenuCreatedBy")
-  serviceOrders                ServiceOrder[]         @relation("ServiceOrderStudent")
-  createdQrCodes               PlaceQrCode[]          @relation("QrCreatedBy")
-  serviceRequests              ServiceRequest[]       @relation("ServiceRequestStudent")
+  createdDailyMenus            DailyMenu[]                  @relation("DailyMenuCreatedBy")
+  serviceOrders                ServiceOrder[]               @relation("ServiceOrderStudent")
+  invoices                     Invoice[]                    @relation("InvoiceCustomer")
+  setCapabilityOverrides       BusinessCapabilityOverride[] @relation("CapabilityOverrideSetBy")
+  createdQrCodes               PlaceQrCode[]                @relation("QrCreatedBy")
+  serviceRequests              ServiceRequest[]             @relation("ServiceRequestStudent")
   privateDocuments             PrivateDocument[]
-  bookings                     Booking[]              @relation("BookingStudent")
-  createdOffers                StudentOffer[]         @relation("OfferCreatedBy")
-  offerRedemptions             OfferRedemption[]      @relation("RedemptionStudent")
-  verifiedRedemptions          OfferRedemption[]      @relation("RedemptionVerifiedBy")
-  assignedSubscriptions        BusinessSubscription[] @relation("SubscriptionAssignedBy")
+  bookings                     Booking[]                    @relation("BookingStudent")
+  createdOffers                StudentOffer[]               @relation("OfferCreatedBy")
+  offerRedemptions             OfferRedemption[]            @relation("RedemptionStudent")
+  verifiedRedemptions          OfferRedemption[]            @relation("RedemptionVerifiedBy")
+  assignedSubscriptions        BusinessSubscription[]       @relation("SubscriptionAssignedBy")
 
   refreshTokens           RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -520,19 +522,22 @@ model CollegePlace {
 
 // Two-level tree (group -> category), fully data-driven: Accommodation -> Room / PG / Hostel.
 model Category {
-  id               String       @id @default(uuid(7)) @db.Char(36)
-  parentId         String?      @db.Char(36)
-  name             String       @db.VarChar(100)
-  slug             String       @unique @db.VarChar(100)
-  description      String?      @db.VarChar(500)
+  id               String        @id @default(uuid(7)) @db.Char(36)
+  parentId         String?       @db.Char(36)
+  name             String        @db.VarChar(100)
+  slug             String        @unique @db.VarChar(100)
+  description      String?       @db.VarChar(500)
   // A key from the UI icon set, not a URL.
-  icon             String?      @db.VarChar(50)
-  status           ActiveStatus @default(ACTIVE)
-  sortOrder        Int          @default(0)
+  icon             String?       @db.VarChar(50)
+  status           ActiveStatus  @default(ACTIVE)
+  sortOrder        Int           @default(0)
   // The unit prices are compared in within this category (e.g. MONTH for messes).
   defaultPriceUnit PriceUnit?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  // What kind of business this category is (drives the business dashboard's capabilities).
+  // NULL = not a business category (or not decided): businesses in it count as OTHER.
+  businessType     BusinessType?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   parent           Category?                 @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
   children         Category[]                @relation("CategoryTree")
@@ -831,6 +836,10 @@ model BusinessProfile {
   verificationStatus VerificationStatus @default(PENDING)
   // Why staff rejected or suspended the business, shown to the owner. Cleared when reinstated.
   statusReason       String?            @db.VarChar(500)
+  // Staff override of the business type; NULL = taken from the category.
+  businessType       BusinessType?
+  // The last invoice number issued (per business, gap-free, incremented in the invoice's transaction).
+  invoiceSeq         Int                @default(0)
   // The places switched off when staff suspended or rejected the business, so reinstating it
   // brings back exactly those (and not a place staff deactivated for its own reasons).
   hiddenPlaceIds     Json?
@@ -839,19 +848,21 @@ model BusinessProfile {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  owner           User                   @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: Restrict)
-  category        Category?              @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  members         BusinessMember[]
-  places          Place[]
-  claims          PlaceClaim[]
-  leads           Lead[]
-  serviceOrders   ServiceOrder[]
-  serviceRequests ServiceRequest[]
-  offers          StudentOffer[]
-  redemptions     OfferRedemption[]
-  bookings        Booking[]
-  events          BusinessEvent[]
-  subscriptions   BusinessSubscription[]
+  owner               User                         @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  category            Category?                    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  members             BusinessMember[]
+  places              Place[]
+  claims              PlaceClaim[]
+  leads               Lead[]
+  serviceOrders       ServiceOrder[]
+  serviceRequests     ServiceRequest[]
+  offers              StudentOffer[]
+  redemptions         OfferRedemption[]
+  bookings            Booking[]
+  events              BusinessEvent[]
+  subscriptions       BusinessSubscription[]
+  capabilityOverrides BusinessCapabilityOverride[]
+  invoices            Invoice[]
 
   @@index([ownerId])
   @@index([status, verificationStatus])
@@ -917,6 +928,120 @@ model BusinessSubscription {
   @@index([businessProfileId, createdAt])
   @@index([planId, status])
   @@map("business_subscriptions")
+}
+
+// ── Business types and capabilities ─────────────────────────────────────────────────────────────
+
+enum BusinessType {
+  HOTEL_RESTAURANT
+  MESS
+  PG
+  ROOM_RENTAL
+  LIBRARY
+  PRINTING_XEROX
+  SALON
+  SERVICE
+  OTHER
+}
+
+// What a business can do on CampusPin. Each gates dashboard modules AND their APIs.
+enum BusinessCapability {
+  ORDER_MANAGEMENT
+  TABLE_ORDER
+  INVOICE
+  PAYMENT
+  BOOKING
+  ENQUIRY
+  SERVICE_REQUEST
+  MEMBERSHIP
+  APPOINTMENT
+  REVENUE_ANALYTICS
+}
+
+// The default capabilities of each business type. Data, so a type's modules change without code.
+model BusinessTypeCapability {
+  businessType BusinessType
+  capability   BusinessCapability
+  createdAt    DateTime           @default(now())
+
+  @@id([businessType, capability])
+  @@map("business_type_capabilities")
+}
+
+// Staff turning one capability on or off for one business, over its type's defaults.
+model BusinessCapabilityOverride {
+  businessProfileId String             @db.Char(36)
+  capability        BusinessCapability
+  enabled           Boolean
+  note              String?            @db.VarChar(255)
+  setById           String?            @db.Char(36)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  setBy           User?           @relation("CapabilityOverrideSetBy", fields: [setById], references: [id], onDelete: SetNull)
+
+  @@id([businessProfileId, capability])
+  @@map("business_capability_overrides")
+}
+
+// ── Payments and invoices ────────────────────────────────────────────────────────────────────────
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+enum PaymentChannel {
+  CASH
+  UPI
+  CARD
+  ONLINE
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  CANCELLED
+}
+
+// The bill of one completed order. At most one per order (orderId is unique). The business and
+// customer details are copied at issue time, so a later rename never changes an issued invoice.
+model Invoice {
+  id                String        @id @default(uuid(7)) @db.Char(36)
+  // Per business: e.g. SGM-2026-0001 (prefix from the business, then year and sequence).
+  number            String        @db.VarChar(40)
+  businessProfileId String        @db.Char(36)
+  orderId           String        @unique @db.Char(36)
+  userId            String?       @db.Char(36)
+  status            InvoiceStatus @default(ISSUED)
+  businessName      String        @db.VarChar(200)
+  businessAddress   String        @db.VarChar(700)
+  businessPhone     String?       @db.VarChar(20)
+  businessEmail     String?       @db.VarChar(254)
+  customerName      String        @db.VarChar(120)
+  subtotal          Int
+  discount          Int           @default(0)
+  // No tax is configured on CampusPin yet; kept so a configured tax never needs a migration.
+  tax               Int           @default(0)
+  total             Int
+  issuedAt          DateTime      @default(now())
+  paidAt            DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  businessProfile BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Restrict)
+  order           ServiceOrder    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  user            User?           @relation("InvoiceCustomer", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([businessProfileId, number])
+  @@index([businessProfileId, issuedAt])
+  @@index([businessProfileId, status])
+  @@index([userId])
+  @@map("invoices")
 }
 
 enum BusinessEventType {
@@ -1963,32 +2088,39 @@ enum PaymentMethod {
 // An order a student placed with a business. Totals are always computed by the server from the
 // catalogue at order time; item names and prices are copied so later menu edits never change it.
 model ServiceOrder {
-  id                String        @id @default(uuid(7)) @db.Char(36)
+  id                String          @id @default(uuid(7)) @db.Char(36)
   // Short code said at the counter, e.g. CP7K2Q9M.
-  code              String        @unique @db.VarChar(12)
+  code              String          @unique @db.VarChar(12)
   kind              OrderKind
-  placeId           String        @db.Char(36)
+  placeId           String          @db.Char(36)
   // Denormalised: the business inbox is keyed on it.
-  businessProfileId String        @db.Char(36)
-  userId            String        @db.Char(36)
-  tableId           String?       @db.Char(36)
+  businessProfileId String          @db.Char(36)
+  userId            String          @db.Char(36)
+  tableId           String?         @db.Char(36)
   // Copied so the order still reads right if the table is renamed or deleted.
-  tableLabel        String?       @db.VarChar(30)
-  status            OrderStatus   @default(PENDING)
+  tableLabel        String?         @db.VarChar(30)
+  status            OrderStatus     @default(PENDING)
   subtotal          Int
-  discount          Int           @default(0)
+  discount          Int             @default(0)
   total             Int
-  paymentMethod     PaymentMethod @default(PAY_AT_COUNTER)
-  note              String?       @db.VarChar(300)
+  paymentMethod     PaymentMethod   @default(PAY_AT_COUNTER)
+  // Separate from `status`: a completed order is not necessarily paid.
+  paymentStatus     PaymentStatus   @default(UNPAID)
+  paidAt            DateTime?
+  // How it was actually paid, recorded by the business (or a gateway later).
+  paidVia           PaymentChannel?
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+  note              String?         @db.VarChar(300)
   // Print orders: the student's document (private) and the chosen options.
-  documentId        String?       @unique @db.Char(36)
+  documentId        String?         @unique @db.Char(36)
   printOptions      Json?
   // The client's retry key: the same key never creates a second order.
-  idempotencyKey    String        @db.VarChar(64)
-  statusReason      String?       @db.VarChar(255)
-  statusChangedAt   DateTime      @default(now())
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  idempotencyKey    String          @db.VarChar(64)
+  statusReason      String?         @db.VarChar(255)
+  statusChangedAt   DateTime        @default(now())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   place           Place              @relation(fields: [placeId], references: [id], onDelete: Restrict)
   businessProfile BusinessProfile    @relation(fields: [businessProfileId], references: [id], onDelete: Restrict)
@@ -1997,9 +2129,11 @@ model ServiceOrder {
   items           ServiceOrderItem[]
   redemption      OfferRedemption?
   document        PrivateDocument?   @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  invoice         Invoice?
 
   @@unique([userId, idempotencyKey])
   @@index([businessProfileId, status, createdAt])
+  @@index([businessProfileId, paymentStatus])
   @@index([placeId, createdAt])
   @@index([userId, createdAt])
   @@index([status, createdAt])

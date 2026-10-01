@@ -1,14 +1,8 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { OrdersSection } from '@/features/business-dashboard/sections/panels';
+import { OrdersSection } from '@/features/business-dashboard/sections/orders';
 
-export const metadata: Metadata = { title: 'Orders & bookings' };
+export const metadata: Metadata = { title: 'Orders' };
 
-// Reads ?view= / ?place= on the client, so it renders inside a Suspense boundary.
 export default function Page() {
-  return (
-    <Suspense>
-      <OrdersSection />
-    </Suspense>
-  );
+  return <OrdersSection />;
 }

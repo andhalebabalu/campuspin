@@ -45,6 +45,7 @@ export const ERROR_CODES = [
   'OFFER_NOT_AVAILABLE', // 409: expired, paused, used up or not valid today
   'OFFER_LIMIT_REACHED', // 409: this student already used the offer as often as allowed
   'SLOT_FULL', // 409: the booking slot has no seats left
+  'CAPABILITY_REQUIRED', // 403: this business's type does not include the module (e.g. orders for a PG)
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

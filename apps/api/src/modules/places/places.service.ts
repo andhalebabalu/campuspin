@@ -4,6 +4,7 @@ import { AppException } from '../../common/http/app-exception.js';
 import { Paginated, pageWindow } from '../../common/http/paginated.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../infra/database/prisma.service.js';
+import { CapabilitiesService } from '../capabilities/capabilities.service.js';
 import { type CardRow, toPlaceCard, toPlaceDetail } from './place-mappers.js';
 import {
   CARD_ORDER_BY,
@@ -32,7 +33,10 @@ interface Point {
  */
 @Injectable()
 export class PlacesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly capabilities: CapabilitiesService,
+  ) {}
 
   async list(query: ListPlacesQuery): Promise<Paginated<PlaceCard>> {
     const college = query.collegeSlug ? await this.activeCollege(query.collegeSlug) : null;
@@ -117,7 +121,12 @@ export class PlacesService {
       },
     });
     if (!place) throw AppException.notFound('Place not found');
-    return toPlaceDetail(place, place.businessProfile, place.colleges);
+    const detail = toPlaceDetail(place, place.businessProfile, place.colleges);
+    // Enquiries only for businesses that take them (their type or staff decide).
+    if (detail.acceptsEnquiries && place.businessProfileId) {
+      detail.acceptsEnquiries = await this.capabilities.has(place.businessProfileId, ['ENQUIRY']);
+    }
+    return detail;
   }
 
   private async activeCollege(slug: string): Promise<Point & { id: string }> {

@@ -32,6 +32,7 @@ import { ResponseMessage } from '../../common/http/response-message.decorator.js
 import { ApiEnvelopeResponse, ApiErrorResponses } from '../../common/swagger/api-responses.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { RequiresCapability } from '../capabilities/requires-capability.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { BusinessService } from './business.service.js';
 
@@ -228,6 +229,7 @@ export class BusinessController {
     return this.business.createListing(body, actor, client);
   }
 
+  @RequiresCapability('ENQUIRY')
   @Get('enquiries')
   @ResponseMessage('Enquiries retrieved')
   @ApiOperation({
@@ -247,6 +249,7 @@ export class BusinessController {
     return this.business.leads(query, actor);
   }
 
+  @RequiresCapability('ENQUIRY')
   @Patch('enquiries/:id')
   @ResponseMessage('Enquiry updated')
   @ApiOperation({

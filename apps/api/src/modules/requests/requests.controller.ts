@@ -46,6 +46,7 @@ import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { sendPrivateFile } from '../uploads/send-private-file.js';
 import { Permissions } from '../auth/decorators/permissions.decorator.js';
+import { RequiresCapability } from '../capabilities/requires-capability.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { RequestsService } from './requests.service.js';
 
@@ -188,6 +189,7 @@ export class RequestsController {
 @ApiTags('Business: Requests')
 @ApiBearerAuth()
 @Roles('BUSINESS_OWNER')
+@RequiresCapability('TABLE_ORDER', 'SERVICE_REQUEST')
 @Controller('business')
 export class BusinessRequestsController {
   constructor(private readonly requests: RequestsService) {}
@@ -247,6 +249,7 @@ export class BusinessRequestsController {
     return this.requests.updateStatus(actor, id, body, client);
   }
 
+  @RequiresCapability('TABLE_ORDER')
   @Get('places/:placeId/request-types')
   @ResponseMessage('Table requests retrieved')
   @ApiOperation({
@@ -266,6 +269,7 @@ export class BusinessRequestsController {
     return this.requests.requestTypes(actor, placeId);
   }
 
+  @RequiresCapability('TABLE_ORDER')
   @Post('places/:placeId/request-types')
   @ResponseMessage('Table request added')
   @ApiOperation({ summary: 'Add a table request' })
@@ -283,6 +287,7 @@ export class BusinessRequestsController {
     return this.requests.addRequestType(actor, placeId, body, client);
   }
 
+  @RequiresCapability('TABLE_ORDER')
   @Patch('places/:placeId/request-types/:typeId')
   @ResponseMessage('Table request updated')
   @ApiOperation({ summary: 'Rename, reorder or switch off a table request' })
@@ -300,6 +305,7 @@ export class BusinessRequestsController {
     return this.requests.updateRequestType(actor, placeId, typeId, body, client);
   }
 
+  @RequiresCapability('TABLE_ORDER')
   @Delete('places/:placeId/request-types/:typeId')
   @ResponseMessage('Table request deleted')
   @ApiOperation({ summary: 'Delete a table request' })

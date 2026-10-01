@@ -1,3 +1,4 @@
+import { InvoicesModule } from '../invoices/invoices.module.js';
 import { Module } from '@nestjs/common';
 import { BusinessModule } from '../business/business.module.js';
 import { OffersModule } from '../offers/offers.module.js';
@@ -16,7 +17,7 @@ import { OrdersService } from './orders.service.js';
  * Owns `service_orders` and `service_order_items`. Imports `ServicesModule` for table QR tokens.
  */
 @Module({
-  imports: [BusinessModule, ServicesModule, OffersModule, UploadsModule],
+  imports: [BusinessModule, ServicesModule, OffersModule, UploadsModule, InvoicesModule],
   controllers: [OrdersController, BusinessOrdersController, AdminOrdersController],
   providers: [OrdersService, InsightsService],
   exports: [OrdersService],

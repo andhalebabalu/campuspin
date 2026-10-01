@@ -317,10 +317,12 @@ export type BusinessAnalytics = z.infer<typeof businessAnalyticsSchema>;
 // ── The owner's own places ───────────────────────────────────────────────────────────────────────
 
 /** `GET /business/places/:placeId`: one of the caller's places with everything they can edit. */
-export const ownedPlaceSchema = placeDetailSchema.omit({ business: true, nearbyColleges: true }).extend({
-  status: placeStatusSchema,
-  updatedAt: z.string(),
-});
+export const ownedPlaceSchema = placeDetailSchema
+  .omit({ business: true, nearbyColleges: true })
+  .extend({
+    status: placeStatusSchema,
+    updatedAt: z.string(),
+  });
 export type OwnedPlace = z.infer<typeof ownedPlaceSchema>;
 
 // ── Plans and subscriptions ──────────────────────────────────────────────────────────────────────

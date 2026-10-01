@@ -86,6 +86,15 @@ export async function removeAuthTestData(db: PrismaClient): Promise<void> {
       { place: { slug: { startsWith: TEST_PLACE_SLUG_PREFIX } } },
     ],
   };
+  // An invoice keeps its order and business (RESTRICT): it goes first.
+  await db.invoice.deleteMany({
+    where: {
+      OR: [
+        { order: orderFilter },
+        ...(ids.length > 0 ? [{ businessProfile: { ownerId: { in: ids } } }] : []),
+      ],
+    },
+  });
   await db.serviceOrder.deleteMany({ where: orderFilter });
   await db.serviceRequest.deleteMany({ where: orderFilter });
   await db.booking.deleteMany({ where: orderFilter });

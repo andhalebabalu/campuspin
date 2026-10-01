@@ -16,6 +16,13 @@ export const DASHBOARD = {
   enquiries: `${base}/enquiries`,
   offers: `${base}/offers`,
   orders: `${base}/orders`,
+  order: (id: string) => `${base}/orders/${id}`,
+  tables: `${base}/tables`,
+  invoices: `${base}/invoices`,
+  invoice: (id: string) => `${base}/invoices/${id}`,
+  payments: `${base}/payments`,
+  bookings: `${base}/bookings`,
+  requests: `${base}/requests`,
   qr: `${base}/qr-codes`,
   analytics: `${base}/analytics`,
   share: `${base}/share`,
@@ -26,12 +33,11 @@ export const DASHBOARD = {
 
 /**
  * Old `?tab=` links (notifications stored in the database still carry them) to their section.
- * The operational tabs (orders, requests, bookings) share one page with its own tab.
  */
 export const TAB_TO_SECTION: Readonly<Record<string, string>> = {
-  orders: `${DASHBOARD.orders}?view=orders`,
-  requests: `${DASHBOARD.orders}?view=requests`,
-  bookings: `${DASHBOARD.orders}?view=bookings`,
+  orders: DASHBOARD.orders,
+  requests: DASHBOARD.requests,
+  bookings: DASHBOARD.bookings,
   menu: `${DASHBOARD.services}?view=daily`,
   food: `${DASHBOARD.services}?view=food`,
   services: DASHBOARD.services,

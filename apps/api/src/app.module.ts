@@ -13,6 +13,7 @@ import { AdminModule } from './modules/admin/admin.module.js';
 import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 import { AuditModule } from './modules/audit/audit.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { CapabilitiesModule } from './modules/capabilities/capabilities.module.js';
 import { BusinessModule } from './modules/business/business.module.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './modules/auth/guards/permissions.guard.js';
@@ -66,6 +67,7 @@ import { UploadsModule } from './modules/uploads/uploads.module.js';
     CommunityModule,
     MarketplaceModule,
     ModerationModule,
+    CapabilitiesModule,
     BusinessModule,
     ServicesModule,
     OrdersModule,

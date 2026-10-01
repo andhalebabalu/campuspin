@@ -4,6 +4,7 @@ import { ApiClientError } from '@platform/api-client';
 import {
   FINAL_ORDER_STATUSES,
   ORDER_STATUS_LABELS,
+  PAYMENT_CHANNEL_LABELS,
   PAYMENT_LABELS,
   type Order,
   type OrderStatus,
@@ -186,9 +187,27 @@ export function OrderTracking({ orderId }: { orderId: string }) {
           </div>
           <div className="flex justify-between text-muted">
             <dt>Payment</dt>
-            <dd>{PAYMENT_LABELS[order.paymentMethod]}</dd>
+            <dd>
+              {order.paymentStatus === 'PAID'
+                ? `Paid${order.paidVia ? ` · ${PAYMENT_CHANNEL_LABELS[order.paidVia]}` : ''}`
+                : order.paymentStatus === 'REFUNDED'
+                  ? 'Refunded'
+                  : PAYMENT_LABELS[order.paymentMethod]}
+            </dd>
           </div>
         </dl>
+        {order.invoice && (
+          <Link
+            href={ROUTES.invoice(order.invoice.id)}
+            className="flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2.5 text-sm hover:bg-subtle"
+          >
+            <span className="flex items-center gap-2 font-medium text-ink">
+              <Icon name="file" className="size-4 text-primary-600" /> Invoice{' '}
+              {order.invoice.number}
+            </span>
+            <span className="font-semibold text-action">View / download</span>
+          </Link>
+        )}
         {order.note && <p className="text-sm text-body">Note: {order.note}</p>}
         {order.print && (
           <p className="rounded-md bg-primary-50 px-3 py-2 text-sm text-primary-800">

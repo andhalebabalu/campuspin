@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { BUSINESS_CAPABILITIES, type BusinessType } from '@platform/contracts';
 import {
   type AuthTestContext,
   TEST_PLACE_SLUG_PREFIX,
@@ -22,6 +23,12 @@ export async function businessWithPlace(
   ctx: AuthTestContext,
   label: string,
   at: { latitude: number; longitude: number } = { latitude: 19.09, longitude: 74.74 },
+  /**
+   * With a type, the business gets exactly that type's default capabilities (what capability tests
+   * need). Without one, every capability is switched on for it, so suites about one feature
+   * (orders, bookings, requests...) do not depend on the capability map.
+   */
+  options: { type?: BusinessType } = {},
 ): Promise<BusinessFixture> {
   const run = randomUUID().slice(0, 8);
   const account = await registerAndVerify(ctx, {
@@ -34,6 +41,20 @@ export async function businessWithPlace(
     where: { ownerId: account.userId },
     select: { id: true },
   });
+  if (options.type) {
+    await ctx.db.businessProfile.update({
+      where: { id: business.id },
+      data: { businessType: options.type },
+    });
+  } else {
+    await ctx.db.businessCapabilityOverride.createMany({
+      data: BUSINESS_CAPABILITIES.map((capability) => ({
+        businessProfileId: business.id,
+        capability,
+        enabled: true,
+      })),
+    });
+  }
   const name = `E2E Place ${label} ${run}`;
   const place = await ctx.db.place.create({
     data: {

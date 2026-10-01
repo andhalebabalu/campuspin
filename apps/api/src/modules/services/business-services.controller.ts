@@ -34,6 +34,7 @@ import { ResponseMessage } from '../../common/http/response-message.decorator.js
 import { ApiEnvelopeResponse, ApiErrorResponses } from '../../common/swagger/api-responses.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { RequiresCapability } from '../capabilities/requires-capability.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { MenusService } from './menus.service.js';
 import { PlaceServicesService } from './place-services.service.js';
@@ -100,6 +101,7 @@ export class BusinessServicesController {
     return this.services.ownerUpdate(actor, placeId, key, body, client);
   }
 
+  @RequiresCapability('ORDER_MANAGEMENT')
   @Get('menus')
   @ResponseMessage('Menus retrieved')
   @ApiOperation({
@@ -117,6 +119,7 @@ export class BusinessServicesController {
     return this.menus.ownerList(actor, placeId, query);
   }
 
+  @RequiresCapability('ORDER_MANAGEMENT')
   @Put('menus/:date')
   @ResponseMessage('Menu saved')
   @ApiOperation({
@@ -137,6 +140,7 @@ export class BusinessServicesController {
     return this.menus.save(actor, placeId, date, body, client);
   }
 
+  @RequiresCapability('ORDER_MANAGEMENT')
   @Post('menus/:date/publish')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Menu published')
@@ -152,6 +156,7 @@ export class BusinessServicesController {
     return this.menus.publish(actor, placeId, date, client);
   }
 
+  @RequiresCapability('ORDER_MANAGEMENT')
   @Post('menus/:date/unpublish')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Menu unpublished')
@@ -167,6 +172,7 @@ export class BusinessServicesController {
     return this.menus.unpublish(actor, placeId, date, client);
   }
 
+  @RequiresCapability('ORDER_MANAGEMENT')
   @Post('menus/:date/copy')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Menu copied')
@@ -186,6 +192,7 @@ export class BusinessServicesController {
     return this.menus.copy(actor, placeId, date, body.fromDate, client);
   }
 
+  @RequiresCapability('ORDER_MANAGEMENT')
   @Delete('menus/:date')
   @ResponseMessage('Menu deleted')
   @ApiOperation({ summary: 'Delete a day’s menu' })

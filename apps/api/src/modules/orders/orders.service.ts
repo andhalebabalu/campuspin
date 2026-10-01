@@ -14,6 +14,7 @@ import {
   type Order,
   type OrderStatus,
   type PaginationQuery,
+  type RecordPaymentRequest,
   type UpdateOrderStatusRequest,
 } from '@platform/contracts';
 import { AppException } from '../../common/http/app-exception.js';
@@ -25,6 +26,8 @@ import { istDay } from '../analytics/activity-rules.js';
 import { AuditService } from '../audit/audit.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { BusinessAccessService } from '../business/business-access.service.js';
+import { CapabilitiesService } from '../capabilities/capabilities.service.js';
+import { InvoicesService } from '../invoices/invoices.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { OffersService, type OrderOfferQuote } from '../offers/offers.service.js';
 import { DocumentsService } from '../uploads/documents.service.js';
@@ -53,6 +56,11 @@ export const ORDER_SELECT = {
   discount: true,
   total: true,
   paymentMethod: true,
+  paymentStatus: true,
+  paidAt: true,
+  paidVia: true,
+  completedAt: true,
+  invoice: { select: { id: true, number: true, status: true } },
   note: true,
   statusReason: true,
   createdAt: true,
@@ -96,6 +104,8 @@ export class OrdersService {
     private readonly offers: OffersService,
     private readonly documents: DocumentsService,
     private readonly audit: AuditService,
+    private readonly capabilities: CapabilitiesService,
+    private readonly invoices: InvoicesService,
   ) {}
 
   // ── Students ───────────────────────────────────────────────────────────────────────────────────
@@ -127,7 +137,7 @@ export class OrdersService {
     });
     if (!place?.businessProfileId) throw AppException.notFound('Place not found');
     const service = place.services[0];
-    if (!service) {
+    if (!service || !(await this.capabilities.has(place.businessProfileId, ['ORDER_MANAGEMENT']))) {
       throw AppException.conflict(
         'SERVICE_UNAVAILABLE_NOW',
         `${place.name} does not take orders on CampusPin.`,
@@ -145,7 +155,11 @@ export class OrdersService {
       );
     }
     const table = dto.qrToken ? await this.tablesQr.tableForToken(dto.qrToken, place.id) : null;
-    if (table && !config.tableOrdering) {
+    if (
+      table &&
+      (!config.tableOrdering ||
+        !(await this.capabilities.has(place.businessProfileId, ['TABLE_ORDER'])))
+    ) {
       throw AppException.conflict(
         'SERVICE_UNAVAILABLE_NOW',
         'Ordering from the table is off here. Order at the counter.',
@@ -226,7 +240,7 @@ export class OrdersService {
     });
     if (!place?.businessProfileId) throw AppException.notFound('Place not found');
     const service = place.services[0];
-    if (!service)
+    if (!service || !(await this.capabilities.has(place.businessProfileId, ['ORDER_MANAGEMENT'])))
       throw AppException.conflict(
         'SERVICE_UNAVAILABLE_NOW',
         `${place.name} does not take print orders on CampusPin.`,
@@ -453,6 +467,7 @@ export class OrdersService {
       ...(query.placeId ? { placeId: query.placeId } : {}),
       ...(query.kind ? { kind: query.kind } : {}),
       ...(query.status ? { status: query.status } : {}),
+      ...(query.paymentStatus ? { paymentStatus: query.paymentStatus } : {}),
       ...(query.scope === 'active' ? ACTIVE_WHERE : {}),
       ...(query.scope === 'today' ? { createdAt: { gte: indiaDayStart() } } : {}),
     };
@@ -509,6 +524,46 @@ export class OrdersService {
     return this.toBusinessOrder(updated, await this.historyOf([id]));
   }
 
+  /**
+   * The business records that an order was paid (cash, UPI, card at the counter). Separate from the
+   * order's status: an order can be paid before or after it is completed. A cancelled or rejected
+   * order cannot be paid; paying twice is a 409.
+   */
+  async recordPayment(
+    actor: AuthenticatedUser,
+    id: string,
+    dto: RecordPaymentRequest,
+    client: ClientContext,
+  ): Promise<BusinessOrder> {
+    const row = await this.ownedByBusiness(actor, id);
+    if (row.status === 'CANCELLED' || row.status === 'REJECTED') {
+      throw AppException.conflict('STATUS_CHANGED', 'A cancelled order cannot be paid.');
+    }
+    const paidAt = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      const changed = await tx.serviceOrder.updateMany({
+        where: { id, paymentStatus: 'UNPAID' },
+        data: { paymentStatus: 'PAID', paidAt, paidVia: dto.via },
+      });
+      if (changed.count === 0) {
+        throw AppException.conflict('STATUS_CHANGED', 'This order is already marked as paid.');
+      }
+      await this.invoices.markPaid(tx, id, paidAt);
+      await this.audit.record(
+        {
+          action: 'ORDER_PAYMENT_RECORDED',
+          actorId: actor.id,
+          entityType: 'ServiceOrder',
+          entityId: id,
+          metadata: { via: dto.via, amount: row.total },
+          client,
+        },
+        tx,
+      );
+    });
+    return this.businessOrder(actor, id);
+  }
+
   // ── Staff ──────────────────────────────────────────────────────────────────────────────────────
 
   async adminOrders(
@@ -547,9 +602,16 @@ export class OrdersService {
   ): Promise<OrderRow> {
     return this.prisma
       .$transaction(async (tx) => {
+        const now = new Date();
         const changed = await tx.serviceOrder.updateMany({
           where: { id: row.id, status: row.status },
-          data: { status: to, statusReason: reason, statusChangedAt: new Date() },
+          data: {
+            status: to,
+            statusReason: reason,
+            statusChangedAt: now,
+            ...(to === 'COMPLETED' ? { completedAt: now } : {}),
+            ...(to === 'CANCELLED' || to === 'REJECTED' ? { cancelledAt: now } : {}),
+          },
         });
         if (changed.count === 0) {
           throw AppException.conflict(
@@ -568,6 +630,7 @@ export class OrdersService {
           },
           tx,
         );
+        if (to === 'COMPLETED') await this.invoices.issueForOrder(tx, row.id);
         return tx.serviceOrder.findUniqueOrThrow({ where: { id: row.id }, select: ORDER_SELECT });
       })
       .then(async (updated) => {
@@ -640,6 +703,11 @@ export class OrdersService {
       discount: row.discount,
       total: row.total,
       paymentMethod: row.paymentMethod,
+      paymentStatus: row.paymentStatus,
+      paidAt: row.paidAt?.toISOString() ?? null,
+      paidVia: row.paidVia,
+      completedAt: row.completedAt?.toISOString() ?? null,
+      invoice: row.invoice,
       note: row.note,
       statusReason: row.statusReason,
       print: printDetailsOf(row),

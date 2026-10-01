@@ -1,7 +1,13 @@
 'use client';
 
 import { ApiClientError } from '@platform/api-client';
-import type { BusinessDashboard, BusinessListing, BusinessProfile } from '@platform/contracts';
+import type {
+  BusinessCapabilities,
+  BusinessCapability,
+  BusinessDashboard,
+  BusinessListing,
+  BusinessProfile,
+} from '@platform/contracts';
 import {
   createContext,
   useCallback,
@@ -12,10 +18,15 @@ import {
   type ReactNode,
 } from 'react';
 import { businessService } from '@/services/business.service';
+import { commerceService } from '@/services/commerce.service';
 
 interface Workspace {
   dashboard: BusinessDashboard;
   listings: BusinessListing[];
+  /** What this business can do: its type's modules. Empty while suspended. */
+  capabilities: BusinessCapabilities;
+  /** True when the business has at least one of these capabilities. */
+  can: (...anyOf: BusinessCapability[]) => boolean;
   /** Reload the profile, numbers and listings (after an edit elsewhere). */
   refresh: () => void;
   /** Swap in a saved profile without a reload. */
@@ -25,7 +36,19 @@ interface Workspace {
 type State =
   | { status: 'loading' }
   | { status: 'error'; message: string; requestId?: string }
-  | { status: 'ready'; dashboard: BusinessDashboard; listings: BusinessListing[] };
+  | {
+      status: 'ready';
+      dashboard: BusinessDashboard;
+      listings: BusinessListing[];
+      capabilities: BusinessCapabilities;
+    };
+
+const NO_CAPABILITIES: BusinessCapabilities = {
+  businessType: 'OTHER',
+  typeSource: 'DEFAULT',
+  capabilities: [],
+  overrides: [],
+};
 
 const WorkspaceContext = createContext<Workspace | null>(null);
 const StateContext = createContext<{ state: State; retry: () => void } | null>(null);
@@ -44,9 +67,19 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     Promise.all([
       businessService.dashboard(controller.signal),
       businessService.listings(controller.signal),
+      // A suspended business has no modules (its dashboard is read-only), not an error.
+      commerceService.capabilities(controller.signal).then(
+        (result) => result.data,
+        () => NO_CAPABILITIES,
+      ),
     ])
-      .then(([dashboard, listings]) =>
-        setState({ status: 'ready', dashboard: dashboard.data, listings: listings.data }),
+      .then(([dashboard, listings, capabilities]) =>
+        setState({
+          status: 'ready',
+          dashboard: dashboard.data,
+          listings: listings.data,
+          capabilities,
+        }),
       )
       .catch((caught: unknown) => {
         if (controller.signal.aborted) return;
@@ -72,7 +105,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const workspace = useMemo<Workspace | null>(
     () =>
       state.status === 'ready'
-        ? { dashboard: state.dashboard, listings: state.listings, refresh, setProfile }
+        ? {
+            dashboard: state.dashboard,
+            listings: state.listings,
+            capabilities: state.capabilities,
+            can: (...anyOf: BusinessCapability[]) =>
+              anyOf.some((capability) => state.capabilities.capabilities.includes(capability)),
+            refresh,
+            setProfile,
+          }
         : null,
     [state, refresh, setProfile],
   );

@@ -1,4 +1,6 @@
 import {
+  BUSINESS_TYPES,
+  DEFAULT_TYPE_CAPABILITIES,
   PERMISSIONS,
   PERMISSION_KEYS,
   ROLES,
@@ -23,6 +25,44 @@ export async function seedReference(db: Db): Promise<void> {
   await seedAmenities(db);
   await seedServiceTypes(db);
   await seedBusinessPlans(db);
+  await seedBusinessTypes(db);
+}
+
+/** Which business type each seeded category is (only set where staff have not chosen one). */
+const CATEGORY_BUSINESS_TYPES: Readonly<Record<string, (typeof BUSINESS_TYPES)[number]>> = {
+  restaurants: 'HOTEL_RESTAURANT',
+  cafes: 'HOTEL_RESTAURANT',
+  mess: 'MESS',
+  tiffin: 'MESS',
+  pg: 'PG',
+  hostels: 'PG',
+  rooms: 'ROOM_RENTAL',
+  libraries: 'LIBRARY',
+  'reading-rooms': 'LIBRARY',
+  xerox: 'PRINTING_XEROX',
+  printing: 'PRINTING_XEROX',
+  laundry: 'SERVICE',
+};
+
+/**
+ * Business types: each type's default capabilities (added when missing, never removed, so staff
+ * edits survive) and the type of the seeded categories.
+ */
+async function seedBusinessTypes(db: Db): Promise<void> {
+  for (const businessType of BUSINESS_TYPES) {
+    const existing = await db.businessTypeCapability.count({ where: { businessType } });
+    if (existing > 0) continue;
+    await db.businessTypeCapability.createMany({
+      data: DEFAULT_TYPE_CAPABILITIES[businessType].map((capability) => ({
+        businessType,
+        capability,
+      })),
+      skipDuplicates: true,
+    });
+  }
+  for (const [slug, businessType] of Object.entries(CATEGORY_BUSINESS_TYPES)) {
+    await db.category.updateMany({ where: { slug, businessType: null }, data: { businessType } });
+  }
 }
 
 async function seedBusinessPlans(db: Db): Promise<void> {

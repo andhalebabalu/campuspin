@@ -58,6 +58,11 @@ describe('Swagger documentation of business owners, enquiries and uploads (e2e)'
     'offers',
     'redemptions',
     'bookings',
+    // Capabilities, invoices, the dashboard summary and the table board (capability-based dashboard).
+    'capabilities',
+    'invoices',
+    'summary',
+    'tables',
   ];
 
   it('documents exactly the 9 business routes', () => {

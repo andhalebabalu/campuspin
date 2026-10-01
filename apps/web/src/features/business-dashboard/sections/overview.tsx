@@ -1,19 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { PageHeader } from '@/components/layout/app-shell';
 import { Skeleton } from '@/components/shared/skeleton';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { useSession } from '@/lib/auth/session-context';
-import { InsightsPanel, type DashboardTarget } from '@/features/business/components/insights-panel';
 import { Delta, DailyBars, ShareBars } from '@/components/shared/charts';
-import { DASHBOARD, TAB_TO_SECTION } from '../routes';
+import { DASHBOARD } from '../routes';
 import { ACTION_ROWS, useAnalytics } from '../use-analytics';
 import { useOwnedPlace } from '../use-owned-place';
 import { mainListing, useWorkspace } from '../workspace';
 import { PublicLinkCard } from './public-link';
+import { TodayPanel } from './today';
 
 export function Panel({
   title,
@@ -206,7 +205,6 @@ function Checklist() {
 }
 
 export function Overview() {
-  const router = useRouter();
   const { user } = useSession();
   const { dashboard } = useWorkspace();
   const { data, error } = useAnalytics(30);
@@ -231,6 +229,9 @@ export function Overview() {
         }
       />
       <StatusBanner />
+      <TodayPanel />
+
+      <h2 className="mb-3 text-lg font-semibold text-ink">Your page on CampusPin</h2>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-6">
         {data ? (
@@ -347,14 +348,6 @@ export function Overview() {
           <Checklist />
         </div>
         <PublicLinkCard compact />
-      </div>
-
-      <div className="mt-6">
-        <InsightsPanel
-          onOpen={(target: DashboardTarget) =>
-            router.push(TAB_TO_SECTION[target] ?? DASHBOARD.home)
-          }
-        />
       </div>
     </>
   );

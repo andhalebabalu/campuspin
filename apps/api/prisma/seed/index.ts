@@ -24,7 +24,8 @@ type SeededTable =
   | 'college_places'
   | 'promotions'
   | 'service_types'
-  | 'business_plans';
+  | 'business_plans'
+  | 'business_type_capabilities';
 
 /** Row counts of every table the seed touches. */
 export type SeedCounts = Record<SeededTable, number>;
@@ -54,6 +55,7 @@ export async function countSeededTables(db: Db): Promise<SeedCounts> {
     promotions: await db.promotion.count(),
     service_types: await db.serviceType.count(),
     business_plans: await db.businessPlan.count(),
+    business_type_capabilities: await db.businessTypeCapability.count(),
   };
 }
 

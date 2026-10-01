@@ -211,9 +211,13 @@ type View = (typeof VIEWS)[number]['id'];
 export function ServicesSection() {
   const router = useRouter();
   const params = useSearchParams();
-  const { listings } = useWorkspace();
+  const { listings, can } = useWorkspace();
+  // Menus belong to businesses that take orders (food or print).
+  const views = VIEWS.filter((item) =>
+    item.id === 'food' || item.id === 'daily' ? can('ORDER_MANAGEMENT') : true,
+  );
   const wanted = params.get('view');
-  const view: View = VIEWS.some((item) => item.id === wanted) ? (wanted as View) : 'prices';
+  const view: View = views.some((item) => item.id === wanted) ? (wanted as View) : 'prices';
 
   return (
     <>
@@ -226,7 +230,7 @@ export function ServicesSection() {
         aria-label="Services"
         className="mb-5 flex gap-1 overflow-x-auto rounded-xl bg-subtle p-1"
       >
-        {VIEWS.map((item) => (
+        {views.map((item) => (
           <button
             key={item.id}
             type="button"

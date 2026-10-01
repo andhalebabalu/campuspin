@@ -238,7 +238,10 @@ export function toPlaceDetail(
     priceOptions: row.priceOptions.map(toPriceOption),
     images: row.images.map(toImage),
     acceptsEnquiries: row.businessProfileId !== null,
-    nearbyColleges: colleges.map((link) => ({ ...link.college, distanceMeters: link.distanceMeters })),
+    nearbyColleges: colleges.map((link) => ({
+      ...link.college,
+      distanceMeters: link.distanceMeters,
+    })),
     business: toPlaceBusiness(business),
   };
 }

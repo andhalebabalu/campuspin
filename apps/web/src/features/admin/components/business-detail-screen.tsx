@@ -27,10 +27,12 @@ import { businessPagesService } from '@/services/business.service';
 import { placesService } from '@/services/places.service';
 import { ReasonDialog, dateFormat, errorMessage, type ReasonRequest } from './admin-ui';
 import { BusinessStatusBadges } from './business-badges';
+import { CapabilityPanel } from './capability-panel';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'listings', label: 'Listings' },
+  { id: 'capabilities', label: 'Type & capabilities' },
   { id: 'page', label: 'Webpage preview' },
   { id: 'history', label: 'History' },
   { id: 'edit', label: 'Edit' },
@@ -800,6 +802,8 @@ export function BusinessDetailScreen({ businessId }: { businessId: string }) {
             </table>
           </div>
         ))}
+
+      {tab === 'capabilities' && <CapabilityPanel businessId={business.id} />}
 
       {tab === 'page' && <PagePreview business={business} />}
 

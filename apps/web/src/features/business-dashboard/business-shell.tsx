@@ -1,8 +1,8 @@
 'use client';
 
-import type { BusinessProfile } from '@platform/contracts';
+import type { BusinessCapability, BusinessProfile } from '@platform/contracts';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { AppShell, type ShellGroup } from '@/components/layout/app-shell';
 import { ErrorState } from '@/components/shared/error-state';
@@ -10,53 +10,45 @@ import { Skeleton } from '@/components/shared/skeleton';
 import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
 import { useSession } from '@/lib/auth/session-context';
+import { GROUP_ORDER, MODULES, moduleAllowed, moduleOf } from './modules';
 import { DASHBOARD } from './routes';
 import { useWorkspaceState } from './workspace';
 
-function groupsFor(newEnquiries: number): ShellGroup[] {
-  return [
-    {
-      label: 'Overview',
-      items: [{ href: DASHBOARD.home, label: 'Dashboard', icon: 'grid', exact: true }],
-    },
-    {
-      label: 'My business',
-      items: [
-        { href: DASHBOARD.profile, label: 'Business profile', icon: 'store' },
-        { href: DASHBOARD.publicPage, label: 'Public page', icon: 'globe' },
-        { href: DASHBOARD.services, label: 'Services & menu', icon: 'receipt' },
-        { href: DASHBOARD.photos, label: 'Photos', icon: 'image' },
-        { href: DASHBOARD.hours, label: 'Opening hours', icon: 'clock' },
-        { href: DASHBOARD.location, label: 'Location', icon: 'pin' },
-        { href: DASHBOARD.listings, label: 'Listings', icon: 'layers' },
-      ],
-    },
-    {
-      label: 'Engagement',
-      items: [
-        { href: DASHBOARD.reviews, label: 'Reviews', icon: 'star' },
-        { href: DASHBOARD.enquiries, label: 'Enquiries', icon: 'chat', badge: newEnquiries },
-        { href: DASHBOARD.offers, label: 'Offers', icon: 'tag' },
-        { href: DASHBOARD.orders, label: 'Orders & bookings', icon: 'cart' },
-        { href: DASHBOARD.qr, label: 'QR codes', icon: 'qr' },
-      ],
-    },
-    {
-      label: 'Growth',
-      items: [
-        { href: DASHBOARD.analytics, label: 'Analytics', icon: 'chart' },
-        { href: DASHBOARD.share, label: 'Share page', icon: 'share' },
-      ],
-    },
-    {
-      label: 'Account',
-      items: [
-        { href: DASHBOARD.subscription, label: 'Subscription', icon: 'card' },
-        { href: DASHBOARD.settings, label: 'Settings', icon: 'settings' },
-        { href: DASHBOARD.help, label: 'Help & support', icon: 'help' },
-      ],
-    },
-  ];
+function groupsFor(
+  capabilities: readonly BusinessCapability[],
+  newEnquiries: number,
+): ShellGroup[] {
+  return GROUP_ORDER.map((group) => ({
+    label: group,
+    items: MODULES.filter(
+      (module) => module.group === group && moduleAllowed(module, capabilities),
+    ).map((module) => ({
+      href: module.href,
+      label: module.label,
+      icon: module.icon,
+      exact: module.exact,
+      ...(module.href === DASHBOARD.enquiries ? { badge: newEnquiries } : {}),
+    })),
+  })).filter((group) => group.items.length > 0);
+}
+
+/** A module the business's type does not include: said plainly, never a blank page. */
+function NotAvailable({ label }: { label: string }) {
+  return (
+    <div className="mx-auto flex max-w-md flex-col items-center gap-3 py-16 text-center">
+      <span className="flex size-12 items-center justify-center rounded-full bg-subtle text-muted">
+        <Icon name="ban" className="size-6" />
+      </span>
+      <h1 className="text-xl font-bold text-ink">{label} is not part of your business</h1>
+      <p className="text-sm text-body">
+        Modules depend on your type of business. If you think you need this one, contact the
+        CampusPin team.
+      </p>
+      <Link href={DASHBOARD.home} className="text-sm font-semibold text-action">
+        Back to your dashboard
+      </Link>
+    </div>
+  );
 }
 
 /** 🟢 Verified / 🟡 Pending / 🔴 Rejected or suspended: always what staff actually decided. */
@@ -117,6 +109,10 @@ function Account({ collapsed }: { collapsed: boolean }) {
 export function BusinessShell({ children }: { children: ReactNode }) {
   const { state, retry } = useWorkspaceState();
   const ready = state.status === 'ready' ? state : null;
+  const pathname = usePathname();
+  const current = moduleOf(pathname);
+  const blocked =
+    ready && current && !moduleAllowed(current, ready.capabilities.capabilities) ? current : null;
   const profile = ready?.dashboard.profile;
 
   const topBar = profile ? (
@@ -152,7 +148,10 @@ export function BusinessShell({ children }: { children: ReactNode }) {
     <AppShell
       title="Business"
       homeHref={DASHBOARD.home}
-      groups={groupsFor(ready?.dashboard.stats.enquiries.new ?? 0)}
+      groups={groupsFor(
+        ready?.capabilities.capabilities ?? [],
+        ready?.dashboard.stats.enquiries.new ?? 0,
+      )}
       topBar={topBar}
       account={(collapsed) => <Account collapsed={collapsed} />}
     >
@@ -168,6 +167,8 @@ export function BusinessShell({ children }: { children: ReactNode }) {
           </div>
           <Skeleton className="h-72 w-full" />
         </div>
+      ) : blocked ? (
+        <NotAvailable label={blocked.label} />
       ) : (
         children
       )}

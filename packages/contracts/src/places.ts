@@ -281,17 +281,19 @@ export type PlaceDetail = z.infer<typeof placeDetailSchema>;
 
 // ── Admin ────────────────────────────────────────────────────────────────────────────────────────
 
-export const adminPlaceSchema = placeDetailSchema.omit({ business: true, nearbyColleges: true }).extend({
-  status: placeStatusSchema,
-  verificationStatus: verificationStatusSchema,
-  lastVerifiedAt: z.string().nullable(),
-  /** Development sample data. Never true for a real place. */
-  isDemo: z.boolean(),
-  createdById: z.string(),
-  publishedAt: z.string().nullable(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
+export const adminPlaceSchema = placeDetailSchema
+  .omit({ business: true, nearbyColleges: true })
+  .extend({
+    status: placeStatusSchema,
+    verificationStatus: verificationStatusSchema,
+    lastVerifiedAt: z.string().nullable(),
+    /** Development sample data. Never true for a real place. */
+    isDemo: z.boolean(),
+    createdById: z.string(),
+    publishedAt: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  });
 export type AdminPlace = z.infer<typeof adminPlaceSchema>;
 
 export const adminPlaceListItemSchema = adminPlaceSchema.omit({
@@ -464,17 +466,17 @@ export type CreatePlaceRequest = z.output<typeof createPlaceRequestSchema>;
  */
 const updatePlaceFields = {
   name: placeFields.name.optional(),
-    description: placeFields.description.nullable().optional(),
-    address: placeFields.address.optional(),
-    city: placeFields.city.optional(),
-    state: placeFields.state.optional(),
-    country: placeFields.country.optional(),
-    latitude: latitude.optional(),
-    longitude: longitude.optional(),
-    phone: placeFields.phone.nullable().optional(),
-    email: placeFields.email.nullable().optional(),
-    website: placeFields.website.nullable().optional(),
-    googleMapsUrl: placeFields.googleMapsUrl.nullable().optional(),
+  description: placeFields.description.nullable().optional(),
+  address: placeFields.address.optional(),
+  city: placeFields.city.optional(),
+  state: placeFields.state.optional(),
+  country: placeFields.country.optional(),
+  latitude: latitude.optional(),
+  longitude: longitude.optional(),
+  phone: placeFields.phone.nullable().optional(),
+  email: placeFields.email.nullable().optional(),
+  website: placeFields.website.nullable().optional(),
+  googleMapsUrl: placeFields.googleMapsUrl.nullable().optional(),
   categoryIds: categoryIdsSchema.optional(),
   amenityIds: amenityIdsSchema.optional(),
   hours: hoursListSchema.optional(),

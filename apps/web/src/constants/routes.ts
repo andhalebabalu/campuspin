@@ -42,6 +42,8 @@ export const ROUTES = {
   placeRequest: (slug: string, key: string) => `/places/${slug}/request/${key}`,
   orders: '/orders',
   order: (id: string) => `/orders/${id}`,
+  /** A student's invoice for one of their orders. */
+  invoice: (id: string) => `/invoices/${id}`,
   request: (id: string) => `/requests/${id}`,
   offers: '/offers',
   community: '/community',
@@ -77,6 +79,7 @@ export const ROUTES = {
   adminServices: '/admin/services',
   adminBusiness: (id: string) => `/admin/businesses/${id}`,
   adminPlans: '/admin/plans',
+  adminBusinessTypes: '/admin/business-types',
   adminSubscriptions: '/admin/subscriptions',
   adminAuditLogs: '/admin/audit-logs',
   adminBusinessAnalytics: '/admin/business-analytics',

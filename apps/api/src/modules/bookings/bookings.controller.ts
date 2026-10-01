@@ -48,6 +48,7 @@ import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Permissions } from '../auth/decorators/permissions.decorator.js';
 import { Public } from '../auth/decorators/public.decorator.js';
+import { RequiresCapability } from '../capabilities/requires-capability.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { BookingsService } from './bookings.service.js';
 
@@ -153,6 +154,7 @@ export class BookingsController {
 @ApiTags('Business: Bookings')
 @ApiBearerAuth()
 @Roles('BUSINESS_OWNER')
+@RequiresCapability('BOOKING', 'APPOINTMENT')
 @Controller('business')
 export class BusinessBookingsController {
   constructor(private readonly bookings: BookingsService) {}

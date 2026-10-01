@@ -138,6 +138,33 @@ export const PAYMENT_LABELS: Readonly<Record<PaymentMethod, string>> = {
   CASH_AT_TABLE: 'Pay at table (cash)',
 };
 
+/** Whether the order is paid: separate from its status (completed does not mean paid). */
+export const PAYMENT_STATUSES = ['UNPAID', 'PAID', 'REFUNDED'] as const;
+export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+export const paymentStatusSchema = z.enum(PAYMENT_STATUSES);
+export const PAYMENT_STATUS_LABELS: Readonly<Record<PaymentStatus, string>> = {
+  UNPAID: 'Unpaid',
+  PAID: 'Paid',
+  REFUNDED: 'Refunded',
+};
+
+/** How an order was actually paid. ONLINE is reserved for a payment gateway. */
+export const PAYMENT_CHANNELS = ['CASH', 'UPI', 'CARD', 'ONLINE'] as const;
+export type PaymentChannel = (typeof PAYMENT_CHANNELS)[number];
+export const paymentChannelSchema = z.enum(PAYMENT_CHANNELS);
+export const PAYMENT_CHANNEL_LABELS: Readonly<Record<PaymentChannel, string>> = {
+  CASH: 'Cash',
+  UPI: 'UPI',
+  CARD: 'Card',
+  ONLINE: 'Online',
+};
+
+/** `POST /business/orders/:id/payment`: the business records how the order was paid. */
+export const recordPaymentSchema = z.strictObject({
+  via: z.enum(['CASH', 'UPI', 'CARD']),
+});
+export type RecordPaymentRequest = z.output<typeof recordPaymentSchema>;
+
 export const MAX_ORDER_LINES = 30;
 export const MAX_ITEM_QUANTITY = 20;
 
@@ -206,6 +233,18 @@ export const orderSchema = z.object({
   discount: z.number().int(),
   total: z.number().int(),
   paymentMethod: z.enum(PAYMENT_METHODS),
+  paymentStatus: paymentStatusSchema,
+  paidAt: z.string().nullable(),
+  paidVia: paymentChannelSchema.nullable(),
+  completedAt: z.string().nullable(),
+  /** The order's invoice, once it has one (issued when a business with invoicing completes it). */
+  invoice: z
+    .object({
+      id: z.string(),
+      number: z.string(),
+      status: z.enum(['DRAFT', 'ISSUED', 'PAID', 'CANCELLED']),
+    })
+    .nullable(),
   note: z.string().nullable(),
   statusReason: z.string().nullable(),
   print: printDetailsSchema.nullable(),
@@ -238,6 +277,7 @@ export const listBusinessOrdersQuerySchema = paginationQuerySchema.extend({
   scope: z.enum(ORDER_SCOPES).default('active'),
   kind: orderKindSchema.optional(),
   status: orderStatusSchema.optional(),
+  paymentStatus: paymentStatusSchema.optional(),
   placeId: uuidSchema.optional(),
 });
 export type ListBusinessOrdersQuery = z.output<typeof listBusinessOrdersQuerySchema>;

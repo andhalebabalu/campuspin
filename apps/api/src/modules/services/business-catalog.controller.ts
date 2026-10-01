@@ -38,6 +38,7 @@ import { ResponseMessage } from '../../common/http/response-message.decorator.js
 import { ApiEnvelopeResponse, ApiErrorResponses } from '../../common/swagger/api-responses.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { RequiresCapability } from '../capabilities/requires-capability.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { CatalogService } from './catalog.service.js';
 import { TablesQrService } from './tables-qr.service.js';
@@ -132,6 +133,7 @@ export class BusinessCatalogController {
     return null;
   }
 
+  @RequiresCapability('TABLE_ORDER')
   @Get('places/:placeId/tables')
   @ResponseMessage('Tables retrieved')
   @ApiOperation({
@@ -147,6 +149,7 @@ export class BusinessCatalogController {
     return this.tablesQr.tables(actor, placeId);
   }
 
+  @RequiresCapability('TABLE_ORDER')
   @Post('places/:placeId/tables')
   @ResponseMessage('Tables added')
   @ApiOperation({
@@ -165,6 +168,7 @@ export class BusinessCatalogController {
     return this.tablesQr.createTables(actor, placeId, body, client);
   }
 
+  @RequiresCapability('TABLE_ORDER')
   @Patch('places/:placeId/tables/:tableId')
   @ResponseMessage('Table updated')
   @ApiOperation({ summary: 'Rename, reorder or switch off a table' })
@@ -180,6 +184,7 @@ export class BusinessCatalogController {
     return this.tablesQr.updateTable(actor, placeId, tableId, body, client);
   }
 
+  @RequiresCapability('TABLE_ORDER')
   @Delete('places/:placeId/tables/:tableId')
   @ResponseMessage('Table deleted')
   @ApiOperation({ summary: 'Delete a table', description: 'Its QR codes stop working.' })

@@ -184,7 +184,11 @@ export type AdminListAuditQuery = z.output<typeof adminListAuditQuerySchema>;
 
 // ── Ownership check ──────────────────────────────────────────────────────────────────────────────
 
-export const OWNERSHIP_PROBLEMS = ['OWNER_IS_STUDENT', 'OWNER_IS_STAFF', 'OWNER_NOT_BUSINESS'] as const;
+export const OWNERSHIP_PROBLEMS = [
+  'OWNER_IS_STUDENT',
+  'OWNER_IS_STAFF',
+  'OWNER_NOT_BUSINESS',
+] as const;
 
 /**
  * `GET /admin/businesses/ownership-check`: businesses whose owner is not a plain business account

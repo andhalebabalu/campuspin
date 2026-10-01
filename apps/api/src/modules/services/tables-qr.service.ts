@@ -11,6 +11,7 @@ import {
   type QrResolution,
   type UpdateTableRequest,
 } from '@platform/contracts';
+import { CapabilitiesService } from '../capabilities/capabilities.service.js';
 import { AppException } from '../../common/http/app-exception.js';
 import { Paginated, pageWindow } from '../../common/http/paginated.js';
 import type { ClientContext } from '../../common/http/request-client.decorator.js';
@@ -65,6 +66,7 @@ export class TablesQrService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly access: BusinessAccessService,
+    private readonly capabilities: CapabilitiesService,
     private readonly audit: AuditService,
   ) {}
 
@@ -215,6 +217,8 @@ export class TablesQrService {
   ): Promise<OwnerQrCode> {
     const place = await this.access.placeOf(actor, placeId);
     const tableId = dto.kind === 'TABLE' ? dto.tableId : null;
+    if (dto.kind === 'TABLE')
+      await this.capabilities.require(place.businessProfileId, ['TABLE_ORDER']);
     if (tableId) {
       const table = await this.prisma.placeTable.findFirst({
         where: { id: tableId, placeId: place.id },
