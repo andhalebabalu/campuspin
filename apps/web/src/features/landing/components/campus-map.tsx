@@ -49,10 +49,32 @@ function MapBackdrop() {
       <circle cx="236" cy="182" r="6" className="fill-accent-400/25" />
       <path d="M0 262 Q 40 240 80 262 T 150 270 L150 300 L0 300Z" className="fill-primary-200/60" />
       {/* main roads */}
-      <path d="M0 185 C 120 175 250 225 400 188" className="stroke-primary-200" strokeWidth="9" fill="none" />
-      <path d="M200 0 C 195 90 205 180 196 300" className="stroke-primary-200" strokeWidth="9" fill="none" />
-      <path d="M0 185 C 120 175 250 225 400 188" className="stroke-white" strokeWidth="2" strokeDasharray="6 8" fill="none" />
-      <path d="M200 0 C 195 90 205 180 196 300" className="stroke-white" strokeWidth="2" strokeDasharray="6 8" fill="none" />
+      <path
+        d="M0 185 C 120 175 250 225 400 188"
+        className="stroke-primary-200"
+        strokeWidth="9"
+        fill="none"
+      />
+      <path
+        d="M200 0 C 195 90 205 180 196 300"
+        className="stroke-primary-200"
+        strokeWidth="9"
+        fill="none"
+      />
+      <path
+        d="M0 185 C 120 175 250 225 400 188"
+        className="stroke-white"
+        strokeWidth="2"
+        strokeDasharray="6 8"
+        fill="none"
+      />
+      <path
+        d="M200 0 C 195 90 205 180 196 300"
+        className="stroke-white"
+        strokeWidth="2"
+        strokeDasharray="6 8"
+        fill="none"
+      />
     </svg>
   );
 }

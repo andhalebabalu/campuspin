@@ -2,9 +2,9 @@ import Link from 'next/link';
 import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
 import {
-  ComingSoonBadge,
   Container,
   CTA_CLASSES,
+  CTA_OUTLINE_CLASSES,
   IconChip,
   SectionHeading,
 } from '@/features/landing/components/primitives';
@@ -84,26 +84,33 @@ export function CommunitySection() {
                 It&rsquo;s your campus community.
               </>
             }
-            lead="Connect with students, discover opportunities and make campus life easier. These are on our roadmap, and you can already help by suggesting the places you know."
+            lead="Ask questions, share notes, find events and help each other out. Posts stay inside your college unless you make them public, and only verified students can post."
           />
           <ul className="grid gap-3 sm:grid-cols-2">
             {COMMUNITY_FEATURES.map((feature) => (
-              <li
-                key={feature.label}
-                className="flex items-center gap-3 rounded-lg border border-line bg-surface p-3"
-              >
-                <IconChip icon={feature.icon} tone={feature.tone} size="sm" />
-                <span className="flex-1 text-sm font-semibold text-primary-800">
-                  {feature.label}
-                </span>
-                <ComingSoonBadge />
+              <li key={feature.label}>
+                <Link
+                  href={ROUTES.community}
+                  className="flex h-full items-center gap-3 rounded-lg border border-line bg-surface p-3 transition-colors hover:border-primary-200 hover:bg-primary-50/40"
+                >
+                  <IconChip icon={feature.icon} tone={feature.tone} size="sm" />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="text-sm font-semibold text-primary-800">{feature.label}</span>
+                    <span className="text-xs text-muted">{feature.hint}</span>
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
-          <Link href={ROUTES.suggestPlace} className={`${CTA_CLASSES} w-fit`}>
-            Suggest a place
-            <Icon name="arrowRight" className="size-4" />
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link href={ROUTES.community} className={CTA_CLASSES}>
+              Open the community
+              <Icon name="arrowRight" className="size-4" />
+            </Link>
+            <Link href={ROUTES.suggestPlace} className={CTA_OUTLINE_CLASSES}>
+              Suggest a place
+            </Link>
+          </div>
         </div>
       </Container>
     </section>
@@ -119,23 +126,33 @@ export function MarketplaceSection() {
             id="marketplace-title"
             eyebrow="Marketplace"
             title="Buy. Sell. Share."
-            lead="Soon: great deals from your fellow students, right next to campus."
+            lead="Buy and sell books, notes, cycles and hostel gear with verified students from your own campus. Chat in the app, meet on campus."
           />
-          <ComingSoonBadge />
+          <Link href={ROUTES.marketplace} className={`${CTA_CLASSES} w-fit`}>
+            Browse the marketplace
+            <Icon name="arrowRight" className="size-4" />
+          </Link>
         </div>
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {MARKETPLACE_KINDS.map((kind) => (
-            <li
-              key={kind.label}
-              className="flex flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-xs"
-            >
-              <div className={`flex aspect-square items-center justify-center ${TONES[kind.tone]}`}>
-                <Icon name={kind.icon} className="size-12" />
-              </div>
-              <div className="flex flex-col gap-1 p-3">
-                <span className="text-sm font-bold text-primary-800">{kind.label}</span>
-                <span className="text-xs text-muted">Listings coming soon</span>
-              </div>
+            <li key={kind.label}>
+              <Link
+                href={ROUTES.marketplace}
+                className="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <span
+                  className={`flex aspect-square items-center justify-center ${TONES[kind.tone]}`}
+                >
+                  <Icon
+                    name={kind.icon}
+                    className="size-12 transition-transform group-hover:scale-110"
+                  />
+                </span>
+                <span className="flex flex-col gap-1 p-3">
+                  <span className="text-sm font-bold text-primary-800">{kind.label}</span>
+                  <span className="text-xs text-muted">Verified students only</span>
+                </span>
+              </Link>
             </li>
           ))}
         </ul>

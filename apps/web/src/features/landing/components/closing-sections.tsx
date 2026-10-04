@@ -5,24 +5,25 @@ import { ROUTES } from '@/constants/routes';
 import {
   Container,
   CTA_CLASSES,
+  CTA_OUTLINE_CLASSES,
   IconChip,
   SectionHeading,
 } from '@/features/landing/components/primitives';
 import { BUSINESS_BENEFITS, WHY_US } from '@/features/landing/lib/landing-content';
 
 const SAMPLE_KPIS = [
-  { label: 'Profile views', value: '2,468', delta: '+12%' },
-  { label: 'Enquiries', value: '186', delta: '+8%' },
+  { label: "Today's orders", value: '42', delta: '+12%' },
+  { label: 'Revenue', value: '₹6,480', delta: '+8%' },
   { label: 'Rating', value: '4.6', delta: '+0.2' },
 ];
 
-const SAMPLE_ENQUIRIES = [
-  { label: 'Mess & tiffin', when: '2 hours ago', icon: 'utensils', tone: 'amber' },
-  { label: 'Room for rent', when: '4 hours ago', icon: 'bed', tone: 'blue' },
-  { label: 'Gym membership', when: '5 hours ago', icon: 'dumbbell', tone: 'violet' },
+const SAMPLE_ORDERS = [
+  { label: 'Table 4 · 2 thalis', when: 'Preparing', icon: 'utensils', tone: 'amber' },
+  { label: 'Print · 24 pages', when: 'Ready', icon: 'printer', tone: 'blue' },
+  { label: 'PG enquiry', when: 'New', icon: 'bed', tone: 'violet' },
 ] as const;
 
-/** A picture of the upcoming business dashboard. Sample numbers, labelled as such. */
+/** A picture of the business dashboard. Sample numbers, labelled as such. */
 function DashboardPreview() {
   return (
     <figure className="overflow-hidden rounded-xl border border-line bg-surface shadow-lg">
@@ -36,7 +37,7 @@ function DashboardPreview() {
       </div>
       <div className="grid sm:grid-cols-[120px_1fr]">
         <ul className="hidden flex-col gap-1 border-r border-line p-2 text-xs text-body sm:flex">
-          {['Dashboard', 'Listings', 'Enquiries', 'Reviews', 'Profile', 'Settings'].map(
+          {['Dashboard', 'Orders', 'Invoices', 'Enquiries', 'QR codes', 'Reviews'].map(
             (item, index) => (
               <li
                 key={item}
@@ -59,7 +60,7 @@ function DashboardPreview() {
           </div>
           <div className="grid gap-3 md:grid-cols-[1.4fr_1fr]">
             <div className="rounded-lg border border-line p-3">
-              <p className="text-xs font-semibold text-ink">Views & enquiries</p>
+              <p className="text-xs font-semibold text-ink">Orders this week</p>
               <svg viewBox="0 0 200 80" className="mt-2 h-24 w-full" aria-hidden="true">
                 <path
                   d="M0 70 C 20 60 30 40 50 45 S 80 20 100 35 S 140 10 160 25 S 190 15 200 12 V80 H0Z"
@@ -81,8 +82,8 @@ function DashboardPreview() {
               </svg>
             </div>
             <ul className="flex flex-col gap-2 rounded-lg border border-line p-3">
-              <li className="text-xs font-semibold text-ink">Recent enquiries</li>
-              {SAMPLE_ENQUIRIES.map((row) => (
+              <li className="text-xs font-semibold text-ink">Live now</li>
+              {SAMPLE_ORDERS.map((row) => (
                 <li key={row.label} className="flex items-center gap-2">
                   <IconChip icon={row.icon} tone={row.tone} size="sm" className="!size-7" />
                   <span className="flex flex-col">
@@ -96,7 +97,7 @@ function DashboardPreview() {
         </div>
       </div>
       <figcaption className="sr-only">
-        Preview of the upcoming business dashboard, with sample numbers.
+        Preview of the business dashboard, with sample numbers.
       </figcaption>
     </figure>
   );
@@ -121,7 +122,7 @@ export function BusinessSection() {
                 around campus.
               </>
             }
-            lead="Reach students who are actively looking for the products and services you offer."
+            lead="Mess, xerox shop, PG, library or cafe: get a page students can find, and run orders, bookings and invoices from one dashboard that fits the kind of business you run."
           />
           <ul className="flex flex-col gap-2.5">
             {BUSINESS_BENEFITS.map((benefit) => (
@@ -131,10 +132,15 @@ export function BusinessSection() {
               </li>
             ))}
           </ul>
-          <Link href={ROUTES.registerBusiness} className={`${CTA_CLASSES} w-fit`}>
-            List your business
-            <Icon name="arrowRight" className="size-4" />
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link href={ROUTES.registerBusiness} className={CTA_CLASSES}>
+              List your business
+              <Icon name="arrowRight" className="size-4" />
+            </Link>
+            <Link href={ROUTES.businessLogin} className={CTA_OUTLINE_CLASSES}>
+              Business login
+            </Link>
+          </div>
         </div>
         <DashboardPreview />
       </Container>

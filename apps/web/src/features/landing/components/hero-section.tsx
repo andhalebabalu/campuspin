@@ -62,7 +62,7 @@ export function HeroSection({ colleges, stats }: { colleges: CollegeCard[]; stat
               Explore your campus
               <Icon name="arrowRight" className="size-4" />
             </Link>
-            <Link href={ROUTES.suggestPlace} className={CTA_OUTLINE_CLASSES}>
+            <Link href={ROUTES.registerBusiness} className={CTA_OUTLINE_CLASSES}>
               List your business
             </Link>
           </div>

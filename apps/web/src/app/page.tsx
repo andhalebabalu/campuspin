@@ -12,9 +12,12 @@ import {
 import {
   CategoryGridSection,
   HowItWorksSection,
-  MapDiscoverySection,
 } from '@/features/landing/components/discovery-sections';
 import { HeroSection } from '@/features/landing/components/hero-section';
+import {
+  DailyServicesSection,
+  LatestPlacesSection,
+} from '@/features/landing/components/services-sections';
 import { collegesService } from '@/services/colleges.service';
 import { placesService } from '@/services/places.service';
 
@@ -25,18 +28,16 @@ export const metadata: Metadata = {
 
 /**
  * The landing page. Everything on it that looks like data is real (the college picker, the counts,
- * the featured place) and every tile, chip and map pin links into a working search. Each fetch
+ * the newest places) and every tile, chip and map pin links into a working page or search. Each fetch
  * fails soft: if the API is down the page still renders, just without the live bits.
  */
 export default async function HomePage() {
   const [colleges, places] = await Promise.all([
     collegesService.list({ sort: 'popular', limit: 50 }).catch(() => null),
-    placesService.list({ sort: 'newest', limit: 6 }).catch(() => null),
+    placesService.list({ sort: 'newest', limit: 8 }).catch(() => null),
   ]);
 
   const collegeOptions = [...(colleges?.data ?? [])].sort((a, b) => a.name.localeCompare(b.name));
-  const featured =
-    places?.data.find((place) => place.verified) ?? places?.data[0] ?? null;
 
   return (
     <main className="flex-1">
@@ -49,7 +50,8 @@ export default async function HomePage() {
       />
       <HowItWorksSection />
       <CategoryGridSection />
-      <MapDiscoverySection featured={featured} />
+      <LatestPlacesSection places={places?.data ?? []} />
+      <DailyServicesSection />
       <CommunitySection />
       <MarketplaceSection />
       <BusinessSection />

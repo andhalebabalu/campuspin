@@ -85,18 +85,18 @@ export const CATEGORY_TILES: CategoryTile[] = [
     slug: 'laundry',
   },
   {
-    label: 'Printing & Xerox',
-    blurb: 'Documents and more',
+    label: 'Xerox & Printing',
+    blurb: 'Copies, prints and binding',
     icon: 'printer',
     tone: 'blue',
-    slug: 'printing',
+    slug: 'xerox',
   },
   {
-    label: 'Rentals',
-    blurb: 'Bikes, cars and more',
-    icon: 'bike',
+    label: 'Stationery',
+    blurb: 'Books, files and drawing kits',
+    icon: 'file',
     tone: 'green',
-    slug: 'bike-rentals',
+    slug: 'stationery',
   },
   {
     label: 'Grocery',
@@ -107,7 +107,7 @@ export const CATEGORY_TILES: CategoryTile[] = [
   },
   {
     label: 'More Categories',
-    blurb: 'Transport, reading rooms and more',
+    blurb: 'Transport, CSC centres, rentals',
     icon: 'grid',
     tone: 'violet',
     slug: null,
@@ -120,10 +120,10 @@ export const QUICK_CATEGORIES: Array<Pick<CategoryTile, 'label' | 'icon' | 'tone
   { label: 'PG', icon: 'building', tone: 'violet', slug: 'pg' },
   { label: 'Mess', icon: 'utensils', tone: 'amber', slug: 'mess' },
   { label: 'Library', icon: 'book', tone: 'teal', slug: 'libraries' },
-  { label: 'Gym', icon: 'dumbbell', tone: 'violet', slug: 'gyms' },
+  { label: 'Xerox', icon: 'printer', tone: 'blue', slug: 'xerox' },
+  { label: 'Stationery', icon: 'file', tone: 'green', slug: 'stationery' },
   { label: 'Medical', icon: 'medical', tone: 'rose', slug: 'medical' },
-  { label: 'Printing', icon: 'printer', tone: 'blue', slug: 'printing' },
-  { label: 'Rentals', icon: 'bike', tone: 'green', slug: 'bike-rentals' },
+  { label: 'Food', icon: 'coffee', tone: 'rose', slug: 'restaurants' },
   { label: 'More', icon: 'more', tone: 'blue', slug: null },
 ];
 
@@ -141,8 +141,8 @@ export const HOW_IT_WORKS: Array<{ title: string; body: string; icon: IconName; 
     tone: 'blue',
   },
   {
-    title: 'Connect',
-    body: 'View details, prices, hours and contact businesses directly.',
+    title: 'Order & connect',
+    body: 'Order food, send prints, enquire or book, right from the listing.',
     icon: 'users',
     tone: 'violet',
   },
@@ -154,32 +154,75 @@ export const HOW_IT_WORKS: Array<{ title: string; body: string; icon: IconName; 
   },
 ];
 
-/** Community features on the roadmap. Shown with a "Coming soon" badge until they ship. */
-export const COMMUNITY_FEATURES: Array<{ label: string; icon: IconName; tone: Tone }> = [
-  { label: 'Student Marketplace', icon: 'cart', tone: 'green' },
-  { label: 'Roommate Finder', icon: 'users', tone: 'blue' },
-  { label: 'Campus Groups', icon: 'chats', tone: 'teal' },
-  { label: 'Events', icon: 'calendar', tone: 'violet' },
-  { label: 'Lost & Found', icon: 'pin', tone: 'rose' },
-  { label: 'Student Discussions', icon: 'chat', tone: 'blue' },
+/** What the student community has today: the post categories of the community feed. */
+export const COMMUNITY_FEATURES: Array<{
+  label: string;
+  hint: string;
+  icon: IconName;
+  tone: Tone;
+}> = [
+  { label: 'Discussions', hint: 'Ask your campus anything', icon: 'chat', tone: 'blue' },
+  { label: 'Study & notes', hint: 'Share notes and doubts', icon: 'book', tone: 'teal' },
+  { label: 'Events', hint: 'Fests, clubs and meet-ups', icon: 'calendar', tone: 'violet' },
+  { label: 'Jobs & internships', hint: 'Openings near campus', icon: 'target', tone: 'amber' },
+  { label: 'Lost & found', hint: 'Lost it? Found it? Post it', icon: 'pin', tone: 'rose' },
+  { label: 'Announcements', hint: 'From your college community', icon: 'bell', tone: 'green' },
 ];
 
-/** Item kinds the marketplace will carry. No listings exist yet, so no prices are shown. */
+/** Marketplace categories students trade in most (a subset of the real listing categories). */
 export const MARKETPLACE_KINDS: Array<{ label: string; icon: IconName; tone: Tone }> = [
   { label: 'Books & notes', icon: 'book', tone: 'amber' },
-  { label: 'Bicycles', icon: 'bike', tone: 'green' },
-  { label: 'Calculators', icon: 'calculator', tone: 'blue' },
-  { label: 'Laptops', icon: 'laptop', tone: 'violet' },
-  { label: 'Hostel furniture', icon: 'bed', tone: 'rose' },
+  { label: 'Cycles', icon: 'bike', tone: 'green' },
+  { label: 'Electronics', icon: 'laptop', tone: 'violet' },
+  { label: 'Hostel essentials', icon: 'bed', tone: 'rose' },
+  { label: 'Stationery', icon: 'calculator', tone: 'blue' },
+];
+
+/** The everyday things a student can do on a listing, each a real flow in the app. */
+export const DAILY_SERVICES: Array<{
+  title: string;
+  body: string;
+  icon: IconName;
+  tone: Tone;
+  slug: string;
+}> = [
+  {
+    title: 'Order from the mess',
+    body: "See today's menu, order a meal or tiffin and pick it up when it is ready.",
+    icon: 'utensils',
+    tone: 'amber',
+    slug: 'mess',
+  },
+  {
+    title: 'Send a print',
+    body: 'Upload a PDF to a xerox shop, choose copies and binding, collect it on the way.',
+    icon: 'printer',
+    tone: 'blue',
+    slug: 'xerox',
+  },
+  {
+    title: 'Order from your table',
+    body: 'Scan the QR code on a restaurant table, order and call the waiter from your phone.',
+    icon: 'qr',
+    tone: 'rose',
+    slug: 'restaurants',
+  },
+  {
+    title: 'Enquire and book',
+    body: 'Ask a PG about rent, book a library seat or a laundry pickup without a phone call.',
+    icon: 'calendar',
+    tone: 'violet',
+    slug: 'pg',
+  },
 ];
 
 export const BUSINESS_BENEFITS = [
-  'Get your place listed',
-  'Reach nearby students',
-  'Show prices, hours and amenities',
-  'Get the verified badge',
-  'Be found in campus search',
-  'Build trust with students',
+  'Your own business page and QR codes',
+  'Take orders and table orders online',
+  'Invoices and payment tracking built in',
+  'Enquiries and bookings in one inbox',
+  'Daily menu, offers and reviews',
+  'Free to start, verified badge on approval',
 ];
 
 export const WHY_US: Array<{ title: string; body: string; icon: IconName; tone: Tone }> = [
@@ -190,8 +233,8 @@ export const WHY_US: Array<{ title: string; body: string; icon: IconName; tone: 
     tone: 'blue',
   },
   {
-    title: 'Trusted listings',
-    body: 'Verified businesses, reviewed by our team before they go live.',
+    title: 'Honest listings',
+    body: 'Verified businesses carry a badge; places from open map data are marked unverified.',
     icon: 'shield',
     tone: 'green',
   },
