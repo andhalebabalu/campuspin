@@ -42,6 +42,7 @@ const CATEGORY_BUSINESS_TYPES: Readonly<Record<string, (typeof BUSINESS_TYPES)[n
   xerox: 'PRINTING_XEROX',
   printing: 'PRINTING_XEROX',
   laundry: 'SERVICE',
+  csc: 'SERVICE',
 };
 
 /**

@@ -221,7 +221,7 @@ export const CATEGORY_GROUPS: readonly CategoryGroupSeed[] = [
     slug: 'study',
     name: 'Study',
     icon: 'book-open',
-    description: 'Libraries, reading rooms, xerox and printing.',
+    description: 'Libraries, reading rooms, xerox, printing and stationery.',
     children: [
       {
         slug: 'libraries',
@@ -301,13 +301,24 @@ export const CATEGORY_GROUPS: readonly CategoryGroupSeed[] = [
         ],
         ratingDimensions: serviceDims,
       },
+      {
+        slug: 'stationery',
+        name: 'Stationery',
+        icon: 'pencil',
+        description: 'Stationery and book shops.',
+        attributes: [
+          yesNo('sells_books', 'Sells books'),
+          yesNo('engineering_supplies', 'Engineering and drawing supplies'),
+        ],
+        ratingDimensions: serviceDims,
+      },
     ],
   },
   {
     slug: 'daily-needs',
     name: 'Daily Needs',
     icon: 'shopping-basket',
-    description: 'Laundry, gyms, grocery and medical stores.',
+    description: 'Laundry, gyms, grocery, medical stores and CSC centres.',
     children: [
       {
         slug: 'laundry',
@@ -381,6 +392,29 @@ export const CATEGORY_GROUPS: readonly CategoryGroupSeed[] = [
           ['price', 'Price'],
           ['service', 'Service'],
         ),
+      },
+      {
+        slug: 'csc',
+        name: 'CSC / Online Services',
+        icon: 'landmark',
+        description:
+          'Common Service Centres, Aaple Sarkar Seva Kendras and online form, certificate and Aadhaar services.',
+        attributes: [
+          {
+            key: 'services',
+            name: 'Services',
+            dataType: 'MULTI_ENUM',
+            filterable: true,
+            options: [
+              { value: 'online_forms', label: 'Online forms and admissions' },
+              { value: 'certificates', label: 'Certificates (income, caste, domicile)' },
+              { value: 'aadhaar_pan', label: 'Aadhaar and PAN' },
+              { value: 'scholarship', label: 'Scholarship applications' },
+              { value: 'bill_payment', label: 'Bill payments and recharge' },
+            ],
+          },
+        ],
+        ratingDimensions: serviceDims,
       },
     ],
   },

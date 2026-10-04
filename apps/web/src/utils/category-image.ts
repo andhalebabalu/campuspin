@@ -14,6 +14,7 @@ const IMAGE_BY_CATEGORY: Readonly<Record<string, string>> = {
   'reading-rooms': 'reading',
   xerox: 'xerox',
   printing: 'stationery',
+  stationery: 'stationery',
   laundry: 'laundry',
   gyms: 'gyms',
   grocery: 'grocery',

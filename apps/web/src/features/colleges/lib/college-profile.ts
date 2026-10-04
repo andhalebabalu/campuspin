@@ -91,7 +91,8 @@ export interface AmenityGroup {
   icon: IconName;
   /** Tailwind classes for the round icon badge. */
   tone: string;
-  image: string;
+  /** A stock photo; without one the card shows the icon on its tone. */
+  image: string | null;
   categories: readonly string[];
 }
 
@@ -158,7 +159,7 @@ export const AMENITY_GROUPS: readonly AmenityGroup[] = [
     icon: 'printer',
     tone: 'bg-success-50 text-success-700',
     image: '/images/amenities/xerox.jpg',
-    categories: ['xerox', 'printing'],
+    categories: ['xerox', 'printing', 'stationery'],
   },
   {
     key: 'grocery',
@@ -195,6 +196,15 @@ export const AMENITY_GROUPS: readonly AmenityGroup[] = [
     tone: 'bg-teal-50 text-teal-600',
     image: '/images/amenities/laundry.jpg',
     categories: ['laundry'],
+  },
+  {
+    key: 'csc',
+    label: 'CSC / Online services',
+    hint: 'Online forms, certificates, Aadhaar',
+    icon: 'building',
+    tone: 'bg-primary-50 text-primary-600',
+    image: null,
+    categories: ['csc'],
   },
 ];
 

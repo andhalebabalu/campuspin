@@ -140,13 +140,19 @@ export function CollegeAround({
                   className="group flex w-full flex-col overflow-hidden rounded-lg border border-line bg-surface text-left transition-shadow hover:shadow-md"
                 >
                   <span className="relative block aspect-[16/9] w-full overflow-hidden bg-subtle">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- local stock photo, not a remote image. */}
-                    <img
-                      src={amenity.image}
-                      alt=""
-                      loading="lazy"
-                      className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+                    {amenity.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- local stock photo, not a remote image.
+                      <img
+                        src={amenity.image}
+                        alt=""
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className={`flex size-full items-center justify-center ${amenity.tone}`}>
+                        <Icon name={amenity.icon} className="size-10" />
+                      </span>
+                    )}
                     <span className="absolute bottom-2 right-2 rounded-full bg-ink/80 px-2.5 py-1 text-xs font-semibold text-white">
                       {distanceRange(amenity.nearestMeters ?? 0, amenity.farthestMeters ?? 0)}
                     </span>

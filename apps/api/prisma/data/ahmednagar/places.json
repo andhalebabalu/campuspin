@@ -1,7 +1,8 @@
 {
- "about": "Real places near those colleges in Ahmednagar (Ahilyanagar) district, Maharashtra, built 2026-09-24. Imported by `npm run db:import:ahmednagar`. Nothing here is invented; see each record's source.",
+ "about": "Real places near those colleges in Ahmednagar (Ahilyanagar) district, Maharashtra, built 2026-09-24, extended 2026-10-04 with stationery, xerox and printing shops, CSC centres, eateries and other daily-needs shops. Imported by `npm run db:import:ahmednagar`. Nothing here is invented; see each record's source.",
  "sources": [
-  "OpenStreetMap (© OpenStreetMap contributors, ODbL, https://www.openstreetmap.org/copyright): named features within 2 km of a college, via the Overpass API"
+  "OpenStreetMap (© OpenStreetMap contributors, ODbL, https://www.openstreetmap.org/copyright): named features within 2 km of a college, via the Overpass API",
+  "OpenStreetMap (© OpenStreetMap contributors, ODbL): named stationery, book, copy and print shops, CSC / Aaple Sarkar centres, restaurants, cafes, grocery, laundry, pharmacies and gyms within 5 km of a college (the colleges’ service radius), via the Overpass API (fetched 2026-10-04)"
  ],
  "license": "ODbL-1.0",
  "items": [
@@ -1719,6 +1720,281 @@
    "address": "Near Hon. Shri. Babanrao Pachpute Vichardhara Trust, Group of Institutions (Integrated Campus)-Parikrama, Kashti Shrigondha",
    "city": "Shrigonda",
    "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "node/9221819191",
+   "name": "Maharashtra Book Depot",
+   "category": "stationery",
+   "latitude": 19.881851,
+   "longitude": 74.479092,
+   "address": "Kopargaon",
+   "city": "Kopargaon",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "node/4330469139",
+   "name": "सैन्य उपहारगृह भांडार",
+   "category": "restaurants",
+   "latitude": 19.095063,
+   "longitude": 74.755105,
+   "address": "Near Dr. Vithalrao Vikhe Patil College of Engineering, Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "node/4330491017",
+   "name": "AC Depot",
+   "category": "stationery",
+   "latitude": 19.097715,
+   "longitude": 74.749891,
+   "address": "Near Dr. Vithalrao Vikhe Patil College of Engineering, Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "node/5921416695",
+   "name": "Thigale Pustak Grantha Bhandar",
+   "category": "stationery",
+   "latitude": 19.388434,
+   "longitude": 74.649247,
+   "address": "Near Shri. Vivekanand Nursing Home Trust, College of Pharmacy, Rahuri Factory, Ahmednagar",
+   "city": "Rahuri",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "node/9007680708",
+   "name": "Matoshri Super Market",
+   "category": "grocery",
+   "latitude": 19.121359,
+   "longitude": 74.747893,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "node/11507905986",
+   "name": "Abhimanyu Supermarket",
+   "category": "grocery",
+   "latitude": 19.149829,
+   "longitude": 74.525144,
+   "address": "Ranmala, Dhawalpuri",
+   "city": "Parner",
+   "phone": "9511614003",
+   "website": null
+  },
+  {
+   "osmId": "way/1123505934",
+   "name": "Morya glosary store",
+   "category": "grocery",
+   "latitude": 19.037331,
+   "longitude": 74.422876,
+   "address": "Near Rajiv Gandhi College of Engineering, At Post Karjule Hariya Tal. Parner",
+   "city": "Parner",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1298345227",
+   "name": "gavthan complex",
+   "category": "grocery",
+   "latitude": 19.761341,
+   "longitude": 74.427491,
+   "address": "dorhale shirdi road, tal-rahata",
+   "city": "Kopargaon",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1360627425",
+   "name": "Grocery Shop",
+   "category": "grocery",
+   "latitude": 19.134202,
+   "longitude": 74.74194,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1360627578",
+   "name": "Jagdamb Kirana Store",
+   "category": "grocery",
+   "latitude": 19.134431,
+   "longitude": 74.741708,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1360627873",
+   "name": "Dalvi Supermarket",
+   "category": "grocery",
+   "latitude": 19.134155,
+   "longitude": 74.742194,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1360628144",
+   "name": "Dalvi Xerox",
+   "category": "xerox",
+   "latitude": 19.134083,
+   "longitude": 74.742173,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1360638960",
+   "name": "Swapnil Super Market",
+   "category": "grocery",
+   "latitude": 19.132703,
+   "longitude": 74.739262,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1360641103",
+   "name": "Adep Stationary Store",
+   "category": "stationery",
+   "latitude": 19.132562,
+   "longitude": 74.738647,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1360642547",
+   "name": "Om Grocery Shop",
+   "category": "grocery",
+   "latitude": 19.132492,
+   "longitude": 74.738425,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1360648772",
+   "name": "Kapse Stationary Shop",
+   "category": "stationery",
+   "latitude": 19.130301,
+   "longitude": 74.740482,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1360650578",
+   "name": "General Store",
+   "category": "grocery",
+   "latitude": 19.130098,
+   "longitude": 74.739794,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1360651619",
+   "name": "Laundry Shop",
+   "category": "laundry",
+   "latitude": 19.133679,
+   "longitude": 74.742252,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "node/5076990464",
+   "name": "Sweet Home Fun N Food",
+   "category": "restaurants",
+   "latitude": 19.054314,
+   "longitude": 74.685068,
+   "address": "Near Adsul's Technical Campus, Chas",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "node/10048789352",
+   "name": "Sai Krupa",
+   "category": "restaurants",
+   "latitude": 19.348052,
+   "longitude": 74.207072,
+   "address": "Near Sitai Arts, Commerce & Science College, Murkundi, Ghargaon, Tal. -Sangamner, Ahmednagar-422620",
+   "city": "Sangamner",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "node/13022691968",
+   "name": "FRULLATO Thickshakes & Desserts",
+   "category": "cafes",
+   "latitude": 19.131201,
+   "longitude": 74.728033,
+   "address": "shop no. 5&6 shraddha, Pipeline Road, Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": "+917020465192",
+   "website": "https://www.zomato.com/ahmednagar/frullato-ahmednagar-locality/order"
+  },
+  {
+   "osmId": "way/1360650143",
+   "name": "Vadapao",
+   "category": "restaurants",
+   "latitude": 19.13026,
+   "longitude": 74.739479,
+   "address": "Near New Arts Commerce and Science College Ahmednagar",
+   "city": "Ahilyanagar",
+   "phone": null,
+   "website": null
+  },
+  {
+   "osmId": "way/1414588746",
+   "name": "Hotel Rajveer",
+   "category": "restaurants",
+   "latitude": 18.941672,
+   "longitude": 74.712273,
+   "address": "Nagar Dound Road, Baburdi Bend",
+   "city": "Ahilyanagar",
+   "phone": "9545671515",
+   "website": null
+  },
+  {
+   "osmId": "way/1414589029",
+   "name": "Hotel Indrayani",
+   "category": "restaurants",
+   "latitude": 18.9423,
+   "longitude": 74.711355,
+   "address": "Nagar Dound Road, Baburdi Bend",
+   "city": "Ahilyanagar",
+   "phone": "9767133955",
+   "website": null
+  },
+  {
+   "osmId": "way/1462808931",
+   "name": "Hotel Dhanshree",
+   "category": "restaurants",
+   "latitude": 19.303186,
+   "longitude": 74.171503,
+   "address": "Pune - Nashik Highway",
+   "city": "Sangamner",
+   "phone": "09881107150",
    "website": null
   }
  ]
