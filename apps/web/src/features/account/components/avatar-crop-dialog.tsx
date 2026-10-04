@@ -40,11 +40,22 @@ export function AvatarCropDialog({
   open,
   onClose,
   onSave,
+  title = 'Profile photo',
+  hint = 'Choose a clear photo of your face.',
+  shape = 'round',
+  saveLabel = 'Save photo',
 }: {
   open: boolean;
   onClose: () => void;
   onSave: (file: File) => Promise<void>;
+  /** Defaults suit a member's profile photo; a business logo passes its own. */
+  title?: string;
+  hint?: string;
+  /** Only how the frame looks while cropping: the saved image is always a square. */
+  shape?: 'round' | 'square';
+  saveLabel?: string;
 }) {
+  const frame = shape === 'round' ? 'rounded-full' : 'rounded-md';
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const drag = useRef<{ startX: number; startY: number; from: Placement } | null>(null);
@@ -216,11 +227,11 @@ export function AvatarCropDialog({
     >
       <div className="flex flex-col gap-4 p-6">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold">Profile photo</h2>
+          <h2 className="text-lg font-semibold">{title}</h2>
           <p className="text-sm text-body">
             {loaded
-              ? 'Drag to move, and zoom until it fits the circle.'
-              : 'Choose a clear photo of your face.'}
+              ? `Drag to move, and zoom until it fits the ${shape === 'round' ? 'circle' : 'square'}.`
+              : hint}
           </p>
         </div>
 
@@ -264,15 +275,15 @@ export function AvatarCropDialog({
                   transform: `translate(${place.x}px, ${place.y}px) scale(${scale})`,
                 }}
               />
-              {/* Everything outside the circle is dimmed: that part will not show. */}
+              {/* Everything outside the frame is dimmed: that part will not show. */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-full"
+                className={`pointer-events-none absolute inset-0 ${frame}`}
                 style={{ boxShadow: '0 0 0 999px rgb(11 18 32 / 0.55)' }}
               />
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-full border-2 border-white/80"
+                className={`pointer-events-none absolute inset-0 border-2 border-white/80 ${frame}`}
               />
             </div>
 
@@ -323,7 +334,7 @@ export function AvatarCropDialog({
             Cancel
           </Button>
           <Button type="button" onClick={() => void save()} loading={busy} disabled={!loaded}>
-            Save photo
+            {saveLabel}
           </Button>
         </div>
       </div>

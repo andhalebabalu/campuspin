@@ -47,7 +47,8 @@ function ProfileForm({ profile }: { profile: BusinessProfile }) {
   const [busy, setBusy] = useState(false);
 
   async function changeLogo() {
-    const asset = await pickPhoto({ allowsEditing: true });
+    // The phone's crop screen, locked to a square: logos show in square and round frames.
+    const asset = await pickPhoto({ allowsEditing: true, aspect: [1, 1] });
     if (!asset) return;
     setUploading(true);
     try {

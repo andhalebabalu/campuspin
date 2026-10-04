@@ -12,10 +12,12 @@ import { ImageUploader } from '@/components/shared/image-uploader';
 import { FormAlert } from '@/components/ui/form-alert';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
+import { AvatarCropDialog } from '@/features/account/components/avatar-crop-dialog';
 import { SELECT_CLASS } from '@/features/auth/components/register-form';
 import { firstFieldErrors, flattenZodErrors } from '@/lib/forms/errors';
 import { businessService } from '@/services/business.service';
 import { categoriesService } from '@/services/categories.service';
+import { uploadsService } from '@/services/uploads.service';
 import { SaveBar, useLeaveGuard } from '../unsaved';
 import { useWorkspace } from '../workspace';
 import { Panel } from './overview';
@@ -350,14 +352,11 @@ export function ProfileEditor() {
         {tab === 'branding' && (
           <Panel>
             <div className="flex flex-col gap-8">
-              <ImageUploader
-                label="Logo"
-                value={values.logoUrl ? [values.logoUrl] : []}
-                onChange={(urls) => set('logoUrl')(urls[0] ?? '')}
-                max={1}
-                hint="Square works best, at least 400 × 400."
+              <LogoPicker
+                name={values.businessName}
+                url={values.logoUrl}
+                onChange={(url) => set('logoUrl')(url)}
                 error={errors.logoUrl}
-                onBusyChange={setUploading}
               />
               <div className="flex flex-col gap-3">
                 <ImageUploader
@@ -397,5 +396,88 @@ export function ProfileEditor() {
         />
       </form>
     </>
+  );
+}
+
+/**
+ * The business logo: pick an image, crop it to a square, and it is uploaded straight away (the URL
+ * is saved with the rest of the profile). The same cropper as profile photos, with a square frame.
+ */
+function LogoPicker({
+  name,
+  url,
+  onChange,
+  error,
+}: {
+  name: string;
+  url: string;
+  onChange: (url: string) => void;
+  error?: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  async function save(file: File) {
+    try {
+      onChange((await uploadsService.uploadImage(file)).data.url);
+    } catch (caught) {
+      throw new Error(
+        caught instanceof ApiClientError ? caught.message : 'Could not upload the logo.',
+      );
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-sm font-medium text-ink">Logo</span>
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={url ? 'Change logo' : 'Add a logo'}
+          className="group relative size-24 shrink-0 overflow-hidden rounded-xl border border-line bg-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
+        >
+          {url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- user-uploaded, served by the API.
+            <img src={url} alt="" className="size-full object-cover" />
+          ) : (
+            <span className="flex size-full items-center justify-center text-3xl font-bold text-primary-700">
+              {name.trim().charAt(0).toUpperCase() || '+'}
+            </span>
+          )}
+          <span className="absolute inset-0 flex items-center justify-center bg-ink/45 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+            {url ? 'Change' : 'Add'}
+          </span>
+        </button>
+        <div className="flex flex-col items-start gap-1 text-sm">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="font-medium text-action hover:text-action-hover"
+          >
+            {url ? 'Change logo' : 'Upload a logo'}
+          </button>
+          {url && (
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="text-xs font-medium text-muted hover:text-danger-700"
+            >
+              Remove logo
+            </button>
+          )}
+          <span className="text-xs text-muted">You crop it to a square. Save to publish it.</span>
+        </div>
+      </div>
+      {error && <p className="text-sm text-danger-700">{error}</p>}
+      <AvatarCropDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onSave={save}
+        title="Business logo"
+        hint="Choose your logo or a clear photo of your shop front."
+        shape="square"
+        saveLabel="Save logo"
+      />
+    </div>
   );
 }

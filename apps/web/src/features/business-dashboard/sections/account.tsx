@@ -10,6 +10,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Skeleton } from '@/components/shared/skeleton';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
+import { AccountPhoto } from '@/features/account/components/account-photo';
 import { ROUTES } from '@/constants/routes';
 import { useSession } from '@/lib/auth/session-context';
 import { env } from '@/lib/env';
@@ -208,6 +209,9 @@ export function SettingsSection() {
       <PageHeader title="Settings" description="Your business account." />
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title="Account">
+          <div className="mb-5">
+            <AccountPhoto />
+          </div>
           <dl className="flex flex-col gap-4 text-sm">
             <div>
               <dt className="text-muted">Name</dt>

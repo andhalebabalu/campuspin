@@ -8,6 +8,7 @@ import { AppShell, type ShellGroup } from '@/components/layout/app-shell';
 import { ErrorState } from '@/components/shared/error-state';
 import { Skeleton } from '@/components/shared/skeleton';
 import { Icon } from '@/components/ui/icon';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { ROUTES } from '@/constants/routes';
 import { useSession } from '@/lib/auth/session-context';
 import { GROUP_ORDER, MODULES, moduleAllowed, moduleOf } from './modules';
@@ -83,9 +84,7 @@ function Account({ collapsed }: { collapsed: boolean }) {
   };
   return (
     <div className={`flex items-center gap-3 ${collapsed ? 'flex-col' : ''}`}>
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-bold text-primary-700">
-        {user.name.charAt(0).toUpperCase()}
-      </span>
+      <UserAvatar name={user.name} url={user.avatarUrl} />
       {!collapsed && (
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold text-ink">{user.name}</span>

@@ -27,11 +27,15 @@ export async function toLocalFile(asset: ImagePicker.ImagePickerAsset): Promise<
 }
 
 /** Asks for a photo from the camera or the gallery. Resolves null when the user cancels. */
-export function pickPhoto(options: { allowsEditing?: boolean } = {}): Promise<ImagePicker.ImagePickerAsset | null> {
+export function pickPhoto(
+  // `aspect` locks the crop screen, e.g. [1, 1] for a square logo.
+  options: { allowsEditing?: boolean; aspect?: [number, number] } = {},
+): Promise<ImagePicker.ImagePickerAsset | null> {
   const pickerOptions: ImagePicker.ImagePickerOptions = {
     mediaTypes: ['images'],
     quality: 0.8,
     allowsEditing: options.allowsEditing ?? false,
+    ...(options.aspect ? { aspect: options.aspect } : {}),
   };
   return new Promise((resolve) => {
     Alert.alert('Add a photo', undefined, [
