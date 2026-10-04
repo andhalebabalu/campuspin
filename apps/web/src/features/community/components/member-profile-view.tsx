@@ -15,6 +15,7 @@ import { useSession } from '@/lib/auth/session-context';
 import { communityService } from '@/services/community.service';
 import { safetyService } from '@/services/safety.service';
 import { CommunityFeed } from './community-feed';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 /**
  * Another member's profile: display name, student badge and college, course and year only if their
@@ -51,13 +52,6 @@ export function MemberProfileView({ memberId }: { memberId: string }) {
   if (!member) return <Skeleton className="h-64 w-full" />;
 
   const self = user?.id === member.id;
-  const initials = member.displayName
-    .split(' ')
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-
   async function toggleBlock() {
     if (!member) return;
     if (
@@ -84,9 +78,7 @@ export function MemberProfileView({ memberId }: { memberId: string }) {
     <div className="flex flex-col gap-6">
       {notice && <FormAlert message={notice} />}
       <section className="flex flex-col items-start gap-4 rounded-xl border border-line bg-surface p-5 shadow-xs sm:flex-row sm:items-center sm:p-6">
-        <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xl font-bold text-primary-700">
-          {initials}
-        </span>
+        <UserAvatar name={member.displayName} url={member.avatarUrl} className="size-16 text-xl" />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <h1 className="text-2xl font-bold text-ink">{member.displayName}</h1>
           <StudentBadgeChip

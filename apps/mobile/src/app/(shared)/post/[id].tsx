@@ -291,7 +291,7 @@ export default function PostScreen() {
 function CommentView({ comment, onPress }: { comment: CommunityComment; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} onLongPress={onPress} style={styles.comment}>
-      <Avatar name={comment.author.displayName} size={32} verified={comment.author.verifiedStudent} />
+      <Avatar name={comment.author.displayName} imageUrl={comment.author.avatarUrl} size={32} verified={comment.author.verifiedStudent} />
       <View style={styles.flex}>
         <View style={styles.bubble}>
           <AppText variant="smallStrong" color={colors.ink}>

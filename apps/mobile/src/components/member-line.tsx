@@ -12,7 +12,7 @@ export function MemberLine({ member, size = 44 }: { member: MemberSummary; size?
       onPress={() => router.push({ pathname: '/member/[id]', params: { id: member.id } })}
       style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
     >
-      <Avatar name={member.displayName} size={size} verified={member.verifiedStudent} />
+      <Avatar name={member.displayName} imageUrl={member.avatarUrl} size={size} verified={member.verifiedStudent} />
       <View style={styles.flex}>
         <AppText variant="bodyStrong" numberOfLines={1}>
           {member.displayName}

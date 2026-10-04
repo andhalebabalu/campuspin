@@ -36,6 +36,7 @@ import {
 const MEMBER_SELECT = {
   id: true,
   name: true,
+  avatarUrl: true,
   studentVerifiedUntil: true,
   verifiedCollege: { select: { id: true, slug: true, name: true } },
 } as const;

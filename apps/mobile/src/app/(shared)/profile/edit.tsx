@@ -3,6 +3,7 @@ import { Stack, router } from 'expo-router';
 import type { Profile } from '@platform/contracts';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { AvatarEditor } from '@/components/avatar-editor';
 import { CollegePicker, type PickedCollege } from '@/components/college-picker';
 import { FormAlert } from '@/components/form-alert';
 import {
@@ -84,6 +85,10 @@ function ProfileForm({ profile }: { profile: Profile }) {
       footer={<Button title="Save" size="lg" loading={busy} onPress={() => void save()} />}
     >
       <View style={styles.form}>
+        <View style={styles.photo}>
+          <AvatarEditor size={104} />
+          <AppText variant="small">Tap your photo to change it</AppText>
+        </View>
         {formError ? <FormAlert message={formError} /> : null}
         <TextField
           label="Name"
@@ -135,6 +140,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
 
 const styles = StyleSheet.create({
   form: { gap: space.lg },
+  photo: { alignItems: 'center', gap: space.sm, paddingVertical: space.sm },
   locked: { gap: 2, padding: space.md, borderRadius: radius.md, backgroundColor: colors.subtle },
   years: { gap: space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },

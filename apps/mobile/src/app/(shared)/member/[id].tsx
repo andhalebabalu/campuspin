@@ -79,7 +79,7 @@ export default function MemberScreen() {
   const header = (
     <View style={styles.header}>
       <View style={styles.profile}>
-        <Avatar name={member.displayName} size={84} verified={member.verifiedStudent} />
+        <Avatar name={member.displayName} imageUrl={member.avatarUrl} size={84} verified={member.verifiedStudent} />
         <AppText variant="title" align="center">
           {member.displayName}
         </AppText>

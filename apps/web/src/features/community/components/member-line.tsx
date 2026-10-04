@@ -1,6 +1,7 @@
 import type { MemberSummary } from '@platform/contracts';
 import Link from 'next/link';
 import { Icon } from '@/components/ui/icon';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { ROUTES } from '@/constants/routes';
 
 /** "Rahul A. 🎓 Verified Student · ABC College" — how a member appears on posts and listings. */
@@ -13,17 +14,9 @@ export function MemberLine({
   meta?: string;
   showCollege?: boolean;
 }) {
-  const initials = member.displayName
-    .split(' ')
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
   return (
     <div className="flex min-w-0 items-center gap-2.5">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
-        {initials}
-      </span>
+      <UserAvatar name={member.displayName} url={member.avatarUrl} />
       <div className="min-w-0 text-sm leading-tight">
         <Link href={ROUTES.member(member.id)} className="font-semibold text-ink hover:underline">
           {member.displayName}

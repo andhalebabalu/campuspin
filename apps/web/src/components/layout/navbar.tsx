@@ -11,6 +11,7 @@ import { isStaff } from '@/features/admin/lib/access';
 import { useSession } from '@/lib/auth/session-context';
 import { MessagesLink } from './messages-link';
 import { NotificationBell } from './notification-bell';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 const NAV_LINKS = [
   { href: ROUTES.search, label: 'Discover' },
@@ -37,6 +38,7 @@ function AccountActions({ onNavigate }: { onNavigate?: () => void }) {
           onClick={onNavigate}
           className="flex items-center gap-1.5 text-sm text-body hover:text-ink"
         >
+          <UserAvatar name={user.name} url={user.avatarUrl} className="size-7 text-xs" />
           Hi, {user.name.split(' ')[0]}
           {user.student.verified && (
             <span title="Verified Student" className="text-success-700">

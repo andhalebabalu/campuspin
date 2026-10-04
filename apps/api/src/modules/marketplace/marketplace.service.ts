@@ -55,6 +55,7 @@ const LISTING_INCLUDE = {
     select: {
       id: true,
       name: true,
+      avatarUrl: true,
       studentVerifiedUntil: true,
       verifiedCollege: { select: { id: true, slug: true, name: true } },
     },

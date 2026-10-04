@@ -275,6 +275,8 @@ export const authUserSchema = z.object({
   id: z.string(),
   name: z.string(),
   email: z.string(),
+  /** Profile photo, or null. */
+  avatarUrl: z.string().nullable(),
   emailVerified: z.boolean(),
   roles: z.array(roleKeySchema),
   permissions: z.array(permissionKeySchema),

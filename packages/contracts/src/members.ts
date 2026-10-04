@@ -26,6 +26,8 @@ export type StudentBadge = z.infer<typeof studentBadgeSchema>;
 export const memberSummarySchema = z.object({
   id: z.string(),
   displayName: z.string(),
+  /** Their profile photo (a square image), or null to show initials. */
+  avatarUrl: z.string().nullable(),
   verifiedStudent: z.boolean(),
   college: collegeRefSchema.nullable(),
 });

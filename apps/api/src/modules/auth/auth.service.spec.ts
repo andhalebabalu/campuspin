@@ -29,6 +29,7 @@ describe('AuthService.register', () => {
         id: expect.any(String) as string,
         name: 'Asha Patil',
         email: 'asha@example.test',
+        avatarUrl: null,
         emailVerified: false,
         roles: ['STUDENT'],
         college: null,

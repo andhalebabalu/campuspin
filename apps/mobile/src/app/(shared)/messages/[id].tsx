@@ -164,7 +164,7 @@ export default function Thread() {
     <View style={styles.root}>
       <Stack.Screen options={{ headerShown: false }} />
       <ChatHeader
-        leading={<Avatar name={conversation.other.displayName} size={38} verified={conversation.other.verifiedStudent} />}
+        leading={<Avatar name={conversation.other.displayName} imageUrl={conversation.other.avatarUrl} size={38} verified={conversation.other.verifiedStudent} />}
         title={conversation.other.displayName}
         subtitle={conversation.role === 'SELLER' ? 'Buyer' : 'Seller'}
         onPressTitle={() => router.push({ pathname: '/member/[id]', params: { id: conversation.other.id } })}

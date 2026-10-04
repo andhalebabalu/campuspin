@@ -4,6 +4,7 @@ const account = (overrides: Partial<Parameters<typeof toAuthUser>[0]> = {}) => (
   id: 'user-1',
   name: 'Asha Patil',
   email: 'asha@example.test',
+  avatarUrl: null,
   status: 'ACTIVE' as const,
   emailVerifiedAt: new Date(),
   userRoles: [{ role: { key: 'STUDENT' } }],
@@ -40,6 +41,7 @@ describe('toAuthUser', () => {
       id: 'user-1',
       name: 'Asha Patil',
       email: 'asha@example.test',
+      avatarUrl: null,
       emailVerified: true,
       roles: ['STUDENT'],
       permissions: ['places.read'],
@@ -53,6 +55,7 @@ describe('toAuthUser', () => {
     const risky = { ...account(), passwordHash: '$argon2id$secret', internal: 'x' };
     const result = toAuthUser(risky, []);
     expect(Object.keys(result).sort()).toEqual([
+      'avatarUrl',
       'college',
       'email',
       'emailVerified',

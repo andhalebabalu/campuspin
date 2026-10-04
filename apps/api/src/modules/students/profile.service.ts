@@ -3,6 +3,7 @@ import type { Profile, Settings, UpdateProfile, UpdateSettings } from '@platform
 import { AppException } from '../../common/http/app-exception.js';
 import type { ClientContext } from '../../common/http/request-client.decorator.js';
 import { PrismaService } from '../../infra/database/prisma.service.js';
+import { ImageStorage } from '../../infra/storage/image-storage.js';
 import { AuditService } from '../audit/audit.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { studentBadge } from './student-rules.js';
@@ -31,6 +32,7 @@ export class ProfileService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly images: ImageStorage,
   ) {}
 
   async profile(userId: string): Promise<Profile> {
@@ -40,6 +42,7 @@ export class ProfileService {
         id: true,
         name: true,
         email: true,
+        avatarUrl: true,
         course: true,
         year: true,
         createdAt: true,
@@ -52,6 +55,7 @@ export class ProfileService {
       id: user.id,
       name: user.name,
       email: user.email,
+      avatarUrl: user.avatarUrl,
       college: user.college,
       course: user.course,
       year: user.year,
@@ -65,6 +69,12 @@ export class ProfileService {
     actor: AuthenticatedUser,
     client: ClientContext,
   ): Promise<Profile> {
+    // A profile photo must be a file this platform stored, never an outside URL.
+    if (dto.avatarUrl && !this.images.owns(dto.avatarUrl)) {
+      throw AppException.validation({
+        avatarUrl: ['Upload the photo here first (POST /uploads/images)'],
+      });
+    }
     if (dto.collegeId) {
       const college = await this.prisma.college.count({
         where: { id: dto.collegeId, status: 'ACTIVE' },
@@ -77,6 +87,7 @@ export class ProfileService {
         where: { id: actor.id },
         data: {
           ...(dto.name !== undefined ? { name: dto.name } : {}),
+          ...(dto.avatarUrl !== undefined ? { avatarUrl: dto.avatarUrl } : {}),
           ...(dto.collegeId !== undefined ? { collegeId: dto.collegeId } : {}),
           ...(dto.course !== undefined ? { course: dto.course } : {}),
           ...(dto.year !== undefined ? { year: dto.year } : {}),

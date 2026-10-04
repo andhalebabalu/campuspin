@@ -215,6 +215,8 @@ enum TokenRevocationReason {
 model User {
   id                   String     @id @default(uuid(7)) @db.Char(36)
   name                 String     @db.VarChar(120)
+  // Profile photo: a square image stored by the uploads endpoint. Null shows initials.
+  avatarUrl            String?    @db.VarChar(500)
   // Stored lowercase by the application; the column collation is case-insensitive as well.
   email                String     @unique @db.VarChar(254)
   // Argon2id hash. Plain-text passwords are never stored.

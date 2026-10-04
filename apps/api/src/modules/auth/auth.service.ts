@@ -151,6 +151,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
+        avatarUrl: null,
         emailVerified: false,
         roles: roleKeysOf(user),
         college: null,

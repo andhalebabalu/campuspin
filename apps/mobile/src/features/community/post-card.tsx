@@ -16,7 +16,7 @@ export function PostCard({ post }: { post: CommunityPost }) {
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={styles.head}>
-        <Avatar name={post.author.displayName} size={36} verified={post.author.verifiedStudent} />
+        <Avatar name={post.author.displayName} imageUrl={post.author.avatarUrl} size={36} verified={post.author.verifiedStudent} />
         <View style={styles.flex}>
           <AppText variant="smallStrong" color={colors.ink} numberOfLines={1}>
             {post.author.displayName}

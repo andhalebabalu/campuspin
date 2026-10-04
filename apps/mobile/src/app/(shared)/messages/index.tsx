@@ -57,7 +57,7 @@ export default function Conversations() {
               style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.subtle }]}
             >
               <View>
-                <Avatar name={item.other.displayName} size={52} verified={item.other.verifiedStudent} />
+                <Avatar name={item.other.displayName} imageUrl={item.other.avatarUrl} size={52} verified={item.other.verifiedStudent} />
               </View>
               <View style={styles.flex}>
                 <View style={styles.line}>

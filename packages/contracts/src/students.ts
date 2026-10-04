@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { emailSchema } from './auth.js';
 import { collegeRefSchema, studentBadgeSchema } from './members.js';
 import { paginationQuerySchema } from './pagination.js';
-import { singleLineField, uuidSchema } from './text.js';
+import { httpUrlField, singleLineField, uuidSchema } from './text.js';
 
 /**
  * Student verification, member profile and member settings.
@@ -158,6 +158,8 @@ export const profileSchema = z.object({
   id: z.string(),
   name: z.string(),
   email: z.string(),
+  /** Profile photo, or null. */
+  avatarUrl: z.string().nullable(),
   /** The college chosen for browsing. Grants nothing; see `student` for the verified one. */
   college: collegeRefSchema.nullable(),
   course: z.string().nullable(),
@@ -171,6 +173,8 @@ export type Profile = z.infer<typeof profileSchema>;
 export const updateProfileSchema = z
   .strictObject({
     name: singleLineField('Name', 120).optional(),
+    /** A square photo uploaded first (POST /uploads/images); null removes it. */
+    avatarUrl: httpUrlField(500).nullable().optional(),
     collegeId: uuidSchema.nullable().optional(),
     course: singleLineField('Course', 120).nullable().optional(),
     year: z.number().int().min(1).max(8).nullable().optional(),

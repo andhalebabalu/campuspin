@@ -59,7 +59,7 @@ export class StudentAccessService {
     if (ids.length === 0) return new Map();
     const users = await this.prisma.user.findMany({
       where: { id: { in: ids } },
-      select: { id: true, name: true, ...BADGE_SELECT },
+      select: { id: true, name: true, avatarUrl: true, ...BADGE_SELECT },
     });
     return new Map(users.map((user) => [user.id, toMemberSummary(user)]));
   }
@@ -68,6 +68,7 @@ export class StudentAccessService {
 export function toMemberSummary(user: {
   id: string;
   name: string;
+  avatarUrl?: string | null;
   studentVerifiedUntil: Date | null;
   verifiedCollege: { id: string; slug: string; name: string } | null;
 }): MemberSummary {
@@ -75,6 +76,7 @@ export function toMemberSummary(user: {
   return {
     id: user.id,
     displayName: displayName(user.name),
+    avatarUrl: user.avatarUrl ?? null,
     verifiedStudent: badge.verified,
     college: badge.college,
   };

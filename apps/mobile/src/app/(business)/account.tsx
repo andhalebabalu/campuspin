@@ -2,7 +2,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Alert, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppText, Avatar, ListRow, RowGroup, Screen } from '@/components/ui';
+import { AvatarEditor } from '@/components/avatar-editor';
+import { AppText, ListRow, RowGroup, Screen } from '@/components/ui';
 import { useUnreadNotifications } from '@/hooks/use-unread';
 import { useLightStatusBar } from '@/hooks/use-status-bar';
 import { useSession, useUser } from '@/lib/session';
@@ -31,7 +32,7 @@ export default function BusinessAccount() {
           end={{ x: 1, y: 1 }}
           style={[styles.hero, { paddingTop: insets.top + space.xl }]}
         >
-          <Avatar name={user.name} size={72} />
+          <AvatarEditor size={80} />
           <AppText variant="title" color={colors.surface} align="center">
             {user.name}
           </AppText>

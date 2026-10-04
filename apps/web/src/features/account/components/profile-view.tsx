@@ -16,6 +16,7 @@ import { useSession } from '@/lib/auth/session-context';
 import { firstFieldErrors } from '@/lib/forms/errors';
 import { studentsService } from '@/services/students.service';
 import { CollegePicker, type PickedCollege } from './college-picker';
+import { ProfilePhoto } from './profile-photo';
 
 const CARD = 'rounded-xl border border-line bg-surface p-5 shadow-xs sm:p-6';
 
@@ -42,14 +43,6 @@ export function ProfileView() {
 
   if (error) return <ErrorState message={error} onRetry={() => setReload((n) => n + 1)} />;
   if (!profile) return <Skeleton className="h-72 w-full" />;
-
-  const initials = profile.name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase();
 
   const links: Array<{ href: string; label: string; hint: string; icon: IconName }> = [
     {
@@ -94,9 +87,7 @@ export function ProfileView() {
   return (
     <div className="flex flex-col gap-6">
       <section className={`${CARD} flex flex-col items-start gap-4 sm:flex-row sm:items-center`}>
-        <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xl font-bold text-primary-700">
-          {initials}
-        </span>
+        <ProfilePhoto profile={profile} onChange={setProfile} />
         <div className="flex min-w-0 flex-col gap-1.5">
           <h1 className="text-2xl font-bold text-ink">{profile.name}</h1>
           <StudentBadgeChip badge={profile.student} size="md" />
