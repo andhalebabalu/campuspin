@@ -11,7 +11,7 @@
     "test",
     "scripts",
     "prisma/seed.ts",
-    "prisma/import-ahmednagar.ts",
+    "prisma/import-region.ts",
     "prisma/seed",
     "prisma.config.ts",
     "vitest.config.ts",

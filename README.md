@@ -343,18 +343,19 @@ NestJS  ->  PrismaService  ->  Prisma Client  ->  @prisma/adapter-mariadb  ->  X
 
 Every demo row is clearly labelled `Sample ... (Demo)`, has no phone or e-mail, and is flagged `isDemo`, so it cannot be mistaken for a real business. The demo coordinates are made-up points, not real addresses.
 
-### Real Ahmednagar district data
+### Real district data: Ahmednagar and Pune
 
-`npm run db:import:ahmednagar` adds **real** colleges and nearby places for Ahmednagar (Ahilyanagar) district from the snapshot in `apps/api/prisma/data/ahmednagar/` (needs `db:seed:reference` first; safe to re-run, never overwrites a row staff have edited; allowed in production because `isDemo` is false):
+`npm run db:import:ahmednagar` and `npm run db:import:pune` (both `tsx prisma/import-region.ts <region>`) add **real** colleges and nearby places from the snapshots in `apps/api/prisma/data/<region>/` (needs `db:seed:reference` first; safe to re-run, never overwrites a row staff have edited; allowed in production because `isDemo` is false). Every region shares one import account, so a place is only pruned when no region's snapshot lists it.
 
-| Data | Rows | Source |
-|---|---|---|
-| Colleges | 200 | Directorate of Higher Education, Maharashtra: [aided](https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf) and [non-aided 2022-23](https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf) college lists (arts, science, commerce, education, law, …); State CET Cell 2025-26 institute lists for Engineering, Pharmacy and BCA/BBA/BMS |
-| Places near a college | 156 | OpenStreetMap (© OpenStreetMap contributors, ODbL): 99 medical (hospitals and clinics only within 1 km, medical stores within 2 km), 22 bus stops and stands, 15 restaurants, 7 hostels, 7 grocery, 3 libraries, 2 cafes, 1 gym |
-| College ↔ place links | ~2,900 | calculated from both locations (5 km college radius) |
+| Data | Ahmednagar | Pune | Source |
+|---|---|---|---|
+| Colleges | 200 | 493 | Directorate of Higher Education, Maharashtra: [aided](https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf) and [non-aided 2022-23](https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf) college lists (arts, science, commerce, education, law, …); State CET Cell 2025-26 institute lists (Engineering, Pharmacy, BCA/BBA/BMS; Pune also M.E./M.Tech). Pune adds 68 OpenStreetMap colleges and universities those lists do not carry (medical, design, management, defence, universities) |
+| Places near a college | 181 | 4,172 | OpenStreetMap (© OpenStreetMap contributors, ODbL): eateries, stationery, xerox and print shops, grocery, medical, hostels, libraries, gyms, laundries, bus stands, CSC centres |
+| College ↔ place links | ~3,600 | ~53,000 | calculated from both locations: 5 km college radius in Ahmednagar, 2 km in Pune (a city college has hundreds of shops within 5 km) |
 
 - **Everything is live but not verified:** `ACTIVE`, `verificationStatus: PENDING`, so no verified badge until staff check a row. Each description says which official list or OSM it came from.
-- **College locations:** 5 come from a matching OpenStreetMap campus; 39 are placed at their village or town and 156 at their taluka headquarters, because the official lists give an address but no coordinates. Those descriptions say **"Map location is APPROXIMATE"**; staff should correct them (`PATCH /admin/colleges/:id`), and distances to places are only as good as that point.
+- **College locations:** the official lists give an address but no coordinates. Ahmednagar: 5 from a matching OpenStreetMap campus, 39 at their village or town, 156 at their taluka headquarters. Pune: 98 exact (30 matched campuses plus the 68 OSM-only colleges), 273 at a named locality, 85 at the median point of OSM addresses with the college's PIN code, 37 at the taluka headquarters. Approximate descriptions say **"Map location is APPROXIMATE"**; staff should correct them (`PATCH /admin/colleges/:id`), and distances to places are only as good as that point.
+- **Pune MBA/MCA lists:** the CET Cell's MBA and MCA portals sit behind a bot check, so those institutes appear only when the DHE lists or OpenStreetMap carry them.
 - **Not covered:** messes, PGs, reading rooms, xerox shops and most libraries are barely on OpenStreetMap, and copying them from Google Maps or Justdial would break those sites' terms (and this project's own rule). They are left to students ("Suggest a place") and staff. Polytechnics, MBA/MCA institutes, medical/nursing colleges and agricultural colleges are not in the lists used. No prices, hours or phone numbers were invented.
 - The footer carries the required "© OpenStreetMap contributors" credit.
 

@@ -30,7 +30,8 @@
     "db:migrate:status": "prisma migrate status",
     "db:seed": "prisma db seed",
     "db:seed:reference": "prisma db seed -- --reference-only",
-    "db:import:ahmednagar": "tsx prisma/import-ahmednagar.ts",
+    "db:import:ahmednagar": "tsx prisma/import-region.ts ahmednagar",
+    "db:import:pune": "tsx prisma/import-region.ts pune",
     "db:purge-demo": "tsx scripts/purge-demo.ts",
     "auth:purge-tokens": "tsx scripts/purge-expired-tokens.ts",
     "db:studio": "prisma studio"
