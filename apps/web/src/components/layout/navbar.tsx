@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
@@ -107,13 +107,32 @@ function useNavLinks() {
     : NAV_LINKS;
 }
 
+/** True once the page has scrolled a little: the bar turns into frosted glass with a shadow. */
+function useScrolled(offset = 8): boolean {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > offset);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, [offset]);
+  return scrolled;
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const links = useNavLinks();
+  const scrolled = useScrolled();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
+    <header
+      className={`sticky top-0 z-30 border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 ${
+        scrolled || open
+          ? 'border-line bg-surface/85 shadow-[0_8px_30px_-12px_rgb(11_18_32/0.18)]'
+          : 'border-transparent bg-surface/60'
+      }`}
+    >
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
         <Link href={ROUTES.home} className="flex shrink-0 items-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- static brand asset. */}
@@ -126,7 +145,7 @@ export function Navbar() {
               key={link.href}
               href={link.href}
               aria-current={pathname === link.href ? 'page' : undefined}
-              className="text-sm font-medium text-body transition-colors hover:text-primary-800 aria-[current=page]:font-semibold aria-[current=page]:text-primary-800"
+              className="relative py-1 text-sm font-medium text-body transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-accent-600 after:transition-transform after:duration-300 hover:text-primary-800 hover:after:scale-x-100 aria-[current=page]:font-semibold aria-[current=page]:text-primary-800 aria-[current=page]:after:scale-x-100"
             >
               {link.label}
             </Link>
@@ -149,7 +168,10 @@ export function Navbar() {
       </div>
 
       {open && (
-        <div id="mobile-menu" className="border-t border-line bg-surface lg:hidden">
+        <div
+          id="mobile-menu"
+          className="animate-fade-down border-t border-line bg-surface lg:hidden"
+        >
           <nav aria-label="Main" className="mx-auto flex max-w-6xl flex-col px-4 py-3 sm:px-6">
             {links.map((link) => (
               <Link

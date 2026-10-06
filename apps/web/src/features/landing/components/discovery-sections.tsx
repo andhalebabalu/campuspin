@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { Icon } from '@/components/ui/icon';
 import { BRAND } from '@/constants/brand';
-import { Container, IconChip, SectionHeading } from '@/features/landing/components/primitives';
+import {
+  Container,
+  IconChip,
+  SectionHeading,
+  stagger,
+} from '@/features/landing/components/primitives';
 import { CATEGORY_TILES, HOW_IT_WORKS } from '@/features/landing/lib/landing-content';
 import { searchHref } from '@/features/search/lib/search-filters';
 
@@ -20,6 +25,8 @@ export function HowItWorksSection() {
           {HOW_IT_WORKS.map((step, index) => (
             <li
               key={step.title}
+              data-reveal
+              style={stagger(index, 100)}
               className="relative flex flex-col gap-3 rounded-xl border border-line bg-surface p-5 shadow-xs"
             >
               <IconChip icon={step.icon} tone={step.tone} />
@@ -56,8 +63,8 @@ export function CategoryGridSection() {
           title="Explore everything around you"
         />
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {CATEGORY_TILES.map((tile) => (
-            <li key={tile.label}>
+          {CATEGORY_TILES.map((tile, index) => (
+            <li key={tile.label} data-reveal style={stagger(index % 6, 60)}>
               <Link
                 href={searchHref({ category: tile.slug ?? '' })}
                 className="group flex h-full flex-col items-center gap-3 rounded-xl border border-line bg-surface px-3 py-6 text-center transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-md"

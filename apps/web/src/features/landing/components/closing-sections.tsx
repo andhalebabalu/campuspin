@@ -8,6 +8,7 @@ import {
   CTA_OUTLINE_CLASSES,
   IconChip,
   SectionHeading,
+  stagger,
 } from '@/features/landing/components/primitives';
 import { BUSINESS_BENEFITS, WHY_US } from '@/features/landing/lib/landing-content';
 
@@ -26,7 +27,10 @@ const SAMPLE_ORDERS = [
 /** A picture of the business dashboard. Sample numbers, labelled as such. */
 function DashboardPreview() {
   return (
-    <figure className="overflow-hidden rounded-xl border border-line bg-surface shadow-lg">
+    <figure
+      data-reveal
+      className="overflow-hidden rounded-xl border border-line bg-surface shadow-lg"
+    >
       <div className="flex items-center justify-between border-b border-line px-4 py-3">
         <span className="flex items-center gap-2 text-xs font-bold text-primary-800">
           <Icon name="store" className="size-4" /> {BRAND.name} Business
@@ -125,8 +129,13 @@ export function BusinessSection() {
             lead="Mess, xerox shop, PG, library or cafe: get a page students can find, and run orders, bookings and invoices from one dashboard that fits the kind of business you run."
           />
           <ul className="flex flex-col gap-2.5">
-            {BUSINESS_BENEFITS.map((benefit) => (
-              <li key={benefit} className="flex items-center gap-2.5 text-sm text-ink">
+            {BUSINESS_BENEFITS.map((benefit, index) => (
+              <li
+                key={benefit}
+                data-reveal
+                style={stagger(index, 60)}
+                className="flex items-center gap-2.5 text-sm text-ink"
+              >
                 <Icon name="check" className="size-5 text-accent-600" />
                 {benefit}
               </li>
@@ -158,9 +167,11 @@ export function WhyUsSection() {
           title="Everything around your campus. Connected."
         />
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {WHY_US.map((item) => (
+          {WHY_US.map((item, index) => (
             <li
               key={item.title}
+              data-reveal
+              style={stagger(index, 100)}
               className="flex gap-4 rounded-xl border border-line bg-surface p-5 shadow-xs"
             >
               <IconChip icon={item.icon} tone={item.tone} />
@@ -178,7 +189,10 @@ export function WhyUsSection() {
 
 export function CtaBand() {
   return (
-    <section aria-labelledby="cta-title" className="bg-primary-800 text-white">
+    <section
+      aria-labelledby="cta-title"
+      className="animate-gradient bg-linear-to-r from-primary-900 via-primary-700 to-primary-900 bg-[length:200%_200%] text-white"
+    >
       <Container className="relative flex flex-col items-center gap-5 overflow-hidden py-16 text-center">
         <svg
           viewBox="0 0 200 120"

@@ -7,6 +7,7 @@ import {
   CTA_OUTLINE_CLASSES,
   IconChip,
   SectionHeading,
+  stagger,
 } from '@/features/landing/components/primitives';
 import {
   COMMUNITY_FEATURES,
@@ -72,7 +73,9 @@ export function CommunitySection() {
       className="scroll-mt-20 border-y border-line bg-surface py-20"
     >
       <Container className="grid items-center gap-12 lg:grid-cols-2">
-        <CommunityIllustration />
+        <div data-reveal>
+          <CommunityIllustration />
+        </div>
         <div className="flex flex-col gap-8">
           <SectionHeading
             id="community-title"
@@ -87,8 +90,8 @@ export function CommunitySection() {
             lead="Ask questions, share notes, find events and help each other out. Posts stay inside your college unless you make them public, and only verified students can post."
           />
           <ul className="grid gap-3 sm:grid-cols-2">
-            {COMMUNITY_FEATURES.map((feature) => (
-              <li key={feature.label}>
+            {COMMUNITY_FEATURES.map((feature, index) => (
+              <li key={feature.label} data-reveal style={stagger(index, 60)}>
                 <Link
                   href={ROUTES.community}
                   className="flex h-full items-center gap-3 rounded-lg border border-line bg-surface p-3 transition-colors hover:border-primary-200 hover:bg-primary-50/40"
@@ -134,8 +137,8 @@ export function MarketplaceSection() {
           </Link>
         </div>
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {MARKETPLACE_KINDS.map((kind) => (
-            <li key={kind.label}>
+          {MARKETPLACE_KINDS.map((kind, index) => (
+            <li key={kind.label} data-reveal style={stagger(index)}>
               <Link
                 href={ROUTES.marketplace}
                 className="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"

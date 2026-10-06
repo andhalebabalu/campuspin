@@ -8,6 +8,7 @@ import {
   CTA_OUTLINE_CLASSES,
   IconChip,
   SectionHeading,
+  stagger,
 } from '@/features/landing/components/primitives';
 import { DAILY_SERVICES } from '@/features/landing/lib/landing-content';
 import { PlaceCard } from '@/features/places/components/place-card';
@@ -36,8 +37,13 @@ export function LatestPlacesSection({ places }: { places: PlaceCardData[] }) {
         </div>
         {/* A swipeable row on phones, a grid from tablets up. */}
         <ul className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
-          {places.map((place) => (
-            <li key={place.id} className="w-64 shrink-0 snap-start sm:w-auto">
+          {places.map((place, index) => (
+            <li
+              key={place.id}
+              data-reveal
+              style={stagger(index % 4)}
+              className="w-64 shrink-0 snap-start sm:w-auto"
+            >
               <PlaceCard place={place} />
             </li>
           ))}
@@ -57,7 +63,7 @@ const SAMPLE_STEPS = [
 /** A phone showing an order being tracked. Sample content, labelled as such. */
 function OrderPhone() {
   return (
-    <figure className="relative mx-auto w-full max-w-[18rem]">
+    <figure data-reveal className="relative mx-auto w-full max-w-[18rem]">
       <div className="rounded-[2.25rem] bg-primary-900 p-2.5 shadow-xl">
         <div className="overflow-hidden rounded-[1.75rem] bg-surface">
           <div className="flex items-center justify-between bg-primary-800 px-4 pt-5 pb-4 text-white">
@@ -143,8 +149,8 @@ export function DailyServicesSection() {
             lead="Places on CampusPin can take orders and requests from students. Track every order live and get an invoice when it is done."
           />
           <ul className="grid gap-4 sm:grid-cols-2">
-            {DAILY_SERVICES.map((service) => (
-              <li key={service.title}>
+            {DAILY_SERVICES.map((service, index) => (
+              <li key={service.title} data-reveal style={stagger(index)}>
                 <Link
                   href={searchHref({ category: service.slug })}
                   className="group flex h-full gap-4 rounded-xl border border-line bg-surface p-4 transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-md"

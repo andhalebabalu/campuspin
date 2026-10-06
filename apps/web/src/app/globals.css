@@ -83,6 +83,14 @@
   --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
   --animate-float: float 6s ease-in-out infinite;
+  /* Motion (docs/06-design-system.md): one easing everywhere, so the site moves as one thing. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-fade-up: fade-up 0.8s var(--ease-out-soft) both;
+  --animate-fade-down: fade-down 0.3s var(--ease-out-soft) both;
+  --animate-pop: pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-blob: blob 18s ease-in-out infinite alternate;
+  --animate-marquee: marquee 120s linear infinite;
+  --animate-gradient: gradient-pan 8s ease-in-out infinite alternate;
 
   @keyframes float {
     0%,
@@ -91,6 +99,60 @@
     }
     50% {
       transform: translateY(-6px);
+    }
+  }
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes fade-down {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes blob {
+    0% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(30px, -20px) scale(1.08);
+    }
+    100% {
+      transform: translate(-20px, 25px) scale(0.95);
+    }
+  }
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes gradient-pan {
+    from {
+      background-position: 0% 50%;
+    }
+    to {
+      background-position: 100% 50%;
     }
   }
 }
@@ -137,6 +199,24 @@
   :focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
+  }
+
+  /*
+   * Scroll reveal: anything marked `data-reveal` eases in when it scrolls into view (ScrollReveal
+   * adds `reveal-ready` and `is-revealed`). Without JavaScript, or with reduced motion, nothing is
+   * ever hidden. `--reveal-delay` staggers a row of cards.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    html.reveal-ready [data-reveal] {
+      transition:
+        opacity 0.8s var(--ease-out-soft),
+        transform 0.8s var(--ease-out-soft);
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+    html.reveal-ready [data-reveal]:not(.is-revealed) {
+      opacity: 0;
+      transform: translateY(24px);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

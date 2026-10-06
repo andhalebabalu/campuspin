@@ -9,7 +9,9 @@ export function Card({ hover = false, className = '', ...props }: CardProps) {
   return (
     <div
       className={`rounded-lg border border-line bg-surface shadow-xs ${
-        hover ? 'transition-shadow hover:shadow-md' : ''
+        hover
+          ? 'transition-[translate,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-lg'
+          : ''
       } ${className}`}
       {...props}
     />

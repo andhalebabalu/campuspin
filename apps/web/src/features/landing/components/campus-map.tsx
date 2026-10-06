@@ -107,11 +107,14 @@ export function CampusMap({
   pins,
   className = '',
   college = '',
+  animated = false,
 }: {
   pins: MapPin[];
   className?: string;
   /** Carried into every pin's search link when set. */
   college?: string;
+  /** Pins pop onto the map one after another (the hero). */
+  animated?: boolean;
 }) {
   return (
     <div className={`relative overflow-hidden ${className}`}>
@@ -124,14 +127,19 @@ export function CampusMap({
             className="absolute -translate-x-1/2 -translate-y-1/2"
             style={{ left: `${pin.x}%`, top: `${pin.y}%` }}
           >
-            <Link
-              href={searchHref({ category: pin.slug, college })}
-              className="flex animate-float items-center gap-2 rounded-full bg-surface py-1 pr-3 pl-1 text-xs font-semibold text-ink shadow-md ring-1 ring-line transition-transform hover:scale-105 sm:text-sm"
-              style={{ animationDelay: `${(index % 4) * -1.5}s` }}
+            <span
+              className={`block ${animated ? 'animate-pop' : ''}`}
+              style={animated ? { animationDelay: `${500 + index * 110}ms` } : undefined}
             >
-              <IconChip icon={pin.icon} tone={pin.tone} size="sm" className="!rounded-full" />
-              {pin.label}
-            </Link>
+              <Link
+                href={searchHref({ category: pin.slug, college })}
+                className="flex animate-float items-center gap-2 rounded-full bg-surface py-1 pr-3 pl-1 text-xs font-semibold text-ink shadow-md ring-1 ring-line transition-[scale,box-shadow] duration-300 hover:scale-110 hover:shadow-lg sm:text-sm"
+                style={{ animationDelay: `${(index % 4) * -1.5}s` }}
+              >
+                <IconChip icon={pin.icon} tone={pin.tone} size="sm" className="!rounded-full" />
+                {pin.label}
+              </Link>
+            </span>
           </li>
         ))}
       </ul>

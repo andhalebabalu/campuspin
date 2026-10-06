@@ -19,7 +19,7 @@ function initials(name: string): string {
 export function PlaceCard({ place }: { place: PlaceCardData }) {
   const fallback = categoryImage(place.primaryCategory?.slug);
   return (
-    <Link href={ROUTES.placeDetail(place.slug)} className="block">
+    <Link href={ROUTES.placeDetail(place.slug)} className="block h-full" data-reveal>
       <Card hover className="flex h-full flex-col overflow-hidden">
         <div className="aspect-[4/3] w-full bg-subtle">
           {place.coverImageUrl ? (
