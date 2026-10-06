@@ -79,8 +79,11 @@ export class CollegesController {
   @ApiOperation({
     summary: 'List colleges',
     description:
-      'Active colleges, paginated (`page`, `limit` up to 50). `q` searches name, short name and city; ' +
-      "`city` matches exactly. Send `lat` and `lng` (together) to get each college's straight-line " +
+      'Active colleges, paginated (`page`, `limit` up to 50). `q` is a forgiving search: every word ' +
+      'must appear in the name, short name, city or address (whole, as a word start, inside a word, ' +
+      'or as the initials: `pict`, `coep`), in any order; only when nothing matches are small typos ' +
+      'forgiven. `sort=relevance` (the default) puts the best match first, or orders by name without ' +
+      "`q`. `city` matches exactly. Send `lat` and `lng` (together) to get each college's straight-line " +
       '`distanceMeters`, and `sort=nearest` to order by it. `sort=popular` orders by the number of ' +
       'active places. `stream` and `management` take comma-separated values (see `GET /colleges/facets` for ' +
       'the counts); a college matches if any value matches. Unknown sort values and impossible ' +

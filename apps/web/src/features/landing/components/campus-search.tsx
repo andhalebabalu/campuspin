@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useId, useState, type FormEvent } from 'react';
 import { Icon } from '@/components/ui/icon';
+import { CollegePicker, type PickedCollege } from '@/features/colleges/components/college-picker';
 import { IconChip } from '@/features/landing/components/primitives';
 import { QUICK_CATEGORIES } from '@/features/landing/lib/landing-content';
 import { searchHref } from '@/features/search/lib/search-filters';
@@ -17,9 +18,9 @@ import { searchHref } from '@/features/search/lib/search-filters';
 export function CampusSearch({ colleges }: { colleges: CollegeCard[] }) {
   const router = useRouter();
   const [q, setQ] = useState('');
-  const [college, setCollege] = useState('');
+  const [picked, setPicked] = useState<PickedCollege | null>(null);
+  const college = picked?.slug ?? '';
   const queryId = useId();
-  const collegeId = useId();
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -55,32 +56,15 @@ export function CampusSearch({ colleges }: { colleges: CollegeCard[] }) {
           />
         </div>
 
-        <div className="relative">
-          <label htmlFor={collegeId} className="sr-only">
-            Select your college
-          </label>
-          <Icon
-            name="pin"
-            className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-primary-600"
-          />
-          <select
-            id={collegeId}
-            value={college}
-            onChange={(event) => setCollege(event.target.value)}
-            className="h-13 w-full appearance-none rounded-md border border-control bg-surface pr-10 pl-12 text-base text-ink"
-          >
-            <option value="">Any college</option>
-            {colleges.map((option) => (
-              <option key={option.id} value={option.slug}>
-                {option.shortName ? `${option.shortName} · ${option.city}` : option.name}
-              </option>
-            ))}
-          </select>
-          <Icon
-            name="chevronDown"
-            className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-muted"
-          />
-        </div>
+        <CollegePicker
+          value={picked}
+          onChange={setPicked}
+          suggestions={colleges}
+          label="Select your college"
+          hideLabel
+          placeholder="Your college or area (e.g. PICT, Kothrud)"
+          inputClassName="h-13 rounded-md pr-10 pl-12 text-base"
+        />
 
         <button
           type="submit"

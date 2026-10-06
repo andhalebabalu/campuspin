@@ -25,6 +25,7 @@ import {
   searchFilter,
 } from './college-queries.js';
 import { collegeProfile, metersFrom, sortCards, summarizeNearby } from './college-rules.js';
+import { rankColleges } from './college-search.js';
 
 /**
  * The public college directory. Only ACTIVE colleges exist here: drafts and deactivated colleges
@@ -35,7 +36,11 @@ export class CollegesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async list(query: ListCollegesQuery): Promise<Paginated<CollegeCard>> {
-    const where: Prisma.CollegeWhereInput = { status: 'ACTIVE', ...searchFilter(query) };
+    // `q` is matched in memory (see college-search.ts); the database only narrows by city.
+    const where: Prisma.CollegeWhereInput = {
+      status: 'ACTIVE',
+      ...searchFilter({ city: query.city }),
+    };
     const point =
       query.lat !== undefined && query.lng !== undefined
         ? { latitude: query.lat, longitude: query.lng }
@@ -44,6 +49,11 @@ export class CollegesService {
       row: CardRow & { latitude: number; longitude: number },
       counts: Map<string, number>,
     ) => toCollegeCard(row, counts.get(row.id) ?? 0, metersFrom(point, row));
+
+    const term = query.q?.trim();
+    if (term) return this.search(term, query, where, card);
+    // Without a search there is nothing to rank by: relevance means by name.
+    const sort = query.sort === 'relevance' ? 'name' : query.sort;
 
     // Streams and management are derived from each college's name and description, so they can only
     // be filtered after reading: every match is read, filtered, ordered and then cut into a page (a
@@ -68,9 +78,9 @@ export class CollegesService {
               (college.management !== null && query.management.includes(college.management))),
         );
       const ordered =
-        query.sort === 'nearest' || query.sort === 'popular'
-          ? sortCards(matching, query.sort)
-          : query.sort === 'newest'
+        sort === 'nearest' || sort === 'popular'
+          ? sortCards(matching, sort)
+          : sort === 'newest'
             ? [...matching].sort(
                 (a, b) =>
                   (created.get(b.id) ?? 0) - (created.get(a.id) ?? 0) || b.id.localeCompare(a.id),
@@ -89,9 +99,9 @@ export class CollegesService {
     }
 
     // Name and newest are plain ORDER BYs, so the database can page.
-    if (query.sort === 'name' || query.sort === 'newest') {
+    if (sort === 'name' || sort === 'newest') {
       const orderBy: Prisma.CollegeOrderByWithRelationInput[] =
-        query.sort === 'name'
+        sort === 'name'
           ? [{ name: 'asc' }, { id: 'asc' }]
           : [{ createdAt: 'desc' }, { id: 'desc' }];
       const [total, rows] = await Promise.all([
@@ -126,8 +136,63 @@ export class CollegesService {
     );
     const ordered = sortCards(
       rows.map((row) => card(row, counts)),
-      query.sort,
+      sort,
     );
+    const { skip, take } = pageWindow(query);
+    return Paginated.of(ordered.slice(skip, skip + take), {
+      page: query.page,
+      limit: query.limit,
+      total: ordered.length,
+    });
+  }
+
+  /**
+   * A forgiving search: every active college (in the city, if one is given) is scored against the
+   * words, best match first unless another order is asked for. Hundreds of rows, read once.
+   */
+  private async search(
+    term: string,
+    query: ListCollegesQuery,
+    where: Prisma.CollegeWhereInput,
+    card: (
+      row: CardRow & { latitude: number; longitude: number },
+      counts: Map<string, number>,
+    ) => CollegeCard,
+  ): Promise<Paginated<CollegeCard>> {
+    const rows = await this.prisma.college.findMany({
+      where,
+      select: { ...CARD_SELECT, address: true, latitude: true, longitude: true, createdAt: true },
+    });
+    const ranked = rankColleges(term, rows);
+    const counts = await countActivePlaces(
+      this.prisma,
+      ranked.map((match) => match.college.id),
+    );
+    const created = new Map(rows.map((row) => [row.id, row.createdAt.getTime()]));
+    const matching = ranked
+      .map((match) => card(match.college, counts))
+      .filter(
+        (college) =>
+          (query.stream.length === 0 ||
+            college.streams.some((stream) => query.stream.includes(stream))) &&
+          (query.management.length === 0 ||
+            (college.management !== null && query.management.includes(college.management))),
+      );
+    const ordered =
+      query.sort === 'nearest' || query.sort === 'popular'
+        ? sortCards(matching, query.sort)
+        : query.sort === 'newest'
+          ? [...matching].sort(
+              (a, b) =>
+                (created.get(b.id) ?? 0) - (created.get(a.id) ?? 0) || b.id.localeCompare(a.id),
+            )
+          : query.sort === 'name'
+            ? [...matching].sort(
+                (a, b) =>
+                  a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }) ||
+                  a.id.localeCompare(b.id),
+              )
+            : matching; // relevance: already best first
     const { skip, take } = pageWindow(query);
     return Paginated.of(ordered.slice(skip, skip + take), {
       page: query.page,

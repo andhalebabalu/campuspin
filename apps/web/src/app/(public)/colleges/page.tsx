@@ -13,10 +13,10 @@ import { BRAND } from '@/constants/brand';
 
 export const metadata: Metadata = {
   title: 'Colleges',
-  description: `Discover colleges in Ahmednagar district on ${BRAND.name}, and everything a student needs around them.`,
+  description: `Discover colleges in Pune and Ahmednagar districts on ${BRAND.name}, and everything a student needs around them.`,
 };
 
-const SORTS: ReadonlyArray<DirectoryQuery['sort']> = ['name', 'popular', 'newest'];
+const SORTS: ReadonlyArray<DirectoryQuery['sort']> = ['relevance', 'name', 'popular', 'newest'];
 
 /** A comma-separated URL value, keeping only the values the API accepts. */
 function csv<T extends string>(raw: string | undefined, allowed: readonly T[]): T[] {
@@ -44,7 +44,7 @@ export default async function CollegesPage({
     city: raw.city?.trim() ?? '',
     stream: csv<CollegeStream>(raw.stream, COLLEGE_STREAMS),
     management: csv<CollegeManagement>(raw.management, COLLEGE_MANAGEMENT),
-    sort: SORTS.find((value) => value === raw.sort) ?? 'name',
+    sort: SORTS.find((value) => value === raw.sort) ?? 'relevance',
     page: Math.max(1, Number.parseInt(raw.page ?? '1', 10) || 1),
   };
 

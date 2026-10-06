@@ -615,9 +615,34 @@ describe('Colleges (e2e, real database)', () => {
 
       expect(await find(`${marker} 100%`)).toEqual([percent.id]);
       expect(await find(`${marker} snake_`)).toEqual([under.id]);
-      // `_` is no longer "any one character": it does not match the space in "E2E ... Plain".
-      expect(await find(`${marker}_plain`)).toEqual([]);
+      // `_` is never "any one character": like all punctuation it just separates words, so
+      // "marker_plain" is the two words "marker plain".
+      expect(await find(`${marker}_plain`)).toEqual([plain.id]);
       expect(await find(`${marker} plain`)).toEqual([plain.id]);
+    });
+
+    it('forgives: words in any order, the address, and a small typo', async () => {
+      const marker = randomUUID().slice(0, 6);
+      const target = await createCollege({
+        name: `E2E ${run} ${marker} Quillfeather Institute of Technology`,
+        address: `Plot 7, Zandovar Nagar ${marker}, Testville`,
+        status: 'ACTIVE',
+      });
+      const other = await createCollege({
+        name: `E2E ${run} ${marker} Plain College`,
+        status: 'ACTIVE',
+      });
+      const find = async (q: string) =>
+        successOf(
+          listOf(collegeCardSchema),
+          await ctx.get(`${API}/colleges`).query({ q }),
+        ).data.map((card) => card.id);
+
+      expect(await find(`technology quillfeather ${marker}`)).toEqual([target.id]); // any order
+      expect(await find(`zandovar ${marker}`)).toEqual([target.id]); // the address
+      expect(await find(`quilfeather ${marker}`)).toEqual([target.id]); // a typo
+      // Best match first: the college whose name has every word ranks above a partial one.
+      expect((await find(`${marker} plain college`))[0]).toBe(other.id);
     });
 
     it.each([

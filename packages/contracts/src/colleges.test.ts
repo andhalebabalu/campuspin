@@ -53,7 +53,7 @@ describe('listCollegesQuerySchema', () => {
     expect(listCollegesQuerySchema.parse({})).toEqual({
       page: 1,
       limit: 20,
-      sort: 'name',
+      sort: 'relevance',
       stream: [],
       management: [],
     });

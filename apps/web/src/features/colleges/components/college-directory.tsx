@@ -19,6 +19,7 @@ import { CollegeCardSkeleton } from './college-card-skeleton';
 type Sort = DirectoryQuery['sort'];
 
 const SORT_OPTIONS: Array<{ value: Sort; label: string }> = [
+  { value: 'relevance', label: 'Best match' },
   { value: 'name', label: 'Name (A – Z)' },
   { value: 'popular', label: 'Most places around' },
   { value: 'newest', label: 'Recently added' },
@@ -101,7 +102,7 @@ export function CollegeDirectory({
     if (query.city) search.set('city', query.city);
     if (query.stream.length) search.set('stream', query.stream.join(','));
     if (query.management.length) search.set('management', query.management.join(','));
-    if (query.sort !== 'name') search.set('sort', query.sort);
+    if (query.sort !== 'relevance') search.set('sort', query.sort);
     if (query.page > 1) search.set('page', String(query.page));
     const suffix = search.toString();
     router.replace(suffix ? `${pathname}?${suffix}` : pathname, { scroll: false });
@@ -186,7 +187,7 @@ export function CollegeDirectory({
                 type="search"
                 value={qInput}
                 onChange={(event) => setQInput(event.target.value)}
-                placeholder="Search college by name or town…"
+                placeholder="Search by name, short name (PICT) or area…"
                 className="h-11 w-full rounded-md border border-control bg-surface pl-10 pr-3.5 text-sm text-ink placeholder:text-muted"
               />
             </label>

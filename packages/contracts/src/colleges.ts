@@ -25,7 +25,8 @@ export const VERIFICATION_STATUSES = ['PENDING', 'VERIFIED', 'REJECTED'] as cons
 export type VerificationStatus = (typeof VERIFICATION_STATUSES)[number];
 export const verificationStatusSchema = z.enum(VERIFICATION_STATUSES);
 
-export const COLLEGE_SORTS = ['name', 'nearest', 'popular', 'newest'] as const;
+/** `relevance`: best match first when there is a search `q`, otherwise by name. */
+export const COLLEGE_SORTS = ['relevance', 'name', 'nearest', 'popular', 'newest'] as const;
 export const ADMIN_COLLEGE_SORTS = ['newest', 'updated', 'name'] as const;
 
 /** Places within this many metres of a college are linked to it automatically. */
@@ -133,7 +134,8 @@ export const collegeIdOrSlugSchema = idOrSlugField('sample-arts-science-college'
 /** `GET /colleges` query. `lat` and `lng` go together; `sort=nearest` needs them. */
 export const listCollegesQuerySchema = paginationQuerySchema
   .extend({
-    q: z.string().trim().max(100).optional().meta({ example: 'science' }),
+    /** Forgiving search: words in any order, initials ("pict"), area names, small typos. */
+    q: z.string().trim().max(100).optional().meta({ example: 'pict' }),
     city: z.string().trim().max(100).optional().meta({ example: 'Ahilyanagar' }),
     lat: z.coerce.number().min(-90).max(90).optional().meta({ example: 19.0952 }),
     lng: z.coerce.number().min(-180).max(180).optional().meta({ example: 74.7496 }),
@@ -141,7 +143,7 @@ export const listCollegesQuerySchema = paginationQuerySchema
     stream: csvOf(COLLEGE_STREAMS).meta({ example: 'engineering,pharmacy' }),
     /** Any of these management types (comma-separated). */
     management: csvOf(COLLEGE_MANAGEMENT).meta({ example: 'aided' }),
-    sort: z.enum(COLLEGE_SORTS).default('name'),
+    sort: z.enum(COLLEGE_SORTS).default('relevance'),
   })
   .check((ctx) => {
     const { lat, lng, sort } = ctx.value;

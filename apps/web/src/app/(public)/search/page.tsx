@@ -49,15 +49,22 @@ export default async function SearchPage({
   const empty = { page: 1, limit: 20, total: 0, totalPages: 0 };
 
   // The pickers are a convenience: if either list fails to load, search still works without it.
-  const [categoryGroups, colleges] = await Promise.all([
+  const [categoryGroups, colleges, selectedCollege] = await Promise.all([
     categoriesService.list().then(
       (result) => result.data,
       () => [],
     ),
-    collegesService.list({ sort: 'name', limit: 50 }).then(
+    // Suggestions before typing; the box itself searches every college.
+    collegesService.list({ sort: 'popular', limit: 8 }).then(
       (result) => result.data,
       () => [],
     ),
+    applied.college
+      ? collegesService.getBySlug(applied.college).then(
+          (result) => result.data,
+          () => null,
+        )
+      : null,
   ]);
 
   let initialPlaces: Awaited<ReturnType<typeof placesService.list>>['data'] = [];
@@ -91,6 +98,7 @@ export default async function SearchPage({
         initialError={initialError}
         categoryGroups={categoryGroups}
         colleges={colleges}
+        selectedCollege={selectedCollege}
       />
     </main>
   );

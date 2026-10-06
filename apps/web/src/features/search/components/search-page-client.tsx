@@ -11,6 +11,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CollegePicker, type PickedCollege } from '@/features/colleges/components/college-picker';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { PlaceCard } from '@/features/places/components/place-card';
@@ -40,7 +41,10 @@ export interface SearchPageClientProps {
   /** Set when the server's own fetch was a 404 (an unknown category or college slug). */
   initialError?: string | null;
   categoryGroups: CategoryGroup[];
+  /** Offered before anything is typed in the college box. */
   colleges: CollegeCard[];
+  /** The college in the URL, so its name shows in the box. */
+  selectedCollege?: PickedCollege | null;
 }
 
 const SELECT_CLASSES = 'h-11 rounded-md border border-control bg-surface px-3.5 text-base text-ink';
@@ -59,11 +63,13 @@ export function SearchPageClient({
   initialError = null,
   categoryGroups,
   colleges,
+  selectedCollege = null,
 }: SearchPageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   const [qInput, setQInput] = useState(initialApplied.q);
+  const [pickedCollege, setPickedCollege] = useState<PickedCollege | null>(selectedCollege);
   const [minPriceInput, setMinPriceInput] = useState(initialApplied.minPrice);
   const [maxPriceInput, setMaxPriceInput] = useState(initialApplied.maxPrice);
   const [applied, setApplied] = useState<Applied>(initialApplied);
@@ -167,25 +173,18 @@ export function SearchPageClient({
               ))}
             </select>
           </label>
-          {colleges.length > 0 && (
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-              Near college
-              <select
-                value={applied.college}
-                onChange={(event) =>
-                  setApplied((current) => ({ ...current, college: event.target.value, page: 1 }))
-                }
-                className={`${SELECT_CLASSES} max-w-64`}
-              >
-                <option value="">Any college</option>
-                {colleges.map((college) => (
-                  <option key={college.id} value={college.slug}>
-                    {college.shortName ?? college.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+          <CollegePicker
+            value={applied.college ? pickedCollege : null}
+            onChange={(college) => {
+              setPickedCollege(college);
+              setApplied((current) => ({ ...current, college: college?.slug ?? '', page: 1 }));
+            }}
+            suggestions={colleges}
+            label="Near college"
+            placeholder="Any college"
+            icon="graduation"
+            className="w-full sm:w-72"
+          />
           <Input
             label="Min price (₹)"
             type="number"

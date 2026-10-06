@@ -110,7 +110,7 @@ export function CollegesHero({ facets }: { facets: CollegeFacets | null }) {
             Explore colleges
           </span>
           <h1 className="text-3xl font-bold leading-tight text-ink sm:text-4xl">
-            Discover colleges in <span className="text-action">Ahmednagar district</span>
+            Discover colleges in <span className="text-action">Pune &amp; Ahmednagar</span>
           </h1>
           <p className="max-w-xl text-body">
             Find colleges from the official government lists, see what they teach, and check the
