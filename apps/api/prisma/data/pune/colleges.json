@@ -23,7 +23,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06930",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06930"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06930"
   },
   {
    "name": "M.S. Kakade College Somshwarnagar",
@@ -56,6 +56,40 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Sahyadri Shikshanshtra Mahavidhyalaya, Someshwar(Waghlwadi), Tal- Baramati, Dist-Pune 412306",
+   "address": "At/Post -Waghalwadi Tal- Baramati Dist-Pune",
+   "city": "Baramati",
+   "taluka": "Baramati",
+   "latitude": 18.147883,
+   "longitude": 74.573398,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Baramati)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2605910811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
+   "name": "Sarsam College Of Pharmacy, Palshiwadi",
+   "address": "Gat No. 29/1, At/Post- Palshiwadi, Tal- Baramati, Dist- Pune",
+   "city": "Baramati",
+   "taluka": "Baramati",
+   "latitude": 18.147883,
+   "longitude": 74.573398,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Baramati)",
+   "kind": "Un-Aided",
+   "university": "Dr. Babasaheb Ambedkar Technological University,Lonere",
+   "courses": [
+    "Pharmacy"
+   ],
+   "source": "State CET Cell / DTE (Pharmacy), institute 06933",
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06933"
+  },
+  {
    "name": "School of Pharmacy and Research Centre, Baramati",
    "address": "At Post Shardanagar Malegaon Colony Tal Baramati Dist Pune",
    "city": "Baramati",
@@ -70,7 +104,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06942",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06942"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06942"
   },
   {
    "name": "Shardabai Pawar Mahila Mahavidyalaya, Shardanagar Tal - Baramati, Dist - Pune 413 115",
@@ -102,7 +136,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06275",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06275"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06275"
   },
   {
    "name": "Shri.Someshwar Shikshan Prasarak Mandal, Sharadchandra Pawar College of Engineering & Technology, Someshwar Nagar",
@@ -119,7 +153,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06795",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06795"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06795"
   },
   {
    "name": "Someshwar Vidnyan Mahavidyalaya, Someshwarnagar",
@@ -166,7 +200,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06377",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06377"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06377"
   },
   {
    "name": "Tuljaram Chaturchand College Baramati",
@@ -198,7 +232,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06137",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06137"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06137"
   },
   {
    "name": "Vidya Pratishthan,s,Arts,Science & Commerce Colege, Vidyanagari,Baramati",
@@ -245,7 +279,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06284",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06284"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06284"
   },
   {
    "name": "Vidya Pratishthan`s Supe Arts,Science & Commerce College, Supe,Baramati",
@@ -322,7 +356,24 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06771",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06771"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06771"
+  },
+  {
+   "name": "Jadhavar College of Law",
+   "address": "Manajinagar, Narhe, Pune",
+   "city": "Bhor",
+   "taluka": "Bhor",
+   "latitude": 18.191997,
+   "longitude": 73.859451,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Narhe)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2603310812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Navsahyadri Education Society's Group of Institutions",
@@ -333,14 +384,14 @@
    "longitude": 73.959094,
    "locationPrecision": "approximate",
    "locationNote": "approximate (PIN 412205 area, median of 6 OpenStreetMap addresses)",
-   "kind": "Un-Aided",
+   "kind": "Un-Aided, Autonomous",
    "university": "Savitribai Phule Pune University",
    "courses": [
     "Engineering",
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06632",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06632"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06632"
   },
   {
    "name": "Rajgad Dnyanpeeth Sou. Nirmalatai Thopate College of Education, Bhor",
@@ -372,7 +423,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06257",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06257"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06257"
   },
   {
    "name": "Rajgad Technical Campus",
@@ -389,7 +440,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06324",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06324"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06324"
   },
   {
    "name": "Shankarrao Bhelke College Nasarapur,tal-Bhor,Dist-Pune",
@@ -405,6 +456,23 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: aided colleges list",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf"
+  },
+  {
+   "name": "Sou Nirmalatai Thopate College Of Education Bhor",
+   "address": "Mahad-Pandharpur road, A.T. College Campus, Bhor",
+   "city": "Bhor",
+   "taluka": "Bhor",
+   "latitude": 18.150806,
+   "longitude": 73.843059,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Bhor)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2607810811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Art's & Commerce College, Rahu",
@@ -437,6 +505,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Bhima Shaikshanik Nyas,Subhashanna Kul College Of Education,Madhukarnagar-Patas",
+   "address": "Madhukarnagar-Patas,Tal-Daund,Dist-Pune",
+   "city": "Daund",
+   "taluka": "Daund",
+   "latitude": 18.428992,
+   "longitude": 74.465635,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Patas)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2601010811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Dattakala College of Pharmacy, Chincholi, Daund",
    "address": "Gat No. 541/2, 527, Off. Pune-Solapur High way, A/P swami chincholi, Tal.Daund, Pune",
    "city": "Daund",
@@ -451,7 +536,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06833",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06833"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06833"
   },
   {
    "name": "Dattakala Group Of Institutions, Swami - Chincholi Tal. Daund Dist. Pune",
@@ -462,14 +547,14 @@
    "longitude": 74.579062,
    "locationPrecision": "approximate",
    "locationNote": "approximate (locality: Daund)",
-   "kind": "Un-Aided",
+   "kind": "Un-Aided, Autonomous",
    "university": "Savitribai Phule Pune University",
    "courses": [
     "Engineering",
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06628",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06628"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06628"
   },
   {
    "name": "Dattakala Institute of Pharmaceutical Science and Research, Swami Chincholi, Daund, Pune",
@@ -486,7 +571,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06914",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06914"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06914"
   },
   {
    "name": "Daund Taluka Arts and Commerce College, Daund",
@@ -593,7 +678,24 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06953",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06953"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06953"
+  },
+  {
+   "name": "Abhinav Education Society'S College Of Education",
+   "address": "SR.NO. 13, AMBEGAON BK. NEAR KATRAJ DEHU ROAD BYPASS HIGHWAY PUNE 46.",
+   "city": "Ghodegaon",
+   "taluka": "Ambegaon",
+   "latitude": 18.453989,
+   "longitude": 73.845728,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (PIN 411046 area, median of 84 OpenStreetMap addresses)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2600410812",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Annasaheb Awate College,Manchar",
@@ -656,6 +758,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Dr. Mumtaz Ahmed Khan College Of Education ( B. Ed. ) Manchar",
+   "address": "A/p-Sultanpur Road ( Manchar),Tal-Ambegaon,Dist-Pune 410503",
+   "city": "Ghodegaon",
+   "taluka": "Ambegaon",
+   "latitude": 19.00333,
+   "longitude": 73.942711,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Manchar)",
+   "kind": "Un-Aided Minority",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2601710711",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Government College of Engineering & Research, Avasari Khurd",
    "address": "Avasari, Tal. Ambegaon. Dist. Pune",
    "city": "Ghodegaon",
@@ -670,7 +789,25 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06004",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06004"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06004"
+  },
+  {
+   "name": "Late Tukaram Dhondiba Kunjir Law College",
+   "address": "Behind Ambegaon Pathar Police Chowki Near Jijamata Chowk Ambegaon Pathar Pune 46",
+   "city": "Ghodegaon",
+   "taluka": "Ambegaon",
+   "latitude": 18.453989,
+   "longitude": 73.845728,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (PIN 411046 area, median of 84 OpenStreetMap addresses)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2604310812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Pune Cambridge Institute of Management and Computer Application, Ambegaon Pathar, Pune",
@@ -687,7 +824,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06992",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06992"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06992"
   },
   {
    "name": "Purandhar Technical Education Society's Pune Cambeidge Senior College,Ambegaon Pathar Pune",
@@ -715,7 +852,9 @@
    "locationNote": "approximate (locality: Manchar)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "B.Ed."
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -749,7 +888,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06191",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06191"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06191"
   },
   {
    "name": "Sinhgad Institute of Pharmacy, Narhe(Ambegaon), Pune",
@@ -766,7 +905,25 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06363",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06363"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06363"
+  },
+  {
+   "name": "Sinhgad Law College",
+   "address": "S.No. 10/1, Ambegaon BK. Pune -411041",
+   "city": "Ghodegaon",
+   "taluka": "Ambegaon",
+   "latitude": 18.448423,
+   "longitude": 73.809421,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (PIN 411041 area, median of 302 OpenStreetMap addresses)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2602110812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Sinhgad Technical Education Society, Sinhgad Institute of Technology and Science, Narhe (Ambegaon)",
@@ -783,7 +940,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06182",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06182"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06182"
   },
   {
    "name": "Arts, Science and Commerce College Indapur",
@@ -815,7 +972,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06715",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06715"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06715"
   },
   {
    "name": "Bhigwan shikshan prasarak mandal's loknete sharaschandrji pawar college of education (B Ed)",
@@ -862,7 +1019,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06140",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06140"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06140"
   },
   {
    "name": "I. T. G. P.'s Arts and Commerce College Kalamb Walchandnagar",
@@ -909,7 +1066,24 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06962",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06962"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06962"
+  },
+  {
+   "name": "Loknete Sharadchandraji Pawar College Of Education, Bhigwan, Tal-Indapur, Dist-Pune",
+   "address": "Bhigwan, Tal. - Indapur, Dist. - Pune",
+   "city": "Indapur",
+   "taluka": "Indapur",
+   "latitude": 18.297701,
+   "longitude": 74.754985,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Bhigwan)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2603810811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Shahajirao Patil Vikas Pratishthan, S.B.Patil College of Engineering, Vangali, Tal. Indapur",
@@ -926,7 +1100,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06319",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06319"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06319"
   },
   {
    "name": "Shri Chatrapati Shikshan Sanstha Shri Chatrapati Arts and Commerce College",
@@ -973,7 +1147,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06943",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06943"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06943"
   },
   {
    "name": "Vidya Pratishthan's Commerce & Science College,Indapur",
@@ -1004,6 +1178,23 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
+  },
+  {
+   "name": "Gramonnati Mandal B.Ed College",
+   "address": "A/p Warulwadi, Narayangaon, Tal: Junnar, Dist: Pune, Pin: 410504",
+   "city": "Junnar",
+   "taluka": "Junnar",
+   "latitude": 19.113491,
+   "longitude": 73.974023,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Narayangaon)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2602710811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Gramonnati Mandal's Art's Commerce, & Science College Narayangaon",
@@ -1065,7 +1256,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06609",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06609"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06609"
   },
   {
    "name": "Jaihind College of Pharmacy",
@@ -1082,7 +1273,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06980",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06980"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06980"
   },
   {
    "name": "Jaihind Institute of Management and Research",
@@ -1099,7 +1290,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06990",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06990"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06990"
   },
   {
    "name": "Pandurang Gramin Vikas Pratishtan Dilip Walase Patil Arts& commerce college",
@@ -1147,7 +1338,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06758",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06758"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06758"
   },
   {
    "name": "Samarth College of Engineering and Management",
@@ -1164,7 +1355,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06635",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06635"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06635"
   },
   {
    "name": "Samarth College of Law, Belhe, Tal. - Junnar, Dist. - Pune",
@@ -1196,7 +1387,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06931",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06931"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06931"
   },
   {
    "name": "Samarth Institute of Pharmacy, Belhe, Junnar",
@@ -1213,7 +1404,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06910",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06910"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06910"
   },
   {
    "name": "Samarth Rural Educational Institute Samarth College Of Computer Science And Management Studies",
@@ -1260,7 +1451,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06322",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06322"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06322"
   },
   {
    "name": "Shree Gajanan Maharaj Shikshan Prasarak Mandal Sharadchandra Pawar College of Pharmacy, At Dumbaarwadi (Otur)",
@@ -1277,7 +1468,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06365",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06365"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06365"
   },
   {
    "name": "Shri Shiv Chhatrapati Arts, Com & Sci College, Junnar",
@@ -1324,7 +1515,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06177",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06177"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06177"
   },
   {
    "name": "Sinhgad Technical Education Society's Smt. Kashibai Navale College of Engineering,Vadgaon,Pune",
@@ -1341,7 +1532,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06178",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06178"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06178"
   },
   {
    "name": "Subhash Vidya Mandal D. R. Kakade College of Commerces",
@@ -1357,6 +1548,23 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
+  },
+  {
+   "name": "Vilas Tambe College Of Education",
+   "address": "AT Dumbarwadi, (Near Toll Plaza) Post Khamundi, Tal- Junnar, Dist-Pune",
+   "city": "Junnar",
+   "taluka": "Junnar",
+   "latitude": 19.209447,
+   "longitude": 73.877194,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Junnar)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2608410811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Vilas Tambe Womens College Of Education Dumbarwadi,Otur",
@@ -1388,7 +1596,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06361",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06361"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06361"
   },
   {
    "name": "AEF's Arihant Institute of Teacher Training, Bawdhan Bk., Pune 411021",
@@ -1528,7 +1736,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06622",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06622"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06622"
   },
   {
    "name": "Jayawant Sawant Prasarak Mandal's Rajarshi Shahu Colleg of Education (B.Ed)",
@@ -1631,7 +1839,10 @@
    "locationNote": "approximate (PIN 411033 area, median of 142 OpenStreetMap addresses)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -1756,7 +1967,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06122",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06122"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06122"
   },
   {
    "name": "A.K.K. New law Academy, Pune",
@@ -1769,9 +1980,29 @@
    "locationNote": "approximate (PIN 411001 area, median of 206 OpenStreetMap addresses)",
    "kind": "Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
    "source": "Directorate of Higher Education, Maharashtra: aided colleges list",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf"
+  },
+  {
+   "name": "AAER's Asian Law College",
+   "address": "S.No.28/15/16/31, Narhe-Dhayari Road, Pari Company Chowk, Dhayari, Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.437398,
+   "longitude": 73.819043,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Dhayari)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2603610812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Abeda Inamdar Senior College",
@@ -1818,7 +2049,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06381",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06381"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06381"
   },
   {
    "name": "Abhinav Education Society'S College Of Computer Science & Management",
@@ -1881,6 +2112,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf"
   },
   {
+   "name": "Adv. Shardulrao Sudhakarrao Jadhavar College of Law",
+   "address": "Near Ram Mandir,Pari Company Road,Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.521374,
+   "longitude": 73.854507,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (taluka headquarters: Pune)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 5 years)), college 2603210812",
+   "sourceUrl": "https://llb5cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Aharm Foundation's, Aharm College of Arts & Commerce, Camp, Pune - 411037",
    "address": "2nd Floor, Shaheen BuildingAdjacent to Azam Campus, Opp. Golibar Maidan Dhobighat Camp",
    "city": "Pune",
@@ -1904,13 +2152,13 @@
    "longitude": 73.854507,
    "locationPrecision": "approximate",
    "locationNote": "approximate (taluka headquarters: Pune)",
-   "kind": "Un-Aided",
+   "kind": "Un-Aided, Autonomous",
    "university": "Savitribai Phule Pune University",
    "courses": [
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06732",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06732"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06732"
   },
   {
    "name": "All India Shri Shivaji Memorial Society's College of Engineering, Pune",
@@ -1927,7 +2175,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06278",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06278"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06278"
   },
   {
    "name": "All India Shri Shivaji Memorial Society's College of Pharmacy, Pune",
@@ -1938,13 +2186,13 @@
    "longitude": 73.879822,
    "locationPrecision": "approximate",
    "locationNote": "approximate (PIN 411001 area, median of 206 OpenStreetMap addresses)",
-   "kind": "Un-Aided",
+   "kind": "Un-Aided, Autonomous",
    "university": "Savitribai Phule Pune University",
    "courses": [
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06376",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06376"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06376"
   },
   {
    "name": "All India Shri Shivaji Memorial Society's Institute of Information Technology,Pune",
@@ -1961,7 +2209,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06282",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06282"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06282"
   },
   {
    "name": "All India Shri Shivaji Memorial Society's, College of Business Administration, Pune",
@@ -2053,7 +2301,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06794",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06794"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06794"
   },
   {
    "name": "Annasaheb Magar Mahavidydalaya",
@@ -2069,6 +2317,40 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: aided colleges list",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf"
+  },
+  {
+   "name": "Arham Law College, Pune",
+   "address": "ARHAM LAW COLLEGE, NEAR DHOBI GHAT, OPP. GOLIBAR MAIDAN, CAMP, PUNE",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.521374,
+   "longitude": 73.854507,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (taluka headquarters: Pune)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 5 years)), college 2602810712",
+   "sourceUrl": "https://llb5cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
+   "name": "Arihant College Of Education",
+   "address": "Sr.No.276/1/2 277/1/2 278/2, Behind Crystal Honda Show Room new Pune -Mumbai Highway Bawdhan (BK) Pune Ta: Pune (corporation Area) Dist: Pune Pincode: 411021",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.521088,
+   "longitude": 73.778859,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (PIN 411021 area, median of 427 OpenStreetMap addresses)",
+   "kind": "Un-Aided Minority",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2600710712",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Arihant Education Foundation Arihant College of Arts Commerce and Science",
@@ -2235,7 +2517,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06273",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06273"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06273"
   },
   {
    "name": "Bhagwan Mahavir Education Society preetam prakash college (Art's&Commerce)",
@@ -2297,7 +2579,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06285",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06285"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06285"
   },
   {
    "name": "Bharati Vidyapeeth's College of Engineering,Lavale, Pune",
@@ -2314,7 +2596,24 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06796",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06796"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06796"
+  },
+  {
+   "name": "Bharatiya Gyanvardhini Sabha'S Kantilal Khinwasara B.Ed.College,Thergaon Pune-411033",
+   "address": "Khasara No.6 Plot No.18 Lxaman Nagar Thergaon -Pune.411033",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.609275,
+   "longitude": 73.772937,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Thergaon)",
+   "kind": "Un-Aided Minority",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2600910711",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Bharatiya Jain Sanghatana's Arts, Science & Comerce College",
@@ -2647,6 +2946,23 @@
    "sourceUrl": "https://www.openstreetmap.org/node/4614226665"
   },
   {
+   "name": "Department of Sports & Physical Education, Savitribai Phule Pune University (formerly University of Pune), Pune",
+   "address": "Department of Sports & Physical Education, Iravati Karve Social Science Complex, Behind SET Guest House, Savitribai Phule Pune University (formerly University of Pune), Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.551235,
+   "longitude": 73.826107,
+   "locationPrecision": "exact",
+   "locationNote": "exact (OpenStreetMap way/995138926)",
+   "kind": "University Managed Unaided College / Department",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "M.P.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (M.P.Ed.), college 2600110911",
+   "sourceUrl": "https://mpedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Dhaeshwar B Ed College",
    "address": "S.No. 48 indrprasthanagar Dhayari Pune 4148, Indraprasthanagar Dhayari Pune 41",
    "city": "Pune",
@@ -2660,6 +2976,23 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
+  },
+  {
+   "name": "Dhareshwar Shikshanshastra Mahavidyalaya",
+   "address": "Sr. no. 48 INDRAPRASTHA NAGAR DHAYARI PUNE 41.",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.437398,
+   "longitude": 73.819043,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Dhayari)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2600210811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Dhole Patil Education Society, Dhole Patil College of Engineering, Wagholi, Tal. Haveli",
@@ -2676,7 +3009,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06307",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06307"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06307"
   },
   {
    "name": "Dhondumama Sathe Homoeopathic Medical College",
@@ -2709,6 +3042,24 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Dnyanganga College Of Education",
+   "address": "Sr.No 25/3/3, Hingane Kh., Sinhgad Road, Pune 411051",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.47725,
+   "longitude": 73.823973,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (PIN 411051 area, median of 73 OpenStreetMap addresses)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed.",
+    "M.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2601610811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Dnyanvardhini Pratishthan's Dnyanvardhini College, Arts, Commerce,Science",
    "address": "Sector No. 18, Shivtejnagar, Chikhali,Pimpri - Chinchwad, Pune",
    "city": "Pune",
@@ -2738,7 +3089,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06915",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06915"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06915"
   },
   {
    "name": "Dr Babasaheb Ambedkar Commerce & M V R Shinde Arts College",
@@ -2769,6 +3120,24 @@
    "courses": null,
    "source": "OpenStreetMap (© OpenStreetMap contributors, ODbL) college/university feature",
    "sourceUrl": "https://www.openstreetmap.org/node/11411784471"
+  },
+  {
+   "name": "Dr D Y Patil Unitech Societys Dr D Y Patil Law College Pimpri Pune",
+   "address": "Sant Tukaram Nagar, Pimpri, Pune.",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.614525,
+   "longitude": 73.815746,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Sant Tukaram Nagar)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2600610812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Dr. Ambedkar Arts & Commerce College, Yerwada, Pune",
@@ -2830,7 +3199,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06272",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06272"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06272"
   },
   {
    "name": "Dr. D. Y. Patil Unitech Society's Dr. D. Y. Patil Institute of Technology, Pimpri, Pune",
@@ -2847,7 +3216,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06207",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06207"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06207"
   },
   {
    "name": "Dr. D.Y. Patil Arts, Commerce & Science Women's College, Pimpri, Pune 411018.",
@@ -2879,7 +3248,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06371",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06371"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06371"
   },
   {
    "name": "Dr. D.Y. Patil Vidya Pratishthan Society Pune Dr.D.Y. Patil B.Ed. College",
@@ -2892,7 +3261,10 @@
    "locationNote": "approximate (locality: Nigdi)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "B.Ed.",
+    "M.Ed."
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -2940,6 +3312,23 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
+  },
+  {
+   "name": "Eagle Education Society's Unique Institute of Management, Pune",
+   "address": "S.No. 36/3C, Katraj Kondhwa Road, Katraj, Pune 411046",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.453679,
+   "longitude": 73.85632,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Katraj)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "BCA / BBA / BMS"
+   ],
+   "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06188",
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06188"
   },
   {
    "name": "Fergusson College",
@@ -3017,6 +3406,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "G S Patil Law College",
+   "address": "Sr.No.1158 to 1160 Newalewasti, Chikhali Pune 411062",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.675283,
+   "longitude": 73.822521,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (PIN 411062 area, median of 74 OpenStreetMap addresses)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2604910812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "G.H Raisoni College of Arts, Commerce and Science",
    "address": "Gat No 1200 Domkhel Road, Wagholi",
    "city": "Pune",
@@ -3046,7 +3452,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06155",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06155"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06155"
   },
   {
    "name": "Genba Education Trust, Genba Sopanrao Moze College of Pharmacy, Wagholi",
@@ -3063,7 +3469,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06384",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06384"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06384"
   },
   {
    "name": "Genba Sopanrao Moze Arts,Comm.&Sci(B.C.S.) College",
@@ -3096,7 +3502,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06144",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06144"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06144"
   },
   {
    "name": "Genba Sopanrao Moze Trust Genaba Sopanrao Moze Adhyapak Mahavidyalay",
@@ -3129,7 +3535,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06138",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06138"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06138"
   },
   {
    "name": "Gokhale Institute of Politics & Economics",
@@ -3386,7 +3792,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06754",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06754"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06754"
   },
   {
    "name": "Ira Education Society Ira Education Society College of Education,Arvi",
@@ -3414,7 +3820,9 @@
    "locationNote": "approximate (PIN 411041 area, median of 302 OpenStreetMap addresses)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "B.Ed."
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -3429,7 +3837,9 @@
    "locationNote": "approximate (locality: Hadapsar)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "B.Ed."
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -3449,7 +3859,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06311",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06311"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06311"
   },
   {
    "name": "Jayawant Shikshan Prasarak Mandal's Jayawant Institute of Management Studies, Tathawade Pune-411033",
@@ -3466,7 +3876,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06129",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06129"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06129"
   },
   {
    "name": "Jayawant Shikshan Prasarak Mandal's Jayawantrao Sawant College of Commerce & Science,Hadapsar,Pune.",
@@ -3498,7 +3908,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06387",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06387"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06387"
   },
   {
    "name": "Jaywant Shikshan Prasarak Mandal's,Rajarshi Shahu College of Engineering, Tathawade, Pune",
@@ -3516,7 +3926,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06141",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06141"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06141"
   },
   {
    "name": "Jet India",
@@ -3578,7 +3988,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06755",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06755"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06755"
   },
   {
    "name": "JSPM University",
@@ -3610,7 +4020,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06143",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06143"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06143"
   },
   {
    "name": "JSPM'S Jaywantrao Sawant College of Engineering,Pune",
@@ -3621,14 +4031,31 @@
    "longitude": 73.937915,
    "locationPrecision": "approximate",
    "locationNote": "approximate (locality: Hadapsar)",
-   "kind": "Un-Aided",
+   "kind": "Un-Aided, Autonomous",
    "university": "Savitribai Phule Pune University",
    "courses": [
     "Engineering",
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06145",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06145"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06145"
+  },
+  {
+   "name": "Jspm'S Rajarshi Shahu College Of Education, Tathawade, Pune 33",
+   "address": "S.No. 82/2,Mumbai Pune Bypass Highway Tathawade Pune-33",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.6154,
+   "longitude": 73.750191,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Tathawade)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2603510811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "K. J.'s Educational Institut Trinity College of Engineering and Research, Pisoli, Haveli",
@@ -3645,7 +4072,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06184",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06184"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06184"
   },
   {
    "name": "K.B. Joshi Institute of Information Technology, Pune",
@@ -3662,7 +4089,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06971",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06971"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06971"
   },
   {
    "name": "K.J.'s Educational Institute's K.J.College of Engineering & Management Research, Pisoli",
@@ -3679,7 +4106,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06320",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06320"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06320"
   },
   {
    "name": "Kamala Education Society Pratibha College Of Education",
@@ -3692,7 +4119,9 @@
    "locationNote": "approximate (locality: Chinchwad)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "B.Ed."
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -3711,7 +4140,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06167",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06167"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06167"
   },
   {
    "name": "Kannada Sangha's Kaveri College of Science and Commerce",
@@ -3752,13 +4181,13 @@
    "longitude": 73.854507,
    "locationPrecision": "approximate",
    "locationNote": "approximate (taluka headquarters: Pune)",
-   "kind": "Un-Aided",
+   "kind": "Un-Aided, Autonomous",
    "university": "Savitribai Phule Pune University",
    "courses": [
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06808",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06808"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06808"
   },
   {
    "name": "Khadki Education Society's Tikaram Jagannath Arts, Commerce & Science College",
@@ -3790,7 +4219,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06634",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06634"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06634"
   },
   {
    "name": "Krishna Educational Foundation Leelawati College",
@@ -3837,7 +4266,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06961",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06961"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06961"
   },
   {
    "name": "M E S College Of Performing Arts, Pune",
@@ -3960,6 +4389,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "MAEER's Saint Dnyaneshwar B.Ed. College",
+   "address": "In front of Gajanan Maharaj Mandir Dehu Phata Alandi (D)",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.677245,
+   "longitude": 73.898113,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Alandi)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2604310812",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Magarpatta College of Hospitality Management, Hadapsar, Pune",
    "address": "133/1+2, near west gate, Magarpatta City, Hadapsar, Pune - 411028",
    "city": "Pune",
@@ -4004,7 +4450,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06952",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06952"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06952"
   },
   {
    "name": "Maharashtra Education Society's Senior College,Pune",
@@ -4065,6 +4511,24 @@
    "courses": null,
    "source": "OpenStreetMap (© OpenStreetMap contributors, ODbL) college/university feature",
    "sourceUrl": "https://www.openstreetmap.org/way/331478725"
+  },
+  {
+   "name": "Maharashtriya Mandal's Chandrashekhar Agashe College of Physical Education Pune",
+   "address": "Veer Savarkar Marg Mukundnagar Gultekadi Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.495217,
+   "longitude": 73.866224,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Mukund Nagar)",
+   "kind": "Government Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.P.Ed.",
+    "M.P.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.P.Ed.), college 2600110411",
+   "sourceUrl": "https://bpedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Mahatma Gandhi Sarvodya Sangh's Padmashree Manibhai Desai Mahavidhyalya",
@@ -4171,7 +4635,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06156",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06156"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06156"
   },
   {
    "name": "Marathwada Mitra Mandal's College of Pharmacy,Thergaon( Kalewadi),Pune",
@@ -4188,7 +4652,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06380",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06380"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06380"
   },
   {
    "name": "Marathwada Mitra Mandal's Institute of Technology, Lohgaon, Pune",
@@ -4205,7 +4669,25 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06203",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06203"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06203"
+  },
+  {
+   "name": "Marathwada Mitra Mandal's Shankarrao Chavan Law College, Pune",
+   "address": "202/A, Deccan Gymkhana, Pune-411004",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.515893,
+   "longitude": 73.84116,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Deccan Gymkhana)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2601410812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Marathwada Mitramandal College of Commerce",
@@ -4253,6 +4735,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "MES Law College Pune",
+   "address": "1214-15, Sadashiv Peth, Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.510776,
+   "longitude": 73.850215,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Sadashiv Peth)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2604010812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "MES Night College of Arts & Commerce",
    "address": "Abasaheb Garware college Campus, Behind Janata Sahakari Bank ltd. Karve road Pune 04",
    "city": "Pune",
@@ -4282,7 +4781,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06276",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06276"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06276"
   },
   {
    "name": "MKSSS'S K.B.Joshi Institute of Technology, Pune",
@@ -4353,13 +4852,13 @@
    "longitude": 73.846433,
    "locationPrecision": "exact",
    "locationNote": "exact (OpenStreetMap way/91712361)",
-   "kind": "Un-Aided",
+   "kind": "Un-Aided, Autonomous",
    "university": "Savitribai Phule Pune University",
    "courses": [
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06281",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06281"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06281"
   },
   {
    "name": "National Defence Academy",
@@ -4421,7 +4920,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06905",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06905"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06905"
   },
   {
    "name": "NBN Sinhgad Technical Institutes Campus, Pune",
@@ -4438,7 +4937,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06772",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06772"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06772"
   },
   {
    "name": "Ness Wadia College of Commerce",
@@ -4514,6 +5013,23 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
+  },
+  {
+   "name": "P. Jog Law College",
+   "address": "Shri Chhatrapati Rajaram Maharaj Path, Mayur Colony, Kothrud, Pune, Maharashtra",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.50722,
+   "longitude": 73.805814,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Kothrud)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 5 years)), college 2602910812",
+   "sourceUrl": "https://llb5cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "P.E.Society's Modern College of Arts, Science and Commerce, Ganeshkhind, Pune",
@@ -4606,6 +5122,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Paschim Maharashtra Education Trust'S Pune College Of Education",
+   "address": "Hasan khan Educational Campus,51 Mitanagar KONDHWA KHURDH PUNE",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.477991,
+   "longitude": 73.894063,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Kondhwa)",
+   "kind": "Un-Aided Minority",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2605010712",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Pawana Shikshan Prasarak Mandal Art's And Commerce College",
    "address": "'J' Block, J/P - 12, Indrayaninagar, Bhosari, Pune - 26'J' Block, J/P - 12, Indrayaninagar, Bhosari, Pune -",
    "city": "Pune",
@@ -4695,7 +5228,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06175",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06175"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06175"
   },
   {
    "name": "Pimpri Chinchwad Education Trust's Pimpri Chinchwad College Of Engineering And Research, Ravet",
@@ -4713,7 +5246,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06822",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06822"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06822"
   },
   {
    "name": "Poona College of Arts, Science & Commerce",
@@ -4745,7 +5278,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06652",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06652"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06652"
   },
   {
    "name": "Poona District Education Association, Shankarrao Ursal College of Pharmaceutical Sciences & Research Centre, Kharadi, Tal: Haveli",
@@ -4762,7 +5295,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06385",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06385"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06385"
   },
   {
    "name": "Pragnya College of Management & Computer Studies, Handewadi,",
@@ -4825,6 +5358,24 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Progressive Education Society Modern Law College",
+   "address": "S. No.85/86, Pashan Rd, University of Pune Circle, Ganeshkhind",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.521374,
+   "longitude": 73.854507,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (taluka headquarters: Pune)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2601710812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Progressive Education Society's Modern College of Engineering, Pune",
    "address": "P.E.S. Modern College of Engineering, 1186 A, Shivajinagar, Off. J.M. Road, Pune",
    "city": "Pune",
@@ -4839,7 +5390,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06139",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06139"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06139"
   },
   {
    "name": "Progressive Education Society's Modern College of Pharmacy, Moshi, Pune",
@@ -4850,13 +5401,13 @@
    "longitude": 73.854507,
    "locationPrecision": "approximate",
    "locationNote": "approximate (taluka headquarters: Pune)",
-   "kind": "Un-Aided",
+   "kind": "Un-Aided, Autonomous",
    "university": "Savitribai Phule Pune University",
    "courses": [
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06364",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06364"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06364"
   },
   {
    "name": "Progressive Education Society's Modern College of Pharmacy, Nigdi, Pune",
@@ -4873,7 +5424,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06370",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06370"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06370"
   },
   {
    "name": "Progressive Education Society's Modern Institute of Business Studies, Nigdi, Pune",
@@ -4890,7 +5441,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06812",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06812"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06812"
   },
   {
    "name": "Progressive Education Societys B.Ed. College,Pune - 5",
@@ -4908,6 +5459,41 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Psd Shastri Educational Foundation's Asma Institute Of Management, Pune",
+   "address": "S. No. 85/1, N.D.A. Road, Shivane, Pune 411029",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.467041,
+   "longitude": 73.793065,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Shivane)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "BCA / BBA / BMS"
+   ],
+   "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06164",
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06164"
+  },
+  {
+   "name": "Pune District Education Association s Law College. Hadapsar",
+   "address": "Annasaheb Magar College Campus, Hadapsar, Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.500774,
+   "longitude": 73.937915,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Hadapsar)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2601810812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Pune District Education Association's College of Engineering, Manjari(Bk), Hadapsar, Pune",
    "address": "Hadapsar-Manjari Road, Manjari(BK),Dist. Pune",
    "city": "Pune",
@@ -4922,7 +5508,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06206",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06206"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06206"
   },
   {
    "name": "Pune District Education Associations College Of Pharmacy Hadapsar Pune",
@@ -4939,7 +5525,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06934",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06934"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06934"
   },
   {
    "name": "Pune Institute of Aviation Technology, Ambegao BK. Pune - 411046",
@@ -4971,7 +5557,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06271",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06271"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06271"
   },
   {
    "name": "Pune University MBA(PUMBA)",
@@ -5003,7 +5589,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06274",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06274"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06274"
   },
   {
    "name": "PVG's College of Science, Parvati",
@@ -5046,7 +5632,9 @@
    "locationNote": "approximate (PIN 411043 area, median of 38 OpenStreetMap addresses)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "B.Ed."
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -5080,7 +5668,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06382",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06382"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06382"
   },
   {
    "name": "Rajarshi Shahu College of Pharmacy & Research, Tathawade, Pune",
@@ -5097,7 +5685,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06367",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06367"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06367"
   },
   {
    "name": "Rajiv Gandhi Academy of E-Learning",
@@ -5129,7 +5717,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06158",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06158"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06158"
   },
   {
    "name": "Rajmata Shikshan Prasarak Mandal's Arts Commerce Night College Landewadi Bhosri",
@@ -5176,7 +5764,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06369",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06369"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06369"
   },
   {
    "name": "Rani Putalabai Women Law College, Bhosari - Pune",
@@ -5223,7 +5811,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06769",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06769"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06769"
   },
   {
    "name": "Rayat Shikshan Sanstha's Mahatma Phule Mahavidyalaya, Pimpri, Pune",
@@ -5239,6 +5827,38 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: aided colleges list",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf"
+  },
+  {
+   "name": "S S Patil Law College",
+   "address": "15/1, Ganesh nagar, Dapodi, Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.592712,
+   "longitude": 73.862597,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Ganesh Nagar)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2604810812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
+   "name": "S. B Patil College",
+   "address": "Pune, Pune district",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.650608,
+   "longitude": 73.745241,
+   "locationPrecision": "exact",
+   "locationNote": "exact (OpenStreetMap way/1241281789)",
+   "kind": "University",
+   "university": null,
+   "courses": null,
+   "source": "OpenStreetMap (© OpenStreetMap contributors, ODbL) college/university feature",
+   "sourceUrl": "https://www.openstreetmap.org/way/1241281789"
   },
   {
    "name": "S. V. Union College of Commerce (Evening)",
@@ -5360,7 +5980,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06927",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06927"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06927"
   },
   {
    "name": "Saibalaji Education Society, International Institute of Management & Human Resource Development(W), Nere Marunje, Pune",
@@ -5377,7 +5997,24 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06366",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06366"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06366"
+  },
+  {
+   "name": "Sankalp College of Law",
+   "address": "140/6/1, Dangat Enclave, NDA road, Warje-Malwadi, Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.482044,
+   "longitude": 73.800171,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Warje)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2603710812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Sanskar Mandir's Arts & Commerce College",
@@ -5425,6 +6062,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Sarhad Law School, Katraj, Pune",
+   "address": "Sr.No.21/1,21/2, Gujar Nimbalkarwadi, Katraj, Pune 411046",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.453679,
+   "longitude": 73.85632,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Katraj)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 5 years)), college 2603010712",
+   "sourceUrl": "https://llb5cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Savitribai Phule Pune University",
    "address": "University Road, Pune",
    "city": "Pune",
@@ -5469,7 +6123,41 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06989",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06989"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06989"
+  },
+  {
+   "name": "Shikshan Maharshi Dr. D.Y. Patil Centre for Management & Research, Chikhali, Pune",
+   "address": "Gat No. 1029 & 1030,Newale Vasthi, A/P Chikhali Tal.Haveli, Dist. Pune 411014",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.556972,
+   "longitude": 73.92582,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (PIN 411014 area, median of 210 OpenStreetMap addresses)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "BCA / BBA / BMS"
+   ],
+   "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06168",
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06168"
+  },
+  {
+   "name": "Shilpkar Law College",
+   "address": "Wagholi Road, Ramnagar, Lonikand, Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.621656,
+   "longitude": 74.025943,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Loni kand)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2603410812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Shree Chanakya Education Society’s Indira College of Arts, Commerce and Science, Pimpri –Chinchwad C",
@@ -5501,7 +6189,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06759",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06759"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06759"
   },
   {
    "name": "Shree sadgurusaibaba seva trust Late.C.R.Rangnathan Deaf arts and commerce college Vishrantwadi,Pune",
@@ -5549,6 +6237,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Shri Jain Vidya Prasarak Mandal College of Education Chinchwad, Pune-411033.",
+   "address": "shri jain vidya prasarak mandal college of education, fattechand marg, Near 7 Orange Hospital, pawananagar, chinchwad, pune.",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.631581,
+   "longitude": 73.78546,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Chinchwad)",
+   "kind": "Un-Aided Minority",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2607010711",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Shri Jain Vidya Prasarak Mandal Shri Jain Vidya Prasarak Mandal B.Ed College",
    "address": "fattechand marg,chinchwadgaon,pune - 411033fattechand marg,chinchwadgaon,pune - 411033",
    "city": "Pune",
@@ -5577,6 +6282,23 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
+  },
+  {
+   "name": "Shri Martand Bhairav Adhyapak Mahavidyalya, Balewadi, Pune",
+   "address": "4/2+3, SKP Campus, Balewadi, Pune-45.",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.582027,
+   "longitude": 73.768983,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Balewadi)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2607110811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Shri Martand Bhairav B.Ed. College",
@@ -5619,7 +6341,10 @@
    "locationNote": "approximate (locality: Shukrawar Peth)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -5634,7 +6359,9 @@
    "locationNote": "approximate (PIN 411009 area, median of 1409 OpenStreetMap addresses)",
    "kind": "Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "B.Ed."
+   ],
    "source": "Directorate of Higher Education, Maharashtra: aided colleges list",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf"
   },
@@ -5653,7 +6380,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06823",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06823"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06823"
   },
   {
    "name": "SIBM",
@@ -5715,7 +6442,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06187",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06187"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06187"
   },
   {
    "name": "Sinhgad College of Arts and Commerce, Narhe, Pune",
@@ -5762,7 +6489,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06358",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06358"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06358"
   },
   {
    "name": "Sinhgad Institute of Technology and Scinece",
@@ -5824,7 +6551,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06362",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06362"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06362"
   },
   {
    "name": "Sir Parashurambhau College, Pune",
@@ -6032,7 +6759,10 @@
    "locationNote": "approximate (locality: Pimpri)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -6052,6 +6782,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Suhrud Mandal Pune'S Pandurang Shamrao Mulgaonkar Vishesh Shikshan Adhyapak Mahavidyalaya. 93/1/B Parvati Paytha Laxminagar Pune 411009",
+   "address": "93/1/B Parvati Paytha Laxminagar Pune 411009",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.476041,
+   "longitude": 73.850542,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (PIN 411009 area, median of 1409 OpenStreetMap addresses)",
+   "kind": "Government Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2608020417",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Suryadatta College of Hospitality Management and Travel Tourism (SCHMTT) Bavdhan",
    "address": "r. No. 342, Bavdhan, Pune - 411021, Maharashtra, India.",
    "city": "Pune",
@@ -6065,6 +6812,21 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
+  },
+  {
+   "name": "Suryadatta college of Management",
+   "address": "DSK Ranwara road, Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.52029,
+   "longitude": 73.77313,
+   "locationPrecision": "exact",
+   "locationNote": "exact (OpenStreetMap node/9480088186)",
+   "kind": "University",
+   "university": null,
+   "courses": null,
+   "source": "OpenStreetMap (© OpenStreetMap contributors, ODbL) college/university feature",
+   "sourceUrl": "https://www.openstreetmap.org/node/9480088186"
   },
   {
    "name": "Suryadatta Educational Foundation, Suryadatta Institute of Business Management and Technology, Pune",
@@ -6081,7 +6843,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06548",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06548"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06548"
   },
   {
    "name": "Suryadatta Educational Foundation, Suryadatta Institute of Management and Mass Communication, Pune",
@@ -6092,13 +6854,13 @@
    "longitude": 73.77313,
    "locationPrecision": "exact",
    "locationNote": "exact (OpenStreetMap node/9480088186)",
-   "kind": "Un-Aided",
+   "kind": "Un-Aided, Autonomous",
    "university": "Savitribai Phule Pune University",
    "courses": [
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06547",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06547"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06547"
   },
   {
    "name": "Suryadatta Institute of Fashion Technology, Sadashiv Peth, Pune - 411030",
@@ -6129,6 +6891,24 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
+  },
+  {
+   "name": "Surydatta Law College, Pune",
+   "address": "Survey No 342, Patil Nagar, Bavdhan, Pune 411071",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.520954,
+   "longitude": 73.778087,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Bavdhan)",
+   "kind": "Un-Aided Minority",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2603810712",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Swaraj College of Commerce, Balaji Nagar,Pune - 411043",
@@ -6311,6 +7091,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Trinity College of Law",
+   "address": "SN 25, Pisoli, Kondhwa-Saswad Road, Bopdev Ghat, Pune",
+   "city": "Pune",
+   "taluka": "Pune City / Haveli",
+   "latitude": 18.480674,
+   "longitude": 73.943502,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Saswad Road)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 5 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 5 years)), college 2603310812",
+   "sourceUrl": "https://llb5cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Trinity College Of Pharmacy Pune",
    "address": "S. No. 25 & 27, Kondhawa-Saswad Road, Bopdev Ghat, Pune 411048",
    "city": "Pune",
@@ -6325,7 +7122,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06956",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06956"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06956"
   },
   {
    "name": "TSSM's Bhivarabai Sawant College of Engineering and Research, Narhe, Pune",
@@ -6342,7 +7139,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06649",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06649"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06649"
   },
   {
    "name": "UEI Global Education, Pune",
@@ -6374,7 +7171,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06625",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06625"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06625"
   },
   {
    "name": "Vasantdada Patil Pratishthans Guruvarya Sadanand Maharaj Arts &commerce College",
@@ -6526,7 +7323,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06775",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06775"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06775"
   },
   {
    "name": "Yashwantrao Chavan Law College",
@@ -6539,7 +7336,10 @@
    "locationNote": "approximate (PIN 411009 area, median of 1409 OpenStreetMap addresses)",
    "kind": "Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "Law (LL.B. 3 years)",
+    "Law (LL.B. 5 years)"
+   ],
    "source": "Directorate of Higher Education, Maharashtra: aided colleges list",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf"
   },
@@ -6559,23 +7359,6 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf"
   },
   {
-   "name": "Zeal Education Society's Zeal College of Engineering & Reserch, Narhe, Pune",
-   "address": "Survey No.39, Narhe-Dhayari Road, Narhe Pune-411 041",
-   "city": "Pune",
-   "taluka": "Pune City / Haveli",
-   "latitude": 18.448423,
-   "longitude": 73.809421,
-   "locationPrecision": "approximate",
-   "locationNote": "approximate (PIN 411041 area, median of 302 OpenStreetMap addresses)",
-   "kind": "Un-Aided, Autonomous",
-   "university": "Savitribai Phule Pune University",
-   "courses": [
-    "Engineering"
-   ],
-   "source": "State CET Cell / DTE (Engineering), institute 06298",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06298"
-  },
-  {
    "name": "Zeal Education Society's Zeal Institute of Business Administration, Computer Application and Research, Pune",
    "address": "S. No. 39, Narhe, Behind Bhaviravnath Temple,Dayari-Narhe Road,Tal.- Haveli, Dist Pune 411041",
    "city": "Pune",
@@ -6590,7 +7373,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06152",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06152"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06152"
   },
   {
    "name": "Adhapak Mahavidyalaya (B.Ed.)",
@@ -6713,6 +7496,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
   {
+   "name": "Kai. Nirmalatai Pingle Law College, Chakan",
+   "address": "94/1B, Near Chakreshwar Madir, At. Po. Chakan, Tal. Khed, Dist Pune",
+   "city": "Rajgurunagar",
+   "taluka": "Khed",
+   "latitude": 18.762311,
+   "longitude": 73.862545,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Chakan)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2602910812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Maharashtra Academy Of Engineering And Educational Research SAINT DNYANESHWAR B.ED COLLEGE ALANDI",
    "address": "s.d.Bed college Dehu Phata alandi (D) Tal - Khed Dist - Pune Pune 412105",
    "city": "Rajgurunagar",
@@ -6729,7 +7529,7 @@
   },
   {
    "name": "MIT Academy of Engineering,Alandi, Pune",
-   "address": "Alandi (D) Tal. Khed, Dist. Pune",
+   "address": "Alandi (D) Tal. Khed, Dist. Pune [Off-Campus : Alandi (D),Tal. Khed, Anandi, Dist. Pune-412105]",
    "city": "Rajgurunagar",
    "taluka": "Khed",
    "latitude": 18.674778,
@@ -6739,10 +7539,29 @@
    "kind": "Un-Aided, Autonomous",
    "university": "Savitribai Phule Pune University",
    "courses": [
-    "Engineering"
+    "Engineering",
+    "Design"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06146",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06146"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06146"
+  },
+  {
+   "name": "Nav Sahyadri Charitable Trust's College Of Education (B.Ed.), Chakan Tal. Khed Dist. Pune",
+   "address": "94/1B, Chakreshwar Nagar, Chakan Tal. Khed Dist. Pune 410501",
+   "city": "Rajgurunagar",
+   "taluka": "Khed",
+   "latitude": 18.762311,
+   "longitude": 73.862545,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Chakan)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed.",
+    "M.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2604810811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "P.K. Technical Campus, Pune.",
@@ -6759,7 +7578,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06768",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06768"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06768"
   },
   {
    "name": "Sharadchandra Pawar Arts & Commerce College, Alandi Devachi,",
@@ -6806,7 +7625,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06372",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06372"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06372"
   },
   {
    "name": "Sharadchandraji Pawar College, JEJURI",
@@ -6913,7 +7732,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06183",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06183"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06183"
   },
   {
    "name": "Delight College of Pharmacy, Koregaon Bhima",
@@ -6930,7 +7749,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06906",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06906"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06906"
   },
   {
    "name": "Gurudatta Gramvikas Pratishtans, Jijamata Senior College, Jategaon",
@@ -6946,6 +7765,57 @@
    "courses": null,
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
+  },
+  {
+   "name": "Jai Shriram College Of Education (B.Ed) Shikrapur, Pune.",
+   "address": "AT.PO SHIKRAPUR TAL.SHIRUR DIST.PUNE",
+   "city": "Shirur",
+   "taluka": "Shirur",
+   "latitude": 18.695989,
+   "longitude": 74.136901,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Shikrapur)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2603310811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
+   "name": "Kai Bhagubai Pingle Law College Pabal",
+   "address": "Pabal, Tal. Shirur",
+   "city": "Shirur",
+   "taluka": "Shirur",
+   "latitude": 18.831534,
+   "longitude": 74.053644,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Pabal)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2603510812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
+   "name": "Kasturi Shikshan Sanstha College Of Education Shikrapur",
+   "address": "Pratimanagar, Pune Nagar Road, Shikrapur",
+   "city": "Shirur",
+   "taluka": "Shirur",
+   "latitude": 18.695989,
+   "longitude": 74.136901,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Shikrapur)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2603710811",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Kasturi Shikshan Sanstha Kasturi Shikshan Sanstha's College of Education",
@@ -6973,7 +7843,9 @@
    "locationNote": "approximate (taluka headquarters: Shirur)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "Law (LL.B. 5 years)"
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -7007,7 +7879,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06383",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06383"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06383"
   },
   {
    "name": "Loknete Shri. Dadapatil Pharate College of Pharmacy, At Post Manadavgan Pharata, Tal.Shirur, Dist. Pune",
@@ -7024,7 +7896,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06879",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06879"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06879"
   },
   {
    "name": "New Vijan Kala, Vanijya Mahavidyalaya, at post Takali Haji. Pune - 412218",
@@ -7087,6 +7959,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf"
   },
   {
+   "name": "Shardchandraji Pawar College Of Education (B.Ed) Koregaon Bhima",
+   "address": "Sharad Campus Pimple jagtap Road Koregaon Bhima Tal. Shirur Dist. Pune Pin. 412216",
+   "city": "Shirur",
+   "taluka": "Shirur",
+   "latitude": 18.627826,
+   "longitude": 74.033815,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (PIN 412216 area, median of 24 OpenStreetMap addresses)",
+   "kind": "Un-Aided Minority",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "B.Ed."
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (B.Ed.), college 2606410711",
+   "sourceUrl": "https://bedcap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Shri Chatrapati Sambhaji Shikshan Sanstha's Sitabai Thite College of Pharmarcy, Shirur, (Ghodnadi). Pune",
    "address": "Behind Hudco Colony, Shirur, (Ghodnadi) Dist. Pune",
    "city": "Shirur",
@@ -7101,7 +7990,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06368",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06368"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06368"
   },
   {
    "name": "Shri Mohatadevi Sevabhavi Pratishthan Crystal College, Ranjangaon Ganpati,Tal Shirur,Dist Pune",
@@ -7134,6 +8023,23 @@
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/2023/06/GrantedCollegeList.pdf"
   },
   {
+   "name": "Shri Swami Vivekanand Law College Shirur",
+   "address": "AT SHIRUR MOTINALA SHIRUR",
+   "city": "Shirur",
+   "taluka": "Shirur",
+   "latitude": 18.826589,
+   "longitude": 74.372525,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Shirur)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2604410812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
+  },
+  {
    "name": "Shri Vasantrao Pharate Patil College of Arts, Commerce & Science (B.B.A., B.C.A., B.C.S.)",
    "address": "Mandavgan Pharata,Tal - Shirur Dist - PuneMandavgan Pharata,Tal - Shirur Dist - Pune pin - 412211",
    "city": "Shirur",
@@ -7163,7 +8069,24 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (BCA / BBA / BMS), institute 06127",
-   "sourceUrl": "https://bca2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06127"
+   "sourceUrl": "https://bca2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06127"
+  },
+  {
+   "name": "Universal Law College",
+   "address": "Gat No. 775, AT. Po. Karandi, Tal. Shirur",
+   "city": "Shirur",
+   "taluka": "Shirur",
+   "latitude": 18.826589,
+   "longitude": 74.372525,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Shirur)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2604110812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Aditi College of Hotel Management and Civil Services, Waksai, Tal - Mawal, Dist - Pune",
@@ -7240,7 +8163,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06991",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06991"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06991"
   },
   {
    "name": "Dr.D.Y.Patil College Of Engineering & Innovation,Talegaon",
@@ -7257,7 +8180,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06834",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06834"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06834"
   },
   {
    "name": "Dr.D.Y.Patil Unitech Society's, Pune Dr.D.Y.Patil Arts, Commerce Night College, Pimpri, Pune - 411018",
@@ -7320,7 +8243,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06179",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06179"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06179"
   },
   {
    "name": "INDRAYANI MAHAVIDYALAYA, Talegaon Dabhade, Pune",
@@ -7352,7 +8275,24 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06902",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06902"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06902"
+  },
+  {
+   "name": "Late Adv Ku Shalaka Santosh Khandge Law College Talegaon Dabhade",
+   "address": "“Vishnupuri”, Talegaon Dabhade,",
+   "city": "Vadgaon Maval",
+   "taluka": "Maval",
+   "latitude": 18.733711,
+   "longitude": 73.672859,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (locality: Talegaon Dabhade)",
+   "kind": "Un-Aided",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Law (LL.B. 3 years)"
+   ],
+   "source": "State CET Cell CAP 2026-27 approved colleges (Law (LL.B. 3 years)), college 2603110812",
+   "sourceUrl": "https://llb3cap26.mahacet.org/Public/SearchCollege.aspx"
   },
   {
    "name": "Lonavla Education Trust's DBNP Arts, SSGG Commerce & Sceince College, Lonavla",
@@ -7430,7 +8370,7 @@
     "BCA / BBA / BMS"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06310",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06310"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06310"
   },
   {
    "name": "S.M.S.T. College of Education",
@@ -7492,7 +8432,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06149",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06149"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06149"
   },
   {
    "name": "Siddhant College of Pharmacy, Sudumbre",
@@ -7509,11 +8449,11 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06258",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06258"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06258"
   },
   {
    "name": "Sinhgad Institute of Technology",
-   "address": "Gat No.309/310/314, Pune-Mumbai Express Highway, kusgaon(BK), Lonavala Pune, 410401",
+   "address": "Gat No.309/310 Pune-Mumbai Express way, kusgaon(BK), Lonavala, Tal Maval, Dist- Pune, 410401",
    "city": "Vadgaon Maval",
    "taluka": "Maval",
    "latitude": 18.754856,
@@ -7526,7 +8466,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06185",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06185"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06185"
   },
   {
    "name": "Sinhgad Technical Education Society Smt. Kashibai Navale College of Education And Training",
@@ -7539,7 +8479,9 @@
    "locationNote": "approximate (locality: Lonavala)",
    "kind": "Non-Aided",
    "university": "Savitribai Phule Pune University, Pune",
-   "courses": null,
+   "courses": [
+    "B.Ed."
+   ],
    "source": "Directorate of Higher Education, Maharashtra: non-aided colleges 2022-23",
    "sourceUrl": "https://dhepune.gov.in/wp-content/uploads/1964/11/Non-Aided-Colleges-2022-23.pdf"
   },
@@ -7558,7 +8500,7 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06378",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06378"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06378"
   },
   {
    "name": "SKN Sinhgad Institute of Technology & Science, Kusgaon(BK),Pune.",
@@ -7575,7 +8517,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06770",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06770"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06770"
   },
   {
    "name": "STES's Sinhgad Institute of Hotel Management & Catering Technology, Kusgaon Bk., Lonavala, Pune",
@@ -7607,7 +8549,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06767",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06767"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06767"
   },
   {
    "name": "V.P.S. Institute of Hospitality Studies & Hotel Management, Mouje Waksai, Maval",
@@ -7641,7 +8583,7 @@
   },
   {
    "name": "Vidya Prasarini Sabha's College of Engineering & Technology, Lonavala",
-   "address": "Gat No. 685, Mouje-Waksai, Tah- Maval, Dist Pune.",
+   "address": "Gat No. 685, Mouje-Waksai, Tah- Maval, Dist Pune 410401",
    "city": "Vadgaon Maval",
    "taluka": "Maval",
    "latitude": 18.763634,
@@ -7654,7 +8596,7 @@
     "Engineering"
    ],
    "source": "State CET Cell / DTE (Engineering), institute 06815",
-   "sourceUrl": "https://fe2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06815"
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06815"
   },
   {
    "name": "VPS College of Pharmacy, Waksai, Lonavala",
@@ -7671,7 +8613,24 @@
     "Pharmacy"
    ],
    "source": "State CET Cell / DTE (Pharmacy), institute 06985",
-   "sourceUrl": "https://ph2025.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06985"
+   "sourceUrl": "https://ph2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06985"
+  },
+  {
+   "name": "Zeal Education Society's Zeal College of Engineering & Reserch, Narhe, Pune",
+   "address": "Survey No.39, Narhe-Dhayari Road, Narhe Pune-411 041 [Off-Campus : Gat No. 354/1 Talegaon,Chakan Road, Induri, Taluka Maval, Dist.Pune-411 041]",
+   "city": "Vadgaon Maval",
+   "taluka": "Maval",
+   "latitude": 18.448423,
+   "longitude": 73.809421,
+   "locationPrecision": "approximate",
+   "locationNote": "approximate (PIN 411041 area, median of 302 OpenStreetMap addresses)",
+   "kind": "Un-Aided, Autonomous",
+   "university": "Savitribai Phule Pune University",
+   "courses": [
+    "Engineering"
+   ],
+   "source": "State CET Cell / DTE (Engineering), institute 06298",
+   "sourceUrl": "https://fe2026.mahacet.org/StaticPages/frmInstituteSummary.aspx?InstituteCode=06298"
   },
   {
    "name": "Amruteshwar Arts, Commerce & Science College, Vinzar",

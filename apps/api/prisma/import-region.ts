@@ -210,6 +210,7 @@ try {
   );
   let placesCreated = 0;
   let placesKept = 0;
+  let placesRecategorised = 0;
   for (const p of places) {
     const categoryId = categories.get(p.category);
     if (!categoryId)
@@ -217,10 +218,31 @@ try {
 
     const sameName = await db.place.findMany({
       where: { name: p.name },
-      select: { id: true, latitude: true, longitude: true },
+      select: {
+        id: true,
+        latitude: true,
+        longitude: true,
+        createdById: true,
+        createdAt: true,
+        updatedAt: true,
+        categories: { where: { isPrimary: true }, select: { categoryId: true } },
+      },
     });
-    if (sameName.some((row) => distanceMeters(row, p) <= SAME_PLACE_METERS)) {
+    const same = sameName.find((row) => distanceMeters(row, p) <= SAME_PLACE_METERS);
+    if (same) {
       placesKept += 1;
+      // A better category in a newer snapshot (an eatery that is really a mess) reaches rows this
+      // import created and nobody has edited since.
+      const primary = same.categories[0]?.categoryId;
+      if (same.createdById === importer.id && untouched(same) && primary !== categoryId) {
+        await db.$transaction([
+          db.placeCategory.deleteMany({ where: { placeId: same.id } }),
+          db.placeCategory.create({ data: { placeId: same.id, categoryId, isPrimary: true } }),
+          // Keep updatedAt = createdAt so the row still counts as untouched by staff.
+          db.place.update({ where: { id: same.id }, data: { updatedAt: same.createdAt } }),
+        ]);
+        placesRecategorised += 1;
+      }
       continue;
     }
     // A name with no Latin letters (a Marathi name, say) slugs to nothing: use its city instead.
@@ -325,7 +347,7 @@ try {
 
   console.log(
     `\nColleges: ${collegesCreated} added, ${collegesKept} already there (${collegesCorrected} descriptions corrected)` +
-      `\nPlaces:   ${placesCreated} added, ${placesKept} already there, ${pruned.count} no longer in any snapshot removed` +
+      `\nPlaces:   ${placesCreated} added, ${placesKept} already there (${placesRecategorised} recategorised), ${pruned.count} no longer in any snapshot removed` +
       `\nLinks:    ${linked} new college-place links (of ${links.length} within range)` +
       `\n\nAll imported rows are ACTIVE and NOT verified. Sources and licences: prisma/data/${regionKey}/*.json`,
   );
