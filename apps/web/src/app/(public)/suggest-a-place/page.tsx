@@ -14,8 +14,8 @@ export default function SuggestPlacePage() {
       <div className="mb-8 flex flex-col gap-2">
         <h1 className="text-3xl font-bold text-ink">Suggest a place</h1>
         <p className="text-body">
-          Know a mess, PG, library or shop near your college that isn&apos;t listed yet? Tell us about
-          it and we&apos;ll review it.
+          Know a mess, PG, library or shop near your college that isn&apos;t listed yet? Tell us
+          about it and we&apos;ll review it.
         </p>
       </div>
 

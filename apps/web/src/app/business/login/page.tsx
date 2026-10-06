@@ -20,7 +20,10 @@ export default async function BusinessLoginPage({
       subtitle={
         <>
           New to CampusPin?{' '}
-          <Link href={ROUTES.registerBusiness} className="font-medium text-action hover:text-action-hover">
+          <Link
+            href={ROUTES.registerBusiness}
+            className="font-medium text-action hover:text-action-hover"
+          >
             Create a business account
           </Link>
         </>
@@ -28,7 +31,10 @@ export default async function BusinessLoginPage({
     >
       <LoginForm next={next} />
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-        <Link href={ROUTES.forgotPassword} className="font-medium text-action hover:text-action-hover">
+        <Link
+          href={ROUTES.forgotPassword}
+          className="font-medium text-action hover:text-action-hover"
+        >
           Forgot your password?
         </Link>
         <Link href={ROUTES.login} className="text-muted hover:text-ink">

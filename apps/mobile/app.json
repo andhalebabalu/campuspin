@@ -59,6 +59,14 @@
         {
           "locationWhenInUsePermission": "CampusPin uses your location to pin a place you are adding on the map."
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "CampusPin uses the camera to scan CampusPin QR codes at restaurants and shops.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
       ]
     ],
     "experiments": {

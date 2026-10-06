@@ -23,7 +23,10 @@ export default function StudentRegisterPage() {
       <RegisterForm accountType="STUDENT" />
       <p className="text-center text-sm text-muted">
         Not a student?{' '}
-        <Link href={ROUTES.registerBusiness} className="font-medium text-action hover:text-action-hover">
+        <Link
+          href={ROUTES.registerBusiness}
+          className="font-medium text-action hover:text-action-hover"
+        >
           Create a business account instead
         </Link>
       </p>

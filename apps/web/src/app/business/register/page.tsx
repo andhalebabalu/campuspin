@@ -14,7 +14,10 @@ export default function BusinessRegisterPage() {
       subtitle={
         <>
           Already have an account?{' '}
-          <Link href={ROUTES.businessLogin} className="font-medium text-action hover:text-action-hover">
+          <Link
+            href={ROUTES.businessLogin}
+            className="font-medium text-action hover:text-action-hover"
+          >
             Sign in
           </Link>
         </>
@@ -23,7 +26,10 @@ export default function BusinessRegisterPage() {
       <RegisterForm accountType="BUSINESS" />
       <p className="text-center text-sm text-muted">
         Not a business?{' '}
-        <Link href={ROUTES.registerStudent} className="font-medium text-action hover:text-action-hover">
+        <Link
+          href={ROUTES.registerStudent}
+          className="font-medium text-action hover:text-action-hover"
+        >
           Create a student account instead
         </Link>
       </p>

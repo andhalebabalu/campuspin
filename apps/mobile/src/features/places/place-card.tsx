@@ -1,8 +1,8 @@
 import type { CollegeCard, PlaceCard as PlaceCardData } from '@platform/contracts';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { AppText, Icon } from '@/components/ui';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { AppText, Badge, Icon } from '@/components/ui';
 import { mediaUrl } from '@/lib/media';
 import { colors, radius, shadows, space } from '@/theme/tokens';
 import { categoryPhoto, formatDistance, formatPlacePrice, iconFor } from './meta';
@@ -26,11 +26,20 @@ export function Rating({ average, count }: { average: number; count: number }) {
   );
 }
 
-/** A place as a horizontal card: photo, name, category, rating, price and distance. */
+function openDirections(place: PlaceCardData) {
+  const query = encodeURIComponent(`${place.name}, ${place.city}, ${place.state}`);
+  void Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+}
+
+/**
+ * A place as a horizontal card: photo, name, category, rating and distance, with a green
+ * Directions button.
+ */
 export function PlaceCard({ place }: { place: PlaceCardData }) {
   const photo = mediaUrl(place.coverImageUrl);
   const stock = photo ? undefined : categoryPhoto(place.primaryCategory?.slug);
   const distance = formatDistance(place.distanceMeters);
+  const priceLine = formatPlacePrice(place.priceMin, place.priceMax, place.priceUnit);
   return (
     <Pressable
       accessibilityRole="button"
@@ -52,16 +61,36 @@ export function PlaceCard({ place }: { place: PlaceCardData }) {
         ) : null}
       </View>
       <View style={styles.body}>
-        <AppText variant="bodyStrong" numberOfLines={1}>
+        <AppText variant="bodyStrong" color={colors.brand} numberOfLines={1}>
           {place.name}
         </AppText>
-        <AppText variant="small" numberOfLines={1}>
-          {[place.primaryCategory?.name, distance ?? place.city].filter(Boolean).join(' · ')}
-        </AppText>
+        {place.primaryCategory ? <Badge label={place.primaryCategory.name} tint="slate" /> : null}
         <Rating average={place.ratingAverage} count={place.ratingCount} />
-        <AppText variant="smallStrong" color={colors.action} numberOfLines={1}>
-          {formatPlacePrice(place.priceMin, place.priceMax, place.priceUnit)}
-        </AppText>
+        {priceLine ? (
+          <AppText variant="caption" color={colors.body} numberOfLines={1}>
+            {priceLine}
+          </AppText>
+        ) : null}
+      </View>
+      <View style={styles.side}>
+        <View style={styles.distance}>
+          <Icon name="location-outline" size={13} color={colors.accent} />
+          <AppText variant="caption" color={colors.body} numberOfLines={1}>
+            {distance ?? place.city}
+          </AppText>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Directions to ${place.name}`}
+          hitSlop={4}
+          onPress={() => openDirections(place)}
+          style={({ pressed }) => [styles.directions, pressed && { backgroundColor: colors.goPressed }]}
+        >
+          <Icon name="navigate" size={13} color={colors.surface} />
+          <AppText variant="caption" color={colors.surface}>
+            Directions
+          </AppText>
+        </Pressable>
       </View>
     </Pressable>
   );
@@ -120,7 +149,7 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   pressed: { opacity: 0.92, transform: [{ scale: 0.99 }] },
-  imageWrap: { width: 96, height: 96, borderRadius: radius.md, overflow: 'hidden' },
+  imageWrap: { width: 92, height: 92, borderRadius: radius.md, overflow: 'hidden' },
   image: { width: '100%', height: '100%', backgroundColor: colors.subtle },
   placeholder: { alignItems: 'center', justifyContent: 'center' },
   verified: {
@@ -130,11 +159,22 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.action,
+    backgroundColor: colors.go,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  body: { flex: 1, gap: 3, justifyContent: 'center' },
+  body: { flex: 1, gap: 4, justifyContent: 'center' },
+  side: { alignItems: 'flex-end', justifyContent: 'space-between', paddingVertical: 2 },
+  distance: { flexDirection: 'row', alignItems: 'center', gap: 2, maxWidth: 90 },
+  directions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    height: 30,
+    paddingHorizontal: space.md,
+    borderRadius: radius.sm,
+    backgroundColor: colors.go,
+  },
   rating: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   college: {
     borderRadius: radius.lg,

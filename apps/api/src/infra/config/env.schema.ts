@@ -12,6 +12,12 @@ const duration = (fallback: string) =>
     })
     .transform((value) => parseDurationSeconds(value) as number);
 
+/** Optional free text. Blank counts as "not set", like a missing key. */
+const optionalText = z.preprocess(
+  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+  z.string().trim().optional(),
+);
+
 /** A signing secret. Blank counts as "not set" so `KEY=` in a .env file behaves like a missing key. */
 const signingSecret = z.preprocess(
   (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
@@ -73,8 +79,20 @@ export const envSchema = z
     // ── Email ───────────────────────────────────────────────────────────────────────────────────
     // `console` prints emails (including their links) to the API log: development only.
     // `memory` keeps them in an in-process outbox: automated tests only.
-    EMAIL_PROVIDER: z.enum(['console', 'memory']).default('console'),
+    // `smtp` really sends, through the SMTP_* server below (Gmail, SES, Brevo, ...).
+    EMAIL_PROVIDER: z.enum(['console', 'memory', 'smtp']).default('console'),
     EMAIL_FROM: z.string().trim().min(3).max(200).default('CampusPin <no-reply@localhost.test>'),
+    // Only read when EMAIL_PROVIDER=smtp (then HOST, USER and PASS are required).
+    SMTP_HOST: optionalText,
+    SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
+    // true = TLS from the first byte (port 465). false = STARTTLS upgrade (587), which is required.
+    SMTP_SECURE: z.stringbool().optional(),
+    SMTP_USER: optionalText,
+    // Contains a credential. Never log it. Spaces are dropped (Gmail shows app passwords in groups).
+    SMTP_PASS: z.preprocess(
+      (value) => (typeof value === 'string' ? value.replace(/\s+/g, '') || undefined : value),
+      z.string().optional(),
+    ),
     APP_NAME: z.string().trim().min(1).max(60).default('CampusPin'),
 
     // ── Uploads (Phase 10) ──────────────────────────────────────────────────────────────────────
@@ -100,6 +118,18 @@ export const envSchema = z
         input: refresh,
         path: ['JWT_REFRESH_SECRET'],
       });
+    }
+    if (ctx.value.EMAIL_PROVIDER === 'smtp') {
+      for (const name of ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'] as const) {
+        if (!ctx.value[name]) {
+          ctx.issues.push({
+            code: 'custom',
+            message: `${name} is required when EMAIL_PROVIDER=smtp`,
+            input: ctx.value[name],
+            path: [name],
+          });
+        }
+      }
     }
   });
 

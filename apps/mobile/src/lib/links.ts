@@ -25,6 +25,14 @@ export function appRouteFor(link: string | null): Href | null {
   if (first === 'colleges' && second) return { pathname: '/college/[slug]', params: { slug: second } };
   if (first === 'places' || first === 'colleges' || first === 'search' || first === 'explore') return '/explore';
   if (first === 'feed' || first === 'home') return '/home';
+  if (first === 'orders' && second) return { pathname: '/order/[id]', params: { id: second } };
+  if (first === 'orders') return '/orders';
+  if (first === 'requests' && second) return { pathname: '/request/[id]', params: { id: second } };
+  if (first === 'offers') return '/offers';
+  if (first === 'q' && second) return { pathname: '/use/[token]', params: { token: second } };
+  if (first === 'menus') return '/menus';
+  if (first === 'saved') return '/saved';
+  if (first === 'dashboard' && /[?&]tab=(orders|requests)/.test(link)) return '/board';
   if (first === 'dashboard') return '/dashboard';
   if (first === 'suggest-a-place') return '/suggest-place';
   return null;

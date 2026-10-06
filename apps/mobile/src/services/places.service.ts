@@ -1,4 +1,10 @@
-import { placeCardSchema, placeDetailSchema, type PLACE_SORTS } from '@platform/contracts';
+import {
+  placeCardSchema,
+  placeDetailSchema,
+  savedPlaceIdsSchema,
+  savedPlaceStateSchema,
+  type PLACE_SORTS,
+} from '@platform/contracts';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api';
 
@@ -35,5 +41,22 @@ export const placesService = {
     apiClient.get(`/places/${encodeURIComponent(idOrSlug)}`, {
       schema: placeDetailSchema,
       signal,
+    }),
+
+  /** Ids of my saved places, for bookmark icons. */
+  savedIds: (signal?: AbortSignal) =>
+    apiClient.get('/me/saved-places/ids', { schema: savedPlaceIdsSchema, signal }),
+
+  savedList: (signal?: AbortSignal) =>
+    apiClient.get('/me/saved-places', { schema: placeListSchema, signal }),
+
+  save: (placeId: string) =>
+    apiClient.put(`/me/saved-places/${encodeURIComponent(placeId)}`, {
+      schema: savedPlaceStateSchema,
+    }),
+
+  unsave: (placeId: string) =>
+    apiClient.delete(`/me/saved-places/${encodeURIComponent(placeId)}`, {
+      schema: savedPlaceStateSchema,
     }),
 };

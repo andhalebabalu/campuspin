@@ -20,6 +20,7 @@ import {
 } from '@/components/ui';
 import { FeaturedSection } from '@/components/featured-section';
 import { LISTING_STATUS } from '@/features/business/labels';
+import { BusinessTools } from '@/features/business/tools';
 import { useUnreadNotifications } from '@/hooks/use-unread';
 import { useLightStatusBar } from '@/hooks/use-status-bar';
 import { formatDate } from '@/lib/format';
@@ -98,6 +99,17 @@ export default function Dashboard() {
         </View>
 
         <View style={styles.body}>
+          <BusinessTools
+            tools={[
+              { label: 'Orders', icon: 'receipt', tint: 'amber', href: '/board' },
+              { label: 'Daily menu', icon: 'restaurant', tint: 'green', href: '/business/menu' },
+              { label: 'Food menu', icon: 'fast-food', tint: 'rose', href: '/business/food-menu' },
+              { label: 'Offers', icon: 'pricetag', tint: 'green', href: '/business/offers' },
+              { label: 'QR codes', icon: 'qr-code', tint: 'violet', href: '/business/qr-codes' },
+              { label: 'Services', icon: 'options', tint: 'blue', href: '/business/services' },
+              { label: 'Reviews', icon: 'star', tint: 'teal', href: '/reviews' },
+            ]}
+          />
           <FeaturedSection />
           {dashboard.isError ? <ErrorState error={dashboard.error} onRetry={refresh} /> : null}
           {stats && stats.listings.underReview > 0 ? (

@@ -1,35 +1,37 @@
 import { Platform, type TextStyle, type ViewStyle } from 'react-native';
 
 /**
- * Design tokens, taken from the CampusPin logo: navy ("Campus", #073066), green ("Pin", #2A913C)
- * and the red location pin (#EA3D24). Screens use the semantic names (`colors.ink`,
+ * Design tokens from the CampusPin design system: navy blue #123D73 (primary), green #28A745
+ * (success / actions), pin red #F04438 (location / alerts) on an off-white #F8FAFC background. Screens use the semantic names (`colors.ink`,
  * `colors.action`), not raw palette steps.
  */
 export const palette = {
   white: '#ffffff',
-  // Navy: the "Campus" wordmark. primary700 is the logo's own navy.
+  // Navy: the "Campus" wordmark. primary700 is the design system's navy (#123D73).
   primary50: '#eef3fa',
-  primary100: '#dbe5f3',
-  primary200: '#b9cbe6',
-  primary400: '#4f79b5',
-  primary500: '#1f55a0',
-  primary600: '#0d4185',
-  primary700: '#073066',
-  primary800: '#052852',
-  primary900: '#031d40',
-  ink900: '#0a1a33',
-  ink800: '#112240',
-  ink700: '#1b2c4a',
-  // Green: the "Pin" wordmark. accent400 is the logo's green; accent600 is dark enough for text.
-  accent50: '#ecf7ee',
-  accent100: '#d3eed8',
-  accent400: '#2a913c',
-  accent600: '#1f7a2e',
-  accent700: '#155f22',
-  // Red: the location pin. For dots, badges and highlights; pin700 is dark enough for text.
-  pin50: '#fdeeeb',
-  pin500: '#ea3d24',
-  pin700: '#c02e18',
+  primary100: '#dce6f4',
+  primary200: '#bacce7',
+  primary400: '#4f7dba',
+  primary500: '#2a62ab',
+  primary600: '#1b4c8c',
+  primary700: '#123d73',
+  primary800: '#0e3160',
+  primary900: '#0a2549',
+  ink900: '#0e2748',
+  ink800: '#15305a',
+  ink700: '#1f3a66',
+  // Green: success and actions. accent400 is the design system's green (#28A745), for filled
+  // buttons, chips and icons; accent600 is dark enough for small text on white.
+  accent50: '#eaf7ee',
+  accent100: '#d0eed9',
+  accent400: '#28a745',
+  accent500: '#23963d',
+  accent600: '#1b7d33',
+  accent700: '#156329',
+  // Red: the location pin (#F04438). For pins, dots, badges and alerts; pin700 is dark enough for text.
+  pin50: '#fef0ef',
+  pin500: '#f04438',
+  pin700: '#c4291d',
   neutral25: '#fafbfc',
   neutral50: '#f4f6f9',
   neutral100: '#ebeef3',
@@ -50,7 +52,7 @@ export const palette = {
 } as const;
 
 export const colors = {
-  canvas: '#f6f7f9',
+  canvas: '#f8fafc',
   surface: palette.white,
   subtle: palette.neutral50,
   line: palette.neutral200,
@@ -66,6 +68,9 @@ export const colors = {
   brand: palette.primary700,
   accent: palette.accent600,
   accentBright: palette.accent400,
+  /** Filled green for the main call to action (Directions, Explore now, Sell item). */
+  go: palette.accent400,
+  goPressed: palette.accent500,
   accentSoft: palette.accent50,
   pin: palette.pin500,
   pinSoft: palette.pin50,
@@ -82,7 +87,7 @@ export const colors = {
 export const brandGradient = [palette.primary700, palette.primary500] as const;
 export const heroGradient = [palette.primary900, palette.primary700, palette.primary500] as const;
 /** Green, for "do something good" actions (sell, verified, publish). */
-export const accentGradient = [palette.accent600, palette.accent400] as const;
+export const accentGradient = [palette.accent500, palette.accent400] as const;
 
 /** Soft tints for category chips and icon tiles: [background, foreground]. */
 export const tints = {

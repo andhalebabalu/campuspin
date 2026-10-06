@@ -53,7 +53,10 @@ export const promotionLinkSchema = z.union([
     .string()
     .trim()
     .max(300)
-    .regex(/^\/(?!\/)[\w\-./?=&%#]*$/, 'Use an app path such as /places/sai-mess, or an https link'),
+    .regex(
+      /^\/(?!\/)[\w\-./?=&%#]*$/,
+      'Use an app path such as /places/sai-mess, or an https link',
+    ),
   httpUrlField(500),
 ]);
 
@@ -98,7 +101,9 @@ const promotionFields = {
   placement: promotionPlacementSchema,
   kind: promotionKindSchema.default('ANNOUNCEMENT'),
   audience: promotionAudienceSchema.default('ALL'),
-  title: singleLineField('Title', PROMOTION_TITLE_MAX).meta({ example: 'The student marketplace is live' }),
+  title: singleLineField('Title', PROMOTION_TITLE_MAX).meta({
+    example: 'The student marketplace is live',
+  }),
   body: multiLineField('Text', PROMOTION_BODY_MAX).nullable().optional(),
   imageUrl: httpUrlField(500).nullable().optional(),
   ctaLabel: singleLineField('Button text', PROMOTION_CTA_LABEL_MAX).nullable().optional(),
@@ -109,7 +114,12 @@ const promotionFields = {
     .min(PROMOTION_DISPLAY_SECONDS_MIN)
     .max(PROMOTION_DISPLAY_SECONDS_MAX)
     .default(PROMOTION_DISPLAY_SECONDS_DEFAULT),
-  skipAfterSeconds: z.number().int().min(0).max(PROMOTION_DISPLAY_SECONDS_MAX).default(PROMOTION_SKIP_AFTER_DEFAULT),
+  skipAfterSeconds: z
+    .number()
+    .int()
+    .min(0)
+    .max(PROMOTION_DISPLAY_SECONDS_MAX)
+    .default(PROMOTION_SKIP_AFTER_DEFAULT),
   active: z.boolean().default(true),
   priority: z.number().int().min(0).max(1000).default(0),
   startsAt: z.iso.datetime({ offset: true }).nullable().optional(),
@@ -159,7 +169,12 @@ export const updatePromotionSchema = z
     imageUrl: promotionFields.imageUrl,
     ctaLabel: promotionFields.ctaLabel,
     ctaLink: promotionFields.ctaLink,
-    displaySeconds: z.number().int().min(PROMOTION_DISPLAY_SECONDS_MIN).max(PROMOTION_DISPLAY_SECONDS_MAX).optional(),
+    displaySeconds: z
+      .number()
+      .int()
+      .min(PROMOTION_DISPLAY_SECONDS_MIN)
+      .max(PROMOTION_DISPLAY_SECONDS_MAX)
+      .optional(),
     skipAfterSeconds: z.number().int().min(0).max(PROMOTION_DISPLAY_SECONDS_MAX).optional(),
     active: z.boolean().optional(),
     priority: z.number().int().min(0).max(1000).optional(),

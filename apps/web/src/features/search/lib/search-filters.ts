@@ -26,12 +26,12 @@ export function hasFilters(
 ): boolean {
   return Boolean(
     applied.q ||
-      applied.category ||
-      applied.college ||
-      applied.minPrice ||
-      applied.maxPrice ||
-      applied.minRating ||
-      applied.verified,
+    applied.category ||
+    applied.college ||
+    applied.minPrice ||
+    applied.maxPrice ||
+    applied.minRating ||
+    applied.verified,
   );
 }
 

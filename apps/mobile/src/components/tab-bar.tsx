@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, Icon, type IconName } from '@/components/ui';
-import { colors, radius, shadows, space } from '@/theme/tokens';
+import { colors, fonts, shadows, space } from '@/theme/tokens';
 
 export interface TabSpec {
   name: string;
@@ -12,7 +12,7 @@ export interface TabSpec {
   iconActive: IconName;
 }
 
-/** A floating pill tab bar. The active tab gets a filled icon on a soft blue capsule. */
+/** A white tab bar. The active tab gets a filled navy icon, a bold navy label and a top marker. */
 const noBadges = (): Record<string, number> => ({});
 
 /** `useBadges` is a hook returning a dot count per tab name (e.g. unread messages). */
@@ -47,15 +47,20 @@ export function makeTabBar(specs: readonly TabSpec[], useBadges: () => Record<st
                 }}
                 style={styles.tab}
               >
-                <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+                <View style={[styles.marker, focused && styles.markerActive]} />
+                <View style={styles.iconWrap}>
                   <Icon
                     name={focused ? spec.iconActive : spec.icon}
                     size={22}
-                    color={focused ? colors.action : colors.muted}
+                    color={focused ? colors.brand : colors.muted}
                   />
                   {badge > 0 ? <View style={styles.dot} /> : null}
                 </View>
-                <AppText variant="caption" color={focused ? colors.action : colors.muted}>
+                <AppText
+                  variant="caption"
+                  color={focused ? colors.brand : colors.muted}
+                  style={focused ? styles.labelActive : undefined}
+                >
                   {spec.title}
                 </AppText>
               </Pressable>
@@ -72,19 +77,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.line,
-    paddingTop: space.sm,
+    paddingTop: 0,
     ...shadows.md,
   },
   bar: { flexDirection: 'row', paddingHorizontal: space.sm },
-  tab: { flex: 1, alignItems: 'center', gap: 3 },
+  tab: { flex: 1, alignItems: 'center', gap: 2 },
+  marker: { width: 28, height: 3, borderBottomLeftRadius: 3, borderBottomRightRadius: 3, marginBottom: space.xs },
+  markerActive: { backgroundColor: colors.brand },
+  labelActive: { fontFamily: fonts.semibold },
   iconWrap: {
     width: 56,
-    height: 32,
-    borderRadius: radius.pill,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconWrapActive: { backgroundColor: colors.actionSoft },
   dot: {
     position: 'absolute',
     top: 4,

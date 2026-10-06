@@ -4,7 +4,12 @@ import { createPromotionSchema, promotionLinkSchema, updatePromotionSchema } fro
 describe('promotions', () => {
   it('fills the splash defaults: 10 s on screen, close after 5 s', () => {
     const parsed = createPromotionSchema.parse({ placement: 'SPLASH', title: 'Hello' });
-    expect(parsed).toMatchObject({ displaySeconds: 10, skipAfterSeconds: 5, audience: 'ALL', active: true });
+    expect(parsed).toMatchObject({
+      displaySeconds: 10,
+      skipAfterSeconds: 5,
+      audience: 'ALL',
+      active: true,
+    });
   });
 
   it('refuses a close button that comes after the ad ends', () => {
@@ -27,7 +32,10 @@ describe('promotions', () => {
         endsAt: '2026-10-01T00:00:00Z',
       }).success,
     ).toBe(false);
-    expect(createPromotionSchema.safeParse({ placement: 'FEED', title: 'Hello', ctaLabel: 'Open' }).success).toBe(false);
+    expect(
+      createPromotionSchema.safeParse({ placement: 'FEED', title: 'Hello', ctaLabel: 'Open' })
+        .success,
+    ).toBe(false);
   });
 
   it('accepts app paths and https links, nothing else', () => {

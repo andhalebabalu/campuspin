@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { colors, radius, space, tints, type Tint } from '@/theme/tokens';
+import { colors, radius, shadows, space, tints, type Tint } from '@/theme/tokens';
 import { Icon, type IconName } from './icon';
 import { AppText } from './text';
 
@@ -25,7 +25,7 @@ export function Badge({
   );
 }
 
-/** A selectable filter pill. */
+/** A selectable filter pill: white with a navy icon, solid green when selected. */
 export function Chip({
   label,
   selected,
@@ -51,8 +51,8 @@ export function Chip({
         pressed && { opacity: 0.8 },
       ]}
     >
-      {icon ? <Icon name={icon} size={15} color={selected ? colors.surface : colors.body} /> : null}
-      <AppText variant="smallStrong" color={selected ? colors.surface : colors.body}>
+      {icon ? <Icon name={icon} size={15} color={selected ? colors.surface : colors.brand} /> : null}
+      <AppText variant="smallStrong" color={selected ? colors.surface : colors.ink}>
         {label}
       </AppText>
     </Pressable>
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     borderWidth: 1,
   },
-  chipIdle: { backgroundColor: colors.surface, borderColor: colors.line },
-  chipSelected: { backgroundColor: colors.brand, borderColor: colors.brand },
+  chipIdle: { backgroundColor: colors.surface, borderColor: colors.line, ...shadows.sm },
+  chipSelected: { backgroundColor: colors.go, borderColor: colors.go },
   row: { gap: space.sm, paddingHorizontal: space.lg, paddingVertical: space.xs },
 });

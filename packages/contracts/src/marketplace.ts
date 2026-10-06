@@ -59,7 +59,14 @@ export const LISTING_VISIBILITY_LABELS: Record<ListingVisibility, string> = {
 };
 
 /** HIDDEN is a moderator's reversible hold; REMOVED is final (by the seller or a moderator). */
-export const LISTING_STATUSES = ['ACTIVE', 'RESERVED', 'SOLD', 'EXPIRED', 'HIDDEN', 'REMOVED'] as const;
+export const LISTING_STATUSES = [
+  'ACTIVE',
+  'RESERVED',
+  'SOLD',
+  'EXPIRED',
+  'HIDDEN',
+  'REMOVED',
+] as const;
 export type ListingStatus = (typeof LISTING_STATUSES)[number];
 export const listingStatusSchema = z.enum(LISTING_STATUSES);
 
@@ -168,7 +175,9 @@ export const listMyListingsQuerySchema = paginationQuerySchema.extend({
 export type ListMyListingsQuery = z.output<typeof listMyListingsQuerySchema>;
 
 const listingFields = {
-  title: singleLineField('Title', LISTING_TITLE_MAX).meta({ example: 'Engineering Maths (Kreyszig)' }),
+  title: singleLineField('Title', LISTING_TITLE_MAX).meta({
+    example: 'Engineering Maths (Kreyszig)',
+  }),
   description: multiLineField('Description', LISTING_DESCRIPTION_MAX).meta({
     example: 'Clean copy, a few pencil notes in chapter 2.',
   }),
@@ -177,7 +186,10 @@ const listingFields = {
   price: z.number().int().min(0).max(LISTING_PRICE_MAX).meta({ example: 350 }),
   negotiable: z.boolean().default(false),
   quantity: z.number().int().min(1).max(99).default(1),
-  location: singleLineField('Pickup point', 120).nullable().optional().meta({ example: 'Main gate' }),
+  location: singleLineField('Pickup point', 120)
+    .nullable()
+    .optional()
+    .meta({ example: 'Main gate' }),
   visibility: listingVisibilitySchema.default('NEARBY_COLLEGES'),
   /** URLs returned by `POST /uploads/images`; the first is the cover. */
   images: z.array(httpUrlField(500)).max(LISTING_IMAGES_MAX).default([]),

@@ -20,7 +20,10 @@ export default async function StudentLoginPage({
       subtitle={
         <>
           New to CampusPin?{' '}
-          <Link href={ROUTES.registerStudent} className="font-medium text-action hover:text-action-hover">
+          <Link
+            href={ROUTES.registerStudent}
+            className="font-medium text-action hover:text-action-hover"
+          >
             Create a student account
           </Link>
         </>
@@ -28,7 +31,10 @@ export default async function StudentLoginPage({
     >
       <LoginForm next={next} />
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-        <Link href={ROUTES.forgotPassword} className="font-medium text-action hover:text-action-hover">
+        <Link
+          href={ROUTES.forgotPassword}
+          className="font-medium text-action hover:text-action-hover"
+        >
           Forgot your password?
         </Link>
         <Link href={ROUTES.businessLogin} className="text-muted hover:text-ink">

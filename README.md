@@ -239,7 +239,7 @@ Open `http://localhost:3000`. The **System status** card calls the API health en
 | `JWT_ACCESS_EXPIRES_IN` / `JWT_REFRESH_EXPIRES_IN` | `15m` / `30d` | Token lifetimes: a number plus `s`, `m`, `h` or `d` |
 | `EMAIL_VERIFICATION_EXPIRES_IN` / `PASSWORD_RESET_EXPIRES_IN` | `24h` / `1h` | Lifetime of the emailed links |
 | `AUTH_RATE_LIMIT` / `AUTH_RATE_LIMIT_TTL_SECONDS` | `20` / `60` | Stricter per-IP limit on the sensitive auth routes |
-| `EMAIL_PROVIDER` | `console` | `console` prints emails (with their links) in the API log: **development only**; `memory` is for automated tests |
+| `EMAIL_PROVIDER` | `console` | `console` prints emails (with their links) in the API log: **development only**; `memory` is for automated tests; `smtp` really sends through `SMTP_HOST` / `SMTP_PORT` / `SMTP_SECURE` / `SMTP_USER` / `SMTP_PASS` (e.g. Gmail with an app password) |
 | `EMAIL_FROM` / `APP_NAME` | `CampusPin <no-reply@localhost.test>` / `CampusPin` | Sender and product name used in emails |
 | `PRIVATE_UPLOAD_DIR` | `private-uploads` | Where student ID photos are stored. Never served; must not be inside `UPLOAD_DIR` |
 | `STUDENT_VERIFICATION_VALID_DAYS` | `365` | How long a student verification lasts |
@@ -841,7 +841,7 @@ npm run typecheck && npm run lint
 | Prisma Studio shows "Could not load schema metadata: `json_arrayagg` does not exist" | Known limitation with XAMPP's MariaDB 10.4; use phpMyAdmin (see [Viewing the data](#viewing-the-data-phpmyadmin-and-prisma-studio)) |
 | `npm run db:seed` says it refuses in production | By design: use `npm run db:seed:reference` |
 | Registering answers `503 Registration is temporarily unavailable` | The `STUDENT` role is missing: run `npm run db:seed:reference` |
-| API refuses to start: `Unsafe production configuration` | In production set real `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET`; `EMAIL_PROVIDER=console` is development-only and no production provider exists yet |
+| API refuses to start: `Unsafe production configuration` | In production set real `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET`; set `EMAIL_PROVIDER=smtp` with the `SMTP_*` settings (`console` is development-only) |
 | No verification email arrives | Development sends nothing: open the API terminal and copy the link printed under `DEV EMAIL` |
 | The public `/colleges` list is empty, or a new college returns 404 | Only **ACTIVE** colleges are public: a new one is a DRAFT until you `POST /admin/colleges/:id/activate` |
 | `403 FORBIDDEN` on `/admin/colleges` | The account needs the ADMIN or SUPER_ADMIN role (`colleges.manage`); roles are read at sign-in, so sign in again after a role change |

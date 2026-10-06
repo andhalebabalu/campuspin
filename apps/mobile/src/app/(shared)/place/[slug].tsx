@@ -22,6 +22,8 @@ import {
   type IconName,
 } from '@/components/ui';
 import { categoryPhoto, formatPlacePrice, iconFor, UNIT_LABELS } from '@/features/places/meta';
+import { PlaceServicesSection } from '@/features/services/place-services';
+import { useSavedPlaces } from '@/hooks/use-saved-places';
 import { isApiError } from '@/lib/errors';
 import { formatDate } from '@/lib/format';
 import { mediaUrl } from '@/lib/media';
@@ -90,6 +92,7 @@ function PlaceView({ place, back }: { place: PlaceDetail; back: React.ReactNode 
   const { width } = useWindowDimensions();
   const user = useUser();
   const isStudent = user.roles.includes('STUDENT');
+  const saved = useSavedPlaces();
   const [photo, setPhoto] = useState(0);
   const photos = [...place.images].sort((a, b) => Number(b.isCover) - Number(a.isCover) || a.sortOrder - b.sortOrder);
   const stock = photos.length === 0 ? categoryPhoto(place.categories.find((c) => c.isPrimary)?.slug ?? place.primaryCategory?.slug) : undefined;
@@ -176,12 +179,21 @@ function PlaceView({ place, back }: { place: PlaceDetail; back: React.ReactNode 
             ) : null}
             {isStudent ? (
               <QuickAction
+                icon={saved.isSaved(place.id) ? 'heart' : 'heart-outline'}
+                label={saved.isSaved(place.id) ? 'Saved' : 'Save'}
+                onPress={() => saved.toggle(place.id)}
+              />
+            ) : null}
+            {isStudent ? (
+              <QuickAction
                 icon="star-outline"
                 label="Review"
                 onPress={() => router.push({ pathname: '/place/review/[slug]', params: { slug: place.slug } })}
               />
             ) : null}
           </View>
+
+          <PlaceServicesSection slug={place.slug} />
 
           {place.description ? (
             <Card style={styles.gap}>

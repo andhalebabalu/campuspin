@@ -106,8 +106,8 @@ describe('rejectSubmissionRequestSchema', () => {
 describe('markDuplicateRequestSchema', () => {
   it('requires duplicateOfPlaceId', () => {
     expect(markDuplicateRequestSchema.safeParse({}).success).toBe(false);
-    expect(
-      markDuplicateRequestSchema.safeParse({ duplicateOfPlaceId: PLACE_ID }).success,
-    ).toBe(true);
+    expect(markDuplicateRequestSchema.safeParse({ duplicateOfPlaceId: PLACE_ID }).success).toBe(
+      true,
+    );
   });
 });

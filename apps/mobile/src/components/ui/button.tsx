@@ -6,7 +6,7 @@ import { brandGradient, colors, radius, space } from '@/theme/tokens';
 import { Icon, type IconName } from './icon';
 import { AppText } from './text';
 
-type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'light';
+type Variant = 'primary' | 'success' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'light';
 type Size = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps {
@@ -27,6 +27,7 @@ const HEIGHT: Record<Size, number> = { sm: 38, md: 48, lg: 54 };
 
 const FOREGROUND: Record<Variant, string> = {
   primary: colors.surface,
+  success: colors.surface,
   secondary: colors.action,
   outline: colors.ink,
   ghost: colors.action,
@@ -111,6 +112,8 @@ const styles = StyleSheet.create({
 
 const variantStyle = StyleSheet.create({
   primary: { backgroundColor: colors.action },
+  /** Solid green: the go-ahead action of a screen (Directions, Sell item). */
+  success: { backgroundColor: colors.go },
   secondary: { backgroundColor: colors.actionSoft },
   outline: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   ghost: { backgroundColor: 'transparent' },

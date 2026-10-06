@@ -101,7 +101,9 @@ export function TabHeader({
   return (
     <View style={[styles.tabHeader, { paddingTop: insets.top + space.md }]}>
       <View style={styles.flex}>
-        <AppText variant="title">{title}</AppText>
+        <AppText variant="title" color={colors.brand}>
+          {title}
+        </AppText>
         {subtitle ? <AppText variant="small">{subtitle}</AppText> : null}
       </View>
       {right ? <View style={styles.headerActions}>{right}</View> : null}
@@ -172,12 +174,15 @@ export function SectionHeader({
 }) {
   return (
     <View style={styles.sectionHeader}>
-      <AppText variant="heading">{title}</AppText>
+      <AppText variant="heading" color={colors.brand}>
+        {title}
+      </AppText>
       {actionLabel && onAction ? (
-        <Pressable hitSlop={8} onPress={onAction} accessibilityRole="button">
+        <Pressable hitSlop={8} onPress={onAction} accessibilityRole="button" style={styles.sectionAction}>
           <AppText variant="smallStrong" color={colors.action}>
             {actionLabel}
           </AppText>
+          <Icon name="arrow-forward" size={14} color={colors.action} />
         </Pressable>
       ) : null}
     </View>
@@ -244,16 +249,22 @@ export function RowGroup({ children }: { children: ReactNode }) {
   );
 }
 
-/** Single-choice segmented control. */
+/**
+ * Single-choice segmented control. `tone` fills the selected segment: white (default), navy
+ * (`brand`, e.g. List / Map) or green (`go`, e.g. Buy / Sell).
+ */
 export function Segmented<T extends string>({
   options,
   value,
   onChange,
+  tone = 'default',
 }: {
-  options: readonly { value: T; label: string }[];
+  options: readonly { value: T; label: string; icon?: IconName }[];
   value: T;
   onChange: (value: T) => void;
+  tone?: 'default' | 'brand' | 'go';
 }) {
+  const filled = tone === 'default' ? null : tone === 'brand' ? colors.brand : colors.go;
   return (
     <View style={styles.segmented}>
       {options.map((option) => {
@@ -267,9 +278,23 @@ export function Segmented<T extends string>({
               void Haptics.selectionAsync().catch(() => undefined);
               onChange(option.value);
             }}
-            style={[styles.segment, selected && styles.segmentSelected]}
+            style={[
+              styles.segment,
+              selected && styles.segmentSelected,
+              selected && filled ? { backgroundColor: filled } : null,
+            ]}
           >
-            <AppText variant="smallStrong" color={selected ? colors.ink : colors.muted}>
+            {option.icon ? (
+              <Icon
+                name={option.icon}
+                size={16}
+                color={selected ? (filled ? colors.surface : colors.ink) : colors.muted}
+              />
+            ) : null}
+            <AppText
+              variant="smallStrong"
+              color={selected ? (filled ? colors.surface : colors.ink) : colors.muted}
+            >
               {option.label}
             </AppText>
           </Pressable>
@@ -333,6 +358,7 @@ const styles = StyleSheet.create({
     borderColor: colors.surface,
   },
   badgeText: { fontSize: 10, lineHeight: 12 },
+  sectionAction: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -371,7 +397,9 @@ const styles = StyleSheet.create({
   },
   segment: {
     flex: 1,
-    height: 36,
+    flexDirection: 'row',
+    gap: 6,
+    height: 38,
     borderRadius: radius.sm + 1,
     alignItems: 'center',
     justifyContent: 'center',

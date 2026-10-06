@@ -42,7 +42,7 @@ export default function Me() {
           end={{ x: 1, y: 1 }}
           style={[styles.hero, { paddingTop: insets.top + space.xl }]}
         >
-          <Avatar name={user.name} size={78} verified={verified} />
+          <Avatar name={user.name} imageUrl={user.avatarUrl} size={78} verified={verified} />
           <AppText variant="title" color={colors.surface} align="center">
             {user.name}
           </AppText>
@@ -71,6 +71,7 @@ export default function Me() {
           ) : null}
 
           <RowGroup>
+            <ListRow icon="heart-outline" title="Saved places" subtitle="Your messes, libraries and shops" onPress={() => router.push('/saved')} />
             <ListRow icon="notifications-outline" title="Notifications" onPress={() => router.push('/notifications')} right={count(unreadNotifications)} />
             {verified ? (
               <ListRow icon="chatbubble-ellipses-outline" title="Messages" onPress={() => router.push('/messages')} right={count(unreadMessages)} />

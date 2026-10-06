@@ -6,7 +6,6 @@ import {
   type MarketplaceSort,
 } from '@platform/contracts';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -20,7 +19,7 @@ import {
   View,
 } from 'react-native';
 import {
-  AppText,
+  Button,
   ChipRow,
   EmptyState,
   ErrorState,
@@ -37,7 +36,7 @@ import { CATEGORY_ICONS, ListingTile } from '@/features/marketplace/listing-card
 import { useUnreadMessages } from '@/hooks/use-unread';
 import { useUser } from '@/lib/session';
 import { marketplaceService } from '@/services/marketplace.service';
-import { accentGradient, colors, fonts, radius, shadows, space } from '@/theme/tokens';
+import { colors, fonts, radius, shadows, space } from '@/theme/tokens';
 
 const PAGE_SIZE = 20;
 
@@ -45,6 +44,12 @@ const SCOPES: { value: MarketplaceScope; label: string }[] = [
   { value: 'my_college', label: 'My college' },
   { value: 'nearby', label: 'Nearby' },
   { value: 'city', label: 'City' },
+];
+
+/** Buy is this screen; Sell opens the student's own listings (with the button to add one). */
+const MODES = [
+  { value: 'buy' as const, label: 'Buy' },
+  { value: 'sell' as const, label: 'Sell' },
 ];
 
 const SORTS: { value: MarketplaceSort; label: string }[] = [
@@ -137,13 +142,23 @@ function Browse() {
 
   const filters = (
     <View style={styles.filters}>
+      <View style={styles.padded}>
+        <Segmented
+          tone="go"
+          options={MODES}
+          value="buy"
+          onChange={(mode) => {
+            if (mode === 'sell') router.push('/listings/mine');
+          }}
+        />
+      </View>
       <View style={styles.searchRow}>
         <View style={styles.search}>
           <Icon name="search" size={18} color={colors.muted} />
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Search books, cycles, notes…"
+            placeholder="Search for items…"
             placeholderTextColor={colors.placeholder}
             style={styles.searchInput}
             returnKeyType="search"
@@ -154,7 +169,7 @@ function Browse() {
             </Pressable>
           ) : null}
         </View>
-        <IconButton icon="swap-vertical" label="Sort" onPress={() => setSortOpen(true)} />
+        <IconButton icon="options-outline" label="Sort" onPress={() => setSortOpen(true)} />
       </View>
       <View style={styles.padded}>
         <Segmented options={SCOPES} value={scope} onChange={setScope} />
@@ -211,19 +226,9 @@ function Browse() {
         />
       )}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Sell something"
-        onPress={() => router.push('/listing/new')}
-        style={({ pressed }) => [styles.fab, pressed && { transform: [{ scale: 0.95 }] }]}
-      >
-        <LinearGradient colors={accentGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fabInner}>
-          <Icon name="add" size={22} color={colors.surface} />
-          <AppText variant="bodyStrong" color={colors.surface}>
-            Sell
-          </AppText>
-        </LinearGradient>
-      </Pressable>
+      <View style={styles.sellBar}>
+        <Button title="Sell Item" icon="add" variant="success" onPress={() => router.push('/listing/new')} />
+      </View>
 
       <Sheet visible={sortOpen} onClose={() => setSortOpen(false)} title="Sort by">
         {SORTS.map((option) => (
@@ -262,13 +267,12 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontFamily: fonts.regular, fontSize: 15, color: colors.ink },
   grid: { paddingBottom: 110 },
   column: { gap: space.md, paddingHorizontal: space.lg, marginBottom: space.md },
-  fab: { position: 'absolute', right: space.lg, bottom: space.lg, borderRadius: radius.pill, ...shadows.lg },
-  fabInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    height: 52,
-    paddingHorizontal: space.xl,
-    borderRadius: radius.pill,
+  sellBar: {
+    position: 'absolute',
+    left: space.lg,
+    right: space.lg,
+    bottom: space.md,
+    borderRadius: radius.md,
+    ...shadows.lg,
   },
 });

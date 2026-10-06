@@ -6,6 +6,12 @@ const DB = { DATABASE_URL: 'mysql://root:@localhost:3306/link_platform' };
 const ACCESS = 'a'.repeat(48);
 const REFRESH = 'b'.repeat(48);
 const STRONG_SECRETS = { JWT_ACCESS_SECRET: ACCESS, JWT_REFRESH_SECRET: REFRESH };
+const SMTP = {
+  EMAIL_PROVIDER: 'smtp',
+  SMTP_HOST: 'smtp.example.test',
+  SMTP_USER: 'team@example.test',
+  SMTP_PASS: 'abcd efgh ijkl mnop',
+};
 
 describe('AppConfig: authentication settings', () => {
   it('has safe defaults: 15 minute access, 30 day refresh, 24 hour verification, 1 hour reset', () => {
@@ -103,7 +109,25 @@ describe('AppConfig: authentication settings', () => {
       expect(() => AppConfig.fromEnv({ ...DB, AUTH_RATE_LIMIT: 'lots' })).toThrow(
         /AUTH_RATE_LIMIT/,
       );
-      expect(() => AppConfig.fromEnv({ ...DB, EMAIL_PROVIDER: 'smtp' })).toThrow(/EMAIL_PROVIDER/);
+      expect(() => AppConfig.fromEnv({ ...DB, EMAIL_PROVIDER: 'ses' })).toThrow(/EMAIL_PROVIDER/);
+    });
+
+    it('requires the SMTP server and login for EMAIL_PROVIDER=smtp', () => {
+      expect(() => AppConfig.fromEnv({ ...DB, EMAIL_PROVIDER: 'smtp' })).toThrow(
+        /SMTP_HOST[\s\S]*SMTP_USER[\s\S]*SMTP_PASS/,
+      );
+    });
+
+    it('reads the SMTP settings, dropping the spaces Gmail shows in app passwords', () => {
+      const config = AppConfig.fromEnv({ ...DB, ...SMTP });
+      expect(config.email.smtp).toEqual({
+        host: 'smtp.example.test',
+        port: 587,
+        secure: false,
+        user: 'team@example.test',
+        pass: 'abcdefghijklmnop',
+      });
+      expect(AppConfig.fromEnv({ ...DB, ...SMTP, SMTP_PORT: '465' }).email.smtp?.secure).toBe(true);
     });
   });
 
@@ -140,6 +164,10 @@ describe('AppConfig: authentication settings', () => {
       expect(production({ ...STRONG_SECRETS, EMAIL_PROVIDER: 'memory' })).toEqual([
         expect.stringContaining('EMAIL_PROVIDER=memory') as string,
       ]);
+    });
+
+    it('accepts SMTP email in production', () => {
+      expect(production({ ...STRONG_SECRETS, ...SMTP })).toEqual([]);
     });
   });
 

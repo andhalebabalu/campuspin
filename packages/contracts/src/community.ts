@@ -59,9 +59,7 @@ export const communityPostSchema = z.object({
   title: z.string().nullable(),
   body: z.string(),
   /** The message this one quotes, if it is a reply (null when that message is gone). */
-  replyTo: z
-    .object({ id: z.string(), authorName: z.string(), excerpt: z.string() })
-    .nullable(),
+  replyTo: z.object({ id: z.string(), authorName: z.string(), excerpt: z.string() }).nullable(),
   /** Always the author's verified college at the time of posting. */
   college: collegeRefSchema,
   author: memberSummarySchema,
@@ -127,7 +125,11 @@ function eventRule(
   value: { category?: CommunityCategory; eventStartsAt?: string; eventLocation?: string },
   ctx: z.RefinementCtx,
 ) {
-  if (value.category && value.category !== 'EVENT' && (value.eventStartsAt || value.eventLocation)) {
+  if (
+    value.category &&
+    value.category !== 'EVENT' &&
+    (value.eventStartsAt || value.eventLocation)
+  ) {
     ctx.addIssue({
       code: 'custom',
       path: ['eventStartsAt'],

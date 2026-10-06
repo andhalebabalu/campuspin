@@ -26,6 +26,7 @@ const NOTIFY: { key: Toggle; title: string }[] = [
   { key: 'notifyMarketplace', title: 'My listings' },
   { key: 'notifyEvents', title: 'New events at my college' },
   { key: 'notifyJobs', title: 'New jobs and internships' },
+  { key: 'notifyPlaceUpdates', title: 'Menus from places I saved' },
 ];
 
 export default function SettingsScreen() {

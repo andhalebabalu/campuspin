@@ -48,7 +48,18 @@ export class AppConfig {
     /** True when the built-in (public!) development secrets are in use. */
     readonly usesDevelopmentSecrets: boolean;
   };
-  readonly email: { readonly provider: Env['EMAIL_PROVIDER']; readonly from: string };
+  readonly email: {
+    readonly provider: Env['EMAIL_PROVIDER'];
+    readonly from: string;
+    /** Set when provider is `smtp`. `pass` is a credential: never log it. */
+    readonly smtp?: {
+      readonly host: string;
+      readonly port: number;
+      readonly secure: boolean;
+      readonly user: string;
+      readonly pass: string;
+    };
+  };
   /** Absolute directory uploaded files are stored in (local-disk storage). */
   readonly uploadDir: string;
   /** Absolute directory for private files (student ID photos). Never served statically. */
@@ -88,7 +99,22 @@ export class AppConfig {
       usesDevelopmentSecrets:
         env.JWT_ACCESS_SECRET === undefined || env.JWT_REFRESH_SECRET === undefined,
     };
-    this.email = { provider: env.EMAIL_PROVIDER, from: env.EMAIL_FROM };
+    this.email = {
+      provider: env.EMAIL_PROVIDER,
+      from: env.EMAIL_FROM,
+      // The schema guarantees host, user and pass when the provider is smtp.
+      ...(env.EMAIL_PROVIDER === 'smtp' && env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS
+        ? {
+            smtp: {
+              host: env.SMTP_HOST,
+              port: env.SMTP_PORT,
+              secure: env.SMTP_SECURE ?? env.SMTP_PORT === 465,
+              user: env.SMTP_USER,
+              pass: env.SMTP_PASS,
+            },
+          }
+        : {}),
+    };
     this.uploadDir = path.resolve(env.UPLOAD_DIR);
     this.privateUploadDir = path.resolve(env.PRIVATE_UPLOAD_DIR);
     // Everything under UPLOAD_DIR is served publicly: a private directory inside it would publish
@@ -124,10 +150,12 @@ export class AppConfig {
         problems.push(`${name} still looks like a development placeholder; generate a random one.`);
       }
     }
-    problems.push(
-      `EMAIL_PROVIDER=${this.email.provider} is for development/tests only (it exposes one-time ` +
-        'links in the log). No production email provider is implemented yet.',
-    );
+    if (this.email.provider !== 'smtp') {
+      problems.push(
+        `EMAIL_PROVIDER=${this.email.provider} is for development/tests only (it exposes one-time ` +
+          'links in the log). Use EMAIL_PROVIDER=smtp with the SMTP_* settings.',
+      );
+    }
     return problems;
   }
 

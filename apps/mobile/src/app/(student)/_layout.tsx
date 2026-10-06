@@ -5,15 +5,18 @@ import { useUnreadMessages } from '@/hooks/use-unread';
 
 const TABS: readonly TabSpec[] = [
   { name: 'home', title: 'Home', icon: 'home-outline', iconActive: 'home' },
-  { name: 'community', title: 'Community', icon: 'chatbubbles-outline', iconActive: 'chatbubbles' },
-  { name: 'market', title: 'Market', icon: 'pricetags-outline', iconActive: 'pricetags' },
   { name: 'explore', title: 'Explore', icon: 'compass-outline', iconActive: 'compass' },
+  { name: 'orders', title: 'Orders', icon: 'receipt-outline', iconActive: 'receipt' },
+  { name: 'community', title: 'Community', icon: 'chatbubbles-outline', iconActive: 'chatbubbles' },
   { name: 'me', title: 'Profile', icon: 'person-circle-outline', iconActive: 'person-circle' },
 ];
 
-const StudentTabBar = makeTabBar(TABS, () => ({ market: useUnreadMessages() }));
+const StudentTabBar = makeTabBar(TABS, () => ({ me: useUnreadMessages() }));
 
-/** The student app: five tabs. Detail screens live in (shared) and push over the tabs. */
+/**
+ * The student app: five tabs. The marketplace is no longer a tab (it opens from Home and Profile) but
+ * keeps its screen here. Detail screens live in (shared) and push over the tabs.
+ */
 export default function StudentLayout() {
   return (
     <>
@@ -21,6 +24,7 @@ export default function StudentLayout() {
         {TABS.map((tab) => (
           <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.title }} />
         ))}
+        <Tabs.Screen name="market" options={{ title: 'Market' }} />
       </Tabs>
       <SplashAd />
     </>

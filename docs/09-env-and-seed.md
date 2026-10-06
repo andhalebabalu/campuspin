@@ -29,10 +29,10 @@ Rules: **never commit real values**; only the `.env.example` files are tracked. 
 | `COOKIE_SECURE` | | | `true` prod | `Secure` flag |
 | `EMAIL_VERIFICATION_EXPIRES_IN` | | | `24h` | **Implemented (Phase 3)** |
 | `PASSWORD_RESET_EXPIRES_IN` | | | `1h` | **Implemented (Phase 3)** |
-| `EMAIL_PROVIDER` | | ✔ | `console` (dev) / `memory` (tests); `smtp` later | provider selection. `console` prints emails **including their one-time links** to the API log, so the API refuses to start in production with it (no production provider exists yet) |
+| `EMAIL_PROVIDER` | | ✔ | `console` (dev) / `memory` (tests) / `smtp` | provider selection. `console` prints emails **including their one-time links** to the API log, so the API refuses to start in production with anything but `smtp` |
 | `EMAIL_FROM`, `APP_NAME` | | | `CampusPin <no-reply@localhost.test>`, `CampusPin` | sender and product name in emails (a real sender needs SPF/DKIM/DMARC) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` | | smtp | | transport (not needed in development: the console provider logs emails) |
-| `SMTP_USER`, `SMTP_PASSWORD` | ✔ | smtp | | credentials |
+| `SMTP_USER`, `SMTP_PASS` | ✔ | smtp | | credentials (Gmail: an app password; spaces are ignored) |
 | `STORAGE_PROVIDER` | | ✔ | `memory` test / `cloudinary` | provider selection |
 | `CLOUDINARY_CLOUD_NAME` | | cloudinary | | |
 | `CLOUDINARY_API_KEY` | ✔ | cloudinary | | |
