@@ -8,6 +8,9 @@ export const ROUTES = {
   placeReview: (slug: string) => `/places/${slug}/review`,
   search: '/search',
   suggestPlace: '/suggest-a-place',
+  privacy: '/privacy',
+  terms: '/terms',
+  grievance: '/grievance',
   /** "Continue as": picks the student or business sign-in. */
   signIn: '/login',
   /** Student sign-in; also where `?next=` links from student pages go. */

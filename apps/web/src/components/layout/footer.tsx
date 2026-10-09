@@ -3,7 +3,7 @@ import { BRAND } from '@/constants/brand';
 import { ROUTES } from '@/constants/routes';
 import { searchHref } from '@/features/search/lib/search-filters';
 
-/** Only pages that exist are linked: About/Careers/Privacy etc. get added when they ship. */
+/** Only pages that exist are linked: About, Careers and the rest get added when they ship. */
 const COLUMNS = [
   {
     title: 'Product',
@@ -31,12 +31,20 @@ const COLUMNS = [
       { href: ROUTES.signIn, label: 'Log in' },
     ],
   },
+  {
+    title: 'Legal',
+    links: [
+      { href: ROUTES.privacy, label: 'Privacy Policy' },
+      { href: ROUTES.terms, label: 'Terms & Conditions' },
+      { href: ROUTES.grievance, label: 'Grievance Officer' },
+    ],
+  },
 ];
 
 export function Footer() {
   return (
     <footer className="border-t border-line bg-surface">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)] lg:px-8">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:px-8">
         <div className="flex flex-col gap-3">
           <Link href={ROUTES.home} className="w-fit">
             {/* eslint-disable-next-line @next/next/no-img-element -- static brand asset. */}
