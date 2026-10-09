@@ -251,3 +251,87 @@ export const WHY_US: Array<{ title: string; body: string; icon: IconName; tone: 
     tone: 'rose',
   },
 ];
+
+/** The categories on the campus map (hero and "Connected campus"), with what each one means. */
+export const MAP_PINS = [
+  {
+    label: 'Hostel',
+    icon: 'building',
+    tone: 'blue',
+    slug: 'hostels',
+    x: 22,
+    y: 14,
+    hint: 'Hostels and dorms on and around campus',
+  },
+  {
+    label: 'Mess',
+    icon: 'utensils',
+    tone: 'amber',
+    slug: 'mess',
+    x: 52,
+    y: 10,
+    hint: 'Home-style meals by the month or the plate',
+  },
+  {
+    label: 'Library',
+    icon: 'book',
+    tone: 'teal',
+    slug: 'libraries',
+    x: 80,
+    y: 20,
+    hint: 'Libraries and quiet study rooms',
+  },
+  {
+    label: 'Gym',
+    icon: 'dumbbell',
+    tone: 'violet',
+    slug: 'gyms',
+    x: 86,
+    y: 44,
+    hint: 'Gyms and fitness studios nearby',
+  },
+  {
+    label: 'Cafe',
+    icon: 'coffee',
+    tone: 'rose',
+    slug: 'cafes',
+    x: 16,
+    y: 44,
+    hint: 'Cafes and eateries to meet friends',
+  },
+  {
+    label: 'Medical',
+    icon: 'medical',
+    tone: 'rose',
+    slug: 'medical',
+    x: 78,
+    y: 70,
+    hint: 'Medical stores, clinics and hospitals',
+  },
+  {
+    label: 'Xerox',
+    icon: 'printer',
+    tone: 'blue',
+    slug: 'xerox',
+    x: 24,
+    y: 76,
+    hint: 'Xerox, printing and binding',
+  },
+  {
+    label: 'PG',
+    icon: 'bed',
+    tone: 'violet',
+    slug: 'pg',
+    x: 52,
+    y: 88,
+    hint: 'PGs and rooms for rent',
+  },
+] as const satisfies ReadonlyArray<{
+  label: string;
+  icon: IconName;
+  tone: Tone;
+  slug: string;
+  x: number;
+  y: number;
+  hint: string;
+}>;

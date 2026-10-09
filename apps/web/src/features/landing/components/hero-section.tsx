@@ -3,24 +3,14 @@ import Link from 'next/link';
 import { Icon } from '@/components/ui/icon';
 import { CountUp } from '@/components/motion/count-up';
 import { ROUTES } from '@/constants/routes';
-import { CampusMap, type MapPin } from '@/features/landing/components/campus-map';
+import { CampusMap } from '@/features/landing/components/campus-map';
 import { CampusSearch } from '@/features/landing/components/campus-search';
 import {
   Container,
   CTA_CLASSES,
   CTA_OUTLINE_CLASSES,
 } from '@/features/landing/components/primitives';
-
-const HERO_PINS: MapPin[] = [
-  { label: 'Hostel', icon: 'building', tone: 'blue', slug: 'hostels', x: 22, y: 14 },
-  { label: 'Mess', icon: 'utensils', tone: 'amber', slug: 'mess', x: 52, y: 10 },
-  { label: 'Library', icon: 'book', tone: 'teal', slug: 'libraries', x: 80, y: 20 },
-  { label: 'Gym', icon: 'dumbbell', tone: 'violet', slug: 'gyms', x: 86, y: 44 },
-  { label: 'Cafe', icon: 'coffee', tone: 'rose', slug: 'cafes', x: 16, y: 44 },
-  { label: 'Medical', icon: 'medical', tone: 'rose', slug: 'medical', x: 78, y: 70 },
-  { label: 'Xerox', icon: 'printer', tone: 'blue', slug: 'xerox', x: 24, y: 76 },
-  { label: 'PG', icon: 'bed', tone: 'violet', slug: 'pg', x: 52, y: 88 },
-];
+import { MAP_PINS } from '@/features/landing/lib/landing-content';
 
 export interface HeroStats {
   colleges: number | null;
@@ -120,9 +110,10 @@ export function HeroSection({ colleges, stats }: { colleges: CollegeCard[]; stat
             className="absolute inset-6 -z-10 rounded-[32px] bg-linear-to-br from-primary-400/30 to-accent-400/25 blur-2xl"
           />
           <CampusMap
-            pins={HERO_PINS}
+            pins={[...MAP_PINS]}
             animated
-            className="aspect-[4/3.2] w-full min-w-0 rounded-[28px] shadow-xl ring-1 ring-line transition-transform duration-700 ease-out hover:scale-[1.01]"
+            tilt
+            className="aspect-[4/3.2] w-full min-w-0 rounded-[28px] shadow-xl ring-1 ring-line"
           />
         </div>
       </Container>

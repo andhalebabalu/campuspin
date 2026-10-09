@@ -18,7 +18,10 @@ export function CollegeCard({ college }: { college: CollegeCardData }) {
   return (
     // The wrapper eases in on scroll; the card itself lifts on hover (two elements, two transitions).
     <div data-reveal className="h-full">
-      <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-xs transition-[translate,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-lg">
+      <article
+        data-spotlight
+        className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-xs transition-[translate,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
+      >
         <Link
           href={ROUTES.collegeDetail(college.slug)}
           className="relative block aspect-[16/9] w-full overflow-hidden bg-subtle"

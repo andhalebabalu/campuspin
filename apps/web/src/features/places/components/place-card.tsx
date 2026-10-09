@@ -20,7 +20,7 @@ export function PlaceCard({ place }: { place: PlaceCardData }) {
   const fallback = categoryImage(place.primaryCategory?.slug);
   return (
     <Link href={ROUTES.placeDetail(place.slug)} className="block h-full" data-reveal>
-      <Card hover className="flex h-full flex-col overflow-hidden">
+      <Card hover data-spotlight className="flex h-full flex-col overflow-hidden">
         <div className="aspect-[4/3] w-full bg-subtle">
           {place.coverImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- foundation phase: no remote-image domains configured yet.

@@ -94,6 +94,7 @@ export function CommunitySection() {
               <li key={feature.label} data-reveal style={stagger(index, 60)}>
                 <Link
                   href={ROUTES.community}
+                  data-spotlight
                   className="flex h-full items-center gap-3 rounded-lg border border-line bg-surface p-3 transition-colors hover:border-primary-200 hover:bg-primary-50/40"
                 >
                   <IconChip icon={feature.icon} tone={feature.tone} size="sm" />
@@ -141,6 +142,7 @@ export function MarketplaceSection() {
             <li key={kind.label} data-reveal style={stagger(index)}>
               <Link
                 href={ROUTES.marketplace}
+                data-spotlight
                 className="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
               >
                 <span

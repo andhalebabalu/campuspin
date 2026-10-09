@@ -5,6 +5,7 @@ import { Footer } from '@/components/layout/footer';
 import { Navbar } from '@/components/layout/navbar';
 import { SiteChrome } from '@/components/layout/site-chrome';
 import { ScrollReveal } from '@/components/motion/scroll-reveal';
+import { SpotlightEffects } from '@/components/motion/spotlight-effects';
 import { ToastProvider } from '@/components/ui/toast';
 import { BRAND } from '@/constants/brand';
 import { VisitTracker } from '@/lib/analytics/visit-tracker';
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ToastProvider>
             <VisitTracker />
             <ScrollReveal />
+            <SpotlightEffects />
             <SiteChrome>
               <Navbar />
             </SiteChrome>

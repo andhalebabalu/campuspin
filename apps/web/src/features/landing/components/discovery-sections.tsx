@@ -26,6 +26,7 @@ export function HowItWorksSection() {
             <li
               key={step.title}
               data-reveal
+              data-spotlight
               style={stagger(index, 100)}
               className="relative flex flex-col gap-3 rounded-xl border border-line bg-surface p-5 shadow-xs"
             >
@@ -67,6 +68,7 @@ export function CategoryGridSection() {
             <li key={tile.label} data-reveal style={stagger(index % 6, 60)}>
               <Link
                 href={searchHref({ category: tile.slug ?? '' })}
+                data-spotlight
                 className="group flex h-full flex-col items-center gap-3 rounded-xl border border-line bg-surface px-3 py-6 text-center transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-md"
               >
                 <IconChip

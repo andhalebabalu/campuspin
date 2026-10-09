@@ -171,6 +171,7 @@ export function WhyUsSection() {
             <li
               key={item.title}
               data-reveal
+              data-spotlight
               style={stagger(index, 100)}
               className="flex gap-4 rounded-xl border border-line bg-surface p-5 shadow-xs"
             >

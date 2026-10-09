@@ -14,6 +14,7 @@ import {
   HowItWorksSection,
 } from '@/features/landing/components/discovery-sections';
 import { CollegeMarquee } from '@/features/landing/components/college-marquee';
+import { ConnectedCampusSection } from '@/features/landing/components/connected-campus-section';
 import { HeroSection } from '@/features/landing/components/hero-section';
 import {
   DailyServicesSection,
@@ -33,7 +34,10 @@ export const metadata: Metadata = {
  * fails soft: if the API is down the page still renders, just without the live bits.
  */
 /** Eight of the newest places, at most two of any one kind, so the strip shows the range. */
-function variety<T extends { primaryCategory: { slug: string } | null }>(places: T[], count = 8): T[] {
+function variety<T extends { primaryCategory: { slug: string } | null }>(
+  places: T[],
+  count = 8,
+): T[] {
   const perKind = new Map<string, number>();
   const picked: T[] = [];
   for (const place of places) {
@@ -66,6 +70,7 @@ export default async function HomePage() {
       />
       <CollegeMarquee colleges={popular} />
       <HowItWorksSection />
+      <ConnectedCampusSection />
       <CategoryGridSection />
       <LatestPlacesSection places={variety(places?.data ?? [])} />
       <DailyServicesSection />

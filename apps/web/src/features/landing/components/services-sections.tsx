@@ -153,6 +153,7 @@ export function DailyServicesSection() {
               <li key={service.title} data-reveal style={stagger(index)}>
                 <Link
                   href={searchHref({ category: service.slug })}
+                  data-spotlight
                   className="group flex h-full gap-4 rounded-xl border border-line bg-surface p-4 transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-md"
                 >
                   <IconChip icon={service.icon} tone={service.tone} />
