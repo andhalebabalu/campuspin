@@ -70,7 +70,7 @@ export function CommunitySection() {
     <section
       id="features"
       aria-labelledby="community-title"
-      className="scroll-mt-20 border-y border-line bg-surface py-20"
+      className="scroll-mt-20 border-y border-line bg-surface/75 py-20"
     >
       <Container className="grid items-center gap-12 lg:grid-cols-2">
         <div data-reveal>

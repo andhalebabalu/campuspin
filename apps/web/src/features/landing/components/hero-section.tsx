@@ -47,7 +47,7 @@ export function HeroSection({ colleges, stats }: { colleges: CollegeCard[]; stat
   return (
     <section
       aria-labelledby="hero-title"
-      className="relative isolate overflow-hidden bg-linear-to-b from-primary-50/80 via-surface to-canvas"
+      className="relative isolate overflow-hidden bg-linear-to-b from-primary-50/70 via-surface/45 to-transparent"
     >
       <HeroBackdrop />
       <Container className="grid items-center gap-12 pt-12 pb-10 lg:grid-cols-[1.05fr_1fr] lg:pt-20">

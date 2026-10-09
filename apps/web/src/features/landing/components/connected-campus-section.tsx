@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Icon } from '@/components/ui/icon';
 import { ROUTES } from '@/constants/routes';
+import { MapNetwork } from '@/components/motion/map-network';
 import { CampusMap } from '@/features/landing/components/campus-map';
 import { CTA_CLASSES, IconChip } from '@/features/landing/components/primitives';
 import { MAP_PINS } from '@/features/landing/lib/landing-content';
@@ -80,6 +81,7 @@ export function ConnectedCampusSection() {
     >
       <div className={`${reduced ? '' : 'sticky top-16 h-[calc(100dvh-4rem)]'} overflow-hidden`}>
         {/* Atmosphere: a faint grid and two glows. */}
+        <MapNetwork tone="dark" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-[linear-gradient(rgb(255_255_255/0.05)_1px,transparent_1px),linear-gradient(90deg,rgb(255_255_255/0.05)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_80%)] bg-[size:48px_48px]" />
           <div className="absolute -top-40 right-0 size-[34rem] animate-blob rounded-full bg-primary-500/25 blur-3xl" />

@@ -13,6 +13,7 @@ import {
   CategoryGridSection,
   HowItWorksSection,
 } from '@/features/landing/components/discovery-sections';
+import { MapNetwork } from '@/components/motion/map-network';
 import { CollegeMarquee } from '@/features/landing/components/college-marquee';
 import { ConnectedCampusSection } from '@/features/landing/components/connected-campus-section';
 import { HeroSection } from '@/features/landing/components/hero-section';
@@ -61,6 +62,8 @@ export default async function HomePage() {
 
   return (
     <main className="flex-1">
+      {/* The living map behind the whole page; light sections let it show through. */}
+      <MapNetwork fixed />
       <HeroSection
         colleges={popular}
         stats={{

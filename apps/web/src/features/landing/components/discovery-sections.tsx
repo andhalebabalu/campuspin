@@ -55,7 +55,7 @@ export function CategoryGridSection() {
     <section
       id="categories"
       aria-labelledby="categories-title"
-      className="scroll-mt-20 border-y border-line bg-surface py-20"
+      className="scroll-mt-20 border-y border-line bg-surface/75 py-20"
     >
       <Container className="flex flex-col gap-10">
         <SectionHeading

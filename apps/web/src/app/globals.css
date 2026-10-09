@@ -199,8 +199,10 @@
     background: var(--color-canvas);
   }
 
+  /* Transparent so a page-wide background layer (MapNetwork) can sit behind content; <html>
+     carries the page colour, so nothing else changes. */
   body {
-    background: var(--color-canvas);
+    background: transparent;
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

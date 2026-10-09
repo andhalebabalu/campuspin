@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { MapNetwork } from '@/components/motion/map-network';
 import { Icon } from '@/components/ui/icon';
 import { BRAND } from '@/constants/brand';
 import { ROUTES } from '@/constants/routes';
@@ -112,7 +113,7 @@ export function BusinessSection() {
     <section
       id="for-businesses"
       aria-labelledby="business-title"
-      className="scroll-mt-20 border-y border-line bg-surface py-20"
+      className="scroll-mt-20 border-y border-line bg-surface/75 py-20"
     >
       <Container className="grid items-center gap-12 lg:grid-cols-[0.9fr_1.4fr]">
         <div className="flex flex-col gap-6">
@@ -192,8 +193,9 @@ export function CtaBand() {
   return (
     <section
       aria-labelledby="cta-title"
-      className="animate-gradient bg-linear-to-r from-primary-900 via-primary-700 to-primary-900 bg-[length:200%_200%] text-white"
+      className="relative overflow-hidden animate-gradient bg-linear-to-r from-primary-900 via-primary-700 to-primary-900 bg-[length:200%_200%] text-white"
     >
+      <MapNetwork tone="dark" />
       <Container className="relative flex flex-col items-center gap-5 overflow-hidden py-16 text-center">
         <svg
           viewBox="0 0 200 120"

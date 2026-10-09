@@ -132,7 +132,7 @@ export function DailyServicesSection() {
     <section
       id="services"
       aria-labelledby="services-title"
-      className="scroll-mt-20 border-y border-line bg-surface py-20"
+      className="scroll-mt-20 border-y border-line bg-surface/75 py-20"
     >
       <Container className="grid items-center gap-12 lg:grid-cols-[1.5fr_1fr]">
         <div className="flex flex-col gap-8">
