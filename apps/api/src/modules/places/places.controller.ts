@@ -38,6 +38,8 @@ const EXAMPLE_CARD = {
   priceMin: 3000,
   priceMax: 3500,
   priceUnit: 'MONTH',
+  latitude: 19.0952,
+  longitude: 74.7496,
   distanceMeters: 850,
 };
 
@@ -99,7 +101,8 @@ export class PlacesController {
     description:
       'Active places, paginated (`page`, `limit` up to 50). `q` searches name, description and address; ' +
       '`city` matches exactly. `collegeSlug` scopes the list to places serving that college (excluding any ' +
-      'a staff member explicitly excluded), and `categorySlug` narrows further. `minPrice`/`maxPrice` keep ' +
+      'a staff member explicitly excluded), and `categorySlug` narrows further (a group such as `food` means all ' +
+      'its categories). `minPrice`/`maxPrice` keep ' +
       'places whose own price range overlaps the window (places with no price never match); `verified=true` ' +
       'shows only staff-verified places; `minRating` (1-5) keeps places whose review average is at least that ' +
       "(unrated places never match). Send `lat` and `lng` (together) for each place's straight-line " +

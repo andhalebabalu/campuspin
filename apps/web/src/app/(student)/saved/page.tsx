@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { PageHero } from '@/components/shared/page-hero';
 import { RequireSession } from '@/features/account/components/require-session';
 import { SavedPlaces } from '@/features/services/components/saved-places';
 
@@ -9,11 +10,23 @@ export const metadata: Metadata = {
 
 export default function SavedPage() {
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold text-ink sm:text-3xl">Saved places</h1>
-      <RequireSession title="Sign in to see your saved places">
-        <SavedPlaces />
-      </RequireSession>
+    <main className="flex-1 pb-16">
+      <PageHero
+        compact
+        eyebrow="Your account"
+        eyebrowIcon="bookmark"
+        title={
+          <>
+            Saved <span className="text-accent-600">places</span>
+          </>
+        }
+        lead="The places you bookmarked, all in one list."
+      />
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:px-8">
+        <RequireSession title="Sign in to see your saved places">
+          <SavedPlaces />
+        </RequireSession>
+      </div>
     </main>
   );
 }

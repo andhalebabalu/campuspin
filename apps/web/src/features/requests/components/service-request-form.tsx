@@ -119,7 +119,7 @@ export function ServiceRequestForm({
     <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-6">
       <div>
         <p className="text-sm font-medium text-accent-700">{service.name}</p>
-        <h1 className="text-2xl font-bold text-ink sm:text-3xl">{data.name}</h1>
+        <h1 className="text-2xl font-extrabold text-primary-800 sm:text-3xl">{data.name}</h1>
         {service.description && <p className="text-body">{service.description}</p>}
         {!config.acceptingRequests && (
           <p className="mt-2 text-sm text-amber-600">Not taking new requests right now.</p>

@@ -6,7 +6,12 @@ import { RegisterForm } from '@/features/auth/components/register-form';
 
 export const metadata: Metadata = { title: 'Create a student account' };
 
-export default function StudentRegisterPage() {
+export default async function StudentRegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ email?: string | string[] }>;
+}) {
+  const { email } = await searchParams;
   return (
     <AuthLayout
       audience="student"
@@ -20,7 +25,7 @@ export default function StudentRegisterPage() {
         </>
       }
     >
-      <RegisterForm accountType="STUDENT" />
+      <RegisterForm accountType="STUDENT" initialEmail={typeof email === 'string' ? email : ''} />
       <p className="text-center text-sm text-muted">
         Not a student?{' '}
         <Link

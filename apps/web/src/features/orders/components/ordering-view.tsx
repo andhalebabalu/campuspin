@@ -276,7 +276,7 @@ export function OrderingView({
           <p className="text-sm font-medium text-accent-700">
             {atTable ? 'Order from your table' : 'Order for pickup'}
           </p>
-          <h1 className="text-2xl font-bold text-ink sm:text-3xl">{data.name}</h1>
+          <h1 className="text-2xl font-extrabold text-primary-800 sm:text-3xl">{data.name}</h1>
         </div>
         {tableLabel && (
           <span className="rounded-full bg-primary-800 px-4 py-1.5 text-sm font-semibold text-white">

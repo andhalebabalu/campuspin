@@ -1,7 +1,6 @@
 'use client';
 
-import Link from 'next/link';
-import { EmptyState } from '@/components/shared/empty-state';
+import { FeatureGate } from '@/components/shared/feature-gate';
 import { Skeleton } from '@/components/shared/skeleton';
 import { ROUTES } from '@/constants/routes';
 import { useSession } from '@/lib/auth/session-context';
@@ -27,20 +26,41 @@ export function SuggestPlaceGate() {
 
   if (status === 'unauthenticated') {
     return (
-      <EmptyState
+      <FeatureGate
+        eyebrow="Suggest a place"
         title="Sign in to suggest a place"
-        description="Suggesting a place is only for signed-in accounts, so staff know who to follow up with."
-        action={
-          <Link
-            href={`${ROUTES.login}?next=${encodeURIComponent(ROUTES.suggestPlace)}`}
-            className="inline-flex h-11 items-center justify-center rounded-md bg-action px-5 text-sm font-medium text-white transition-colors hover:bg-action-hover"
-          >
-            Sign in
-          </Link>
-        }
+        description="Suggesting a place is only for signed-in accounts, so our staff know who to follow up with."
+        points={[
+          {
+            icon: 'pin',
+            title: 'Add what is missing',
+            body: 'A mess, PG, library or shop near your college.',
+          },
+          {
+            icon: 'userCheck',
+            title: 'Reviewed by staff',
+            body: 'We check every suggestion before it goes live.',
+          },
+          {
+            icon: 'users',
+            title: 'Help your juniors',
+            body: 'The next batch finds it on day one.',
+          },
+          { icon: 'bell', title: 'Hear back', body: 'You are told when your place is approved.' },
+        ]}
+        image="/images/amenities/mess.jpg"
+        primary={{
+          href: `${ROUTES.login}?next=${encodeURIComponent(ROUTES.suggestPlace)}`,
+          label: 'Sign in',
+        }}
+        secondary={{ href: ROUTES.register, label: 'Create a free account' }}
       />
     );
   }
 
-  return <SuggestPlaceForm />;
+  return (
+    <div className="mx-auto w-full max-w-2xl rounded-3xl border border-line bg-surface p-6 shadow-sm sm:p-8">
+      <SuggestPlaceForm />
+    </div>
+  );
 }

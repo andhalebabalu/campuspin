@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
+import { Caveat, Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { Footer } from '@/components/layout/footer';
 import { Navbar } from '@/components/layout/navbar';
@@ -19,6 +19,8 @@ const jakarta = Plus_Jakarta_Sans({
   variable: '--font-jakarta',
   display: 'swap',
 });
+/** Handwritten notes on the landing page ("Your campus nearby!"). */
+const caveat = Caveat({ subsets: ['latin'], variable: '--font-caveat', display: 'swap' });
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
@@ -37,7 +39,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jakarta.variable}`}>
+    <html lang="en" className={`${inter.variable} ${jakarta.variable} ${caveat.variable}`}>
       <body className="flex min-h-dvh flex-col">
         <SessionProvider>
           <ToastProvider>

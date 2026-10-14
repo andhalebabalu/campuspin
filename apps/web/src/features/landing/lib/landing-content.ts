@@ -1,4 +1,6 @@
 import type { IconName } from '@/components/ui/icon';
+import { ROUTES } from '@/constants/routes';
+import { searchHref } from '@/features/search/lib/search-filters';
 
 /**
  * Icon-chip colour pairs. Written out as literal class strings (not built from the tone name) so
@@ -14,324 +16,199 @@ export const TONES = {
 } as const;
 export type Tone = keyof typeof TONES;
 
-export interface CategoryTile {
+interface Linked {
   label: string;
-  blurb: string;
   icon: IconName;
   tone: Tone;
-  /**
-   * A leaf category slug from the reference seed. Places only link to leaf categories, so a group
-   * slug (e.g. `accommodation`) would match nothing. `null` opens search with the category picker.
-   */
-  slug: string | null;
+  href: string;
 }
 
-/** The twelve "Explore everything around you" tiles. */
-export const CATEGORY_TILES: CategoryTile[] = [
-  {
-    label: 'Rooms & PG',
-    blurb: 'Rooms and PGs near your campus',
-    icon: 'bed',
-    tone: 'blue',
-    slug: 'rooms',
-  },
-  {
-    label: 'Hostels',
-    blurb: 'Safe and affordable hostels',
-    icon: 'building',
-    tone: 'blue',
-    slug: 'hostels',
-  },
-  {
-    label: 'Mess & Tiffin',
-    blurb: 'Home-style meals, every day',
-    icon: 'utensils',
-    tone: 'amber',
-    slug: 'mess',
-  },
-  {
-    label: 'Libraries',
-    blurb: 'Quiet spaces for better learning',
-    icon: 'book',
-    tone: 'teal',
-    slug: 'libraries',
-  },
-  {
-    label: 'Food & Cafes',
-    blurb: 'Great food, great vibes',
-    icon: 'coffee',
-    tone: 'rose',
-    slug: 'cafes',
-  },
-  {
-    label: 'Gyms',
-    blurb: 'Stay fit, stay healthy',
-    icon: 'dumbbell',
-    tone: 'violet',
-    slug: 'gyms',
-  },
-  {
-    label: 'Medical',
-    blurb: 'Pharmacies and healthcare',
-    icon: 'medical',
-    tone: 'rose',
-    slug: 'medical',
-  },
-  {
-    label: 'Laundry',
-    blurb: 'Clean clothes, less worries',
-    icon: 'shirt',
-    tone: 'blue',
-    slug: 'laundry',
-  },
-  {
-    label: 'Xerox & Printing',
-    blurb: 'Copies, prints and binding',
-    icon: 'printer',
-    tone: 'blue',
-    slug: 'xerox',
-  },
-  {
-    label: 'Stationery',
-    blurb: 'Books, files and drawing kits',
-    icon: 'file',
-    tone: 'green',
-    slug: 'stationery',
-  },
-  {
-    label: 'Grocery',
-    blurb: 'Daily essentials nearby',
-    icon: 'cart',
-    tone: 'amber',
-    slug: 'grocery',
-  },
-  {
-    label: 'More Categories',
-    blurb: 'Transport, CSC centres, rentals',
-    icon: 'grid',
-    tone: 'violet',
-    slug: null,
-  },
-];
-
-/** The quick-pick chips under the hero search. */
-export const QUICK_CATEGORIES: Array<Pick<CategoryTile, 'label' | 'icon' | 'tone' | 'slug'>> = [
-  { label: 'Rooms', icon: 'bed', tone: 'blue', slug: 'rooms' },
-  { label: 'PG', icon: 'building', tone: 'violet', slug: 'pg' },
-  { label: 'Mess', icon: 'utensils', tone: 'amber', slug: 'mess' },
-  { label: 'Library', icon: 'book', tone: 'teal', slug: 'libraries' },
-  { label: 'Xerox', icon: 'printer', tone: 'blue', slug: 'xerox' },
-  { label: 'Stationery', icon: 'file', tone: 'green', slug: 'stationery' },
-  { label: 'Medical', icon: 'medical', tone: 'rose', slug: 'medical' },
+/**
+ * The quick-pick chips under the hero search. `slug` is a leaf category from the reference seed
+ * (places only link to leaf categories); `null` opens search with the category picker.
+ */
+export const QUICK_CATEGORIES: Array<Omit<Linked, 'href'> & { slug: string | null }> = [
+  { label: 'Mess', icon: 'utensils', tone: 'blue', slug: 'mess' },
+  { label: 'Rooms', icon: 'bed', tone: 'violet', slug: 'rooms' },
+  { label: 'Hostel', icon: 'building', tone: 'blue', slug: 'hostels' },
+  { label: 'Libraries', icon: 'book', tone: 'amber', slug: 'libraries' },
+  { label: 'Xerox', icon: 'printer', tone: 'violet', slug: 'xerox' },
   { label: 'Food', icon: 'coffee', tone: 'rose', slug: 'restaurants' },
+  { label: 'Transport', icon: 'bus', tone: 'blue', slug: 'auto' },
   { label: 'More', icon: 'more', tone: 'blue', slug: null },
 ];
 
-export const HOW_IT_WORKS: Array<{ title: string; body: string; icon: IconName; tone: Tone }> = [
+/** "Your campus. One platform.": the four things CampusPin is. */
+export const PLATFORM_FEATURES: Array<Linked & { body: string }> = [
   {
-    title: 'Select your campus',
-    body: 'Choose your college and explore everything around it.',
+    label: 'Nearby Amenities',
+    body: 'Find mess, rooms, hostel, libraries and more, with distance & location.',
     icon: 'pin',
     tone: 'green',
+    href: ROUTES.search,
   },
   {
-    title: 'Discover',
-    body: 'Find places, services and businesses based on your needs.',
-    icon: 'search',
-    tone: 'blue',
-  },
-  {
-    title: 'Order & connect',
-    body: 'Order food, send prints, enquire or book, right from the listing.',
-    icon: 'users',
+    label: 'Student Marketplace',
+    body: 'Buy & sell notes, books and other essentials across colleges.',
+    icon: 'tag',
     tone: 'violet',
+    href: ROUTES.marketplace,
   },
   {
-    title: 'Experience',
-    body: 'Visit, suggest missing places and grow your campus community.',
-    icon: 'star',
+    label: 'Community Platform',
+    body: 'Connect with students, share ideas, and grow together.',
+    icon: 'chats',
     tone: 'amber',
+    href: ROUTES.community,
+  },
+  {
+    label: 'Business Growth',
+    body: 'List your business, get more customers from campus community.',
+    icon: 'store',
+    tone: 'blue',
+    href: ROUTES.registerBusiness,
   },
 ];
 
-/** What the student community has today: the post categories of the community feed. */
-export const COMMUNITY_FEATURES: Array<{
+/** "Explore everything around you": the ten tiles, each a working search or page. */
+export const EXPLORE_TILES: Array<Linked & { blurb: string }> = [
+  {
+    label: 'Order Food',
+    blurb: 'From nearby cafés & mess',
+    icon: 'utensils',
+    tone: 'blue',
+    href: searchHref({ category: 'mess' }),
+  },
+  {
+    label: 'Print',
+    blurb: 'Xerox, printing & scanning',
+    icon: 'printer',
+    tone: 'blue',
+    href: searchHref({ category: 'xerox' }),
+  },
+  {
+    label: 'Laundry',
+    blurb: 'Clean clothes, happy you',
+    icon: 'shirt',
+    tone: 'green',
+    href: searchHref({ category: 'laundry' }),
+  },
+  {
+    label: 'Book Appointment',
+    blurb: 'Haircut, doctor, services',
+    icon: 'calendar',
+    tone: 'rose',
+    href: searchHref({ category: 'medical' }),
+  },
+  {
+    label: 'Find Room',
+    blurb: 'PG, rental & hostel',
+    icon: 'bed',
+    tone: 'violet',
+    href: searchHref({ category: 'rooms' }),
+  },
+  {
+    label: 'Study Space',
+    blurb: 'Quiet places to study',
+    icon: 'laptop',
+    tone: 'violet',
+    href: searchHref({ category: 'reading-rooms' }),
+  },
+  {
+    label: 'Repair',
+    blurb: 'Mobile, laptop & more',
+    icon: 'wrench',
+    tone: 'rose',
+    href: searchHref({ q: 'repair' }),
+  },
+  {
+    label: 'Offers',
+    blurb: 'Exclusive deals & discounts',
+    icon: 'receipt',
+    tone: 'amber',
+    href: ROUTES.offers,
+  },
+  {
+    label: 'Notes & Books',
+    blurb: 'Buy / Sell / Exchange',
+    icon: 'book',
+    tone: 'green',
+    href: ROUTES.marketplace,
+  },
+  {
+    label: 'Community',
+    blurb: 'Connect with fellow students',
+    icon: 'heart',
+    tone: 'teal',
+    href: ROUTES.community,
+  },
+];
+
+/** The floating labels around the hero map: what a student finds near their gate. */
+export const HERO_MAP_LABELS: Array<{
   label: string;
-  hint: string;
-  icon: IconName;
-  tone: Tone;
-}> = [
-  { label: 'Discussions', hint: 'Ask your campus anything', icon: 'chat', tone: 'blue' },
-  { label: 'Study & notes', hint: 'Share notes and doubts', icon: 'book', tone: 'teal' },
-  { label: 'Events', hint: 'Fests, clubs and meet-ups', icon: 'calendar', tone: 'violet' },
-  { label: 'Jobs & internships', hint: 'Openings near campus', icon: 'target', tone: 'amber' },
-  { label: 'Lost & found', hint: 'Lost it? Found it? Post it', icon: 'pin', tone: 'rose' },
-  { label: 'Announcements', hint: 'From your college community', icon: 'bell', tone: 'green' },
-];
-
-/** Marketplace categories students trade in most (a subset of the real listing categories). */
-export const MARKETPLACE_KINDS: Array<{ label: string; icon: IconName; tone: Tone }> = [
-  { label: 'Books & notes', icon: 'book', tone: 'amber' },
-  { label: 'Cycles', icon: 'bike', tone: 'green' },
-  { label: 'Electronics', icon: 'laptop', tone: 'violet' },
-  { label: 'Hostel essentials', icon: 'bed', tone: 'rose' },
-  { label: 'Stationery', icon: 'calculator', tone: 'blue' },
-];
-
-/** The everyday things a student can do on a listing, each a real flow in the app. */
-export const DAILY_SERVICES: Array<{
-  title: string;
-  body: string;
+  distance: string;
   icon: IconName;
   tone: Tone;
   slug: string;
+  /** Position over the map, in percent of the hero visual. */
+  x: number;
+  y: number;
 }> = [
+  { label: 'Mess', distance: '300 m', icon: 'utensils', tone: 'blue', slug: 'mess', x: 50, y: 20 },
+  { label: 'Rooms', distance: '400 m', icon: 'bed', tone: 'green', slug: 'rooms', x: 79, y: 28 },
   {
-    title: 'Order from the mess',
-    body: "See today's menu, order a meal or tiffin and pick it up when it is ready.",
-    icon: 'utensils',
-    tone: 'amber',
-    slug: 'mess',
-  },
-  {
-    title: 'Send a print',
-    body: 'Upload a PDF to a xerox shop, choose copies and binding, collect it on the way.',
-    icon: 'printer',
+    label: 'Library',
+    distance: '400 m',
+    icon: 'book',
     tone: 'blue',
-    slug: 'xerox',
-  },
-  {
-    title: 'Order from your table',
-    body: 'Scan the QR code on a restaurant table, order and call the waiter from your phone.',
-    icon: 'qr',
-    tone: 'rose',
-    slug: 'restaurants',
-  },
-  {
-    title: 'Enquire and book',
-    body: 'Ask a PG about rent, book a library seat or a laundry pickup without a phone call.',
-    icon: 'calendar',
-    tone: 'violet',
-    slug: 'pg',
-  },
-];
-
-export const BUSINESS_BENEFITS = [
-  'Your own business page and QR codes',
-  'Take orders and table orders online',
-  'Invoices and payment tracking built in',
-  'Enquiries and bookings in one inbox',
-  'Daily menu, offers and reviews',
-  'Free to start, verified badge on approval',
-];
-
-export const WHY_US: Array<{ title: string; body: string; icon: IconName; tone: Tone }> = [
-  {
-    title: 'Location-based discovery',
-    body: 'Find what you need, sorted by distance from your campus.',
-    icon: 'pin',
-    tone: 'blue',
-  },
-  {
-    title: 'Honest listings',
-    body: 'Verified businesses carry a badge; places from open map data are marked unverified.',
-    icon: 'shield',
-    tone: 'green',
-  },
-  {
-    title: 'Student-friendly',
-    body: 'Built for students, with prices in plain rupees per month, meal or hour.',
-    icon: 'users',
-    tone: 'violet',
-  },
-  {
-    title: 'Community powered',
-    body: 'Students suggest the places they know. Real people, real places.',
-    icon: 'heart',
-    tone: 'rose',
-  },
-];
-
-/** The categories on the campus map (hero and "Connected campus"), with what each one means. */
-export const MAP_PINS = [
-  {
-    label: 'Hostel',
-    icon: 'building',
-    tone: 'blue',
-    slug: 'hostels',
-    x: 22,
-    y: 14,
-    hint: 'Hostels and dorms on and around campus',
-  },
-  {
-    label: 'Mess',
-    icon: 'utensils',
-    tone: 'amber',
-    slug: 'mess',
-    x: 52,
-    y: 10,
-    hint: 'Home-style meals by the month or the plate',
+    slug: 'libraries',
+    x: 85,
+    y: 50,
   },
   {
     label: 'Library',
+    distance: '300 m',
     icon: 'book',
-    tone: 'teal',
-    slug: 'libraries',
-    x: 80,
-    y: 20,
-    hint: 'Libraries and quiet study rooms',
-  },
-  {
-    label: 'Gym',
-    icon: 'dumbbell',
-    tone: 'violet',
-    slug: 'gyms',
-    x: 86,
-    y: 44,
-    hint: 'Gyms and fitness studios nearby',
-  },
-  {
-    label: 'Cafe',
-    icon: 'coffee',
-    tone: 'rose',
-    slug: 'cafes',
-    x: 16,
-    y: 44,
-    hint: 'Cafes and eateries to meet friends',
-  },
-  {
-    label: 'Medical',
-    icon: 'medical',
-    tone: 'rose',
-    slug: 'medical',
-    x: 78,
-    y: 70,
-    hint: 'Medical stores, clinics and hospitals',
-  },
-  {
-    label: 'Xerox',
-    icon: 'printer',
     tone: 'blue',
-    slug: 'xerox',
-    x: 24,
-    y: 76,
-    hint: 'Xerox, printing and binding',
+    slug: 'reading-rooms',
+    x: 56,
+    y: 84,
   },
   {
-    label: 'PG',
-    icon: 'bed',
+    label: 'Hostel',
+    distance: '700 m',
+    icon: 'building',
     tone: 'violet',
-    slug: 'pg',
-    x: 52,
-    y: 88,
-    hint: 'PGs and rooms for rent',
+    slug: 'hostels',
+    x: 76,
+    y: 72,
   },
-] as const satisfies ReadonlyArray<{
-  label: string;
-  icon: IconName;
-  tone: Tone;
-  slug: string;
-  x: number;
-  y: number;
-  hint: string;
-}>;
+];
+
+/**
+ * Sample reviews in the shape real ones will take. Shown under a heading that says they are
+ * examples: swap in real student quotes (with their permission) before calling them real.
+ */
+export const SAMPLE_TESTIMONIALS: Array<{ name: string; course: string; quote: string }> = [
+  {
+    name: 'Aditya Patil',
+    course: 'S.Y. B.Tech',
+    quote: 'CampusPin helped me find the best mess near my college. Super useful!',
+  },
+  {
+    name: 'Sneha Kulkarni',
+    course: 'F.Y. B.Sc',
+    quote: 'I found a great room through CampusPin. It’s so easy to use!',
+  },
+  {
+    name: 'Rahul Deshmukh',
+    course: 'T.Y. B.Com',
+    quote: 'The student marketplace is amazing, I sold my old books here.',
+  },
+  {
+    name: 'Priya More',
+    course: 'M.Sc',
+    quote: 'All my daily needs are in one place. Love this app!',
+  },
+];

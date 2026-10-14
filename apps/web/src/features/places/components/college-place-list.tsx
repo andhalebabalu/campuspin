@@ -1,5 +1,6 @@
 'use client';
 
+import { useSavedPlaceIds } from '@/features/services/components/save-place-button';
 import { ApiClientError } from '@platform/api-client';
 import type { PlaceCard as PlaceCardData, PageMeta } from '@platform/contracts';
 import { useEffect, useRef, useState } from 'react';
@@ -44,6 +45,7 @@ export function CollegePlaceList({
   categories = [],
   onCategoryChange,
 }: CollegePlaceListProps) {
+  const savedIds = useSavedPlaceIds();
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
   const [sort, setSort] = useState<Sort>('nearest');
@@ -193,7 +195,7 @@ export function CollegePlaceList({
         <>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {places.map((place) => (
-              <PlaceCard key={place.id} place={place} />
+              <PlaceCard key={place.id} place={place} saved={savedIds.has(place.id)} />
             ))}
           </div>
 

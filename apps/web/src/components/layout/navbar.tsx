@@ -13,7 +13,17 @@ import { MessagesLink } from './messages-link';
 import { NotificationBell } from './notification-bell';
 import { UserAvatar } from '@/components/ui/user-avatar';
 
-const NAV_LINKS = [
+/** On the landing page: its own sections. */
+const HOME_LINKS = [
+  { href: ROUTES.home, label: 'Home' },
+  { href: `${ROUTES.home}#features`, label: 'Features' },
+  { href: `${ROUTES.home}#for-students`, label: 'For Students' },
+  { href: `${ROUTES.home}#for-businesses`, label: 'For Businesses' },
+  { href: `${ROUTES.home}#about`, label: 'About' },
+];
+
+/** Everywhere else: the parts of the app. */
+const APP_LINKS = [
   { href: ROUTES.search, label: 'Discover' },
   { href: ROUTES.colleges, label: 'Colleges' },
   { href: ROUTES.community, label: 'Community' },
@@ -75,15 +85,16 @@ function AccountActions({ onNavigate }: { onNavigate?: () => void }) {
       <Link
         href={ROUTES.signIn}
         onClick={onNavigate}
-        className="inline-flex h-9 items-center justify-center rounded-full border border-control px-4 text-sm font-semibold text-primary-800 transition-colors hover:bg-subtle"
+        className="inline-flex h-10 items-center justify-center rounded-full border border-line bg-surface px-5 text-sm font-semibold text-primary-800 shadow-xs transition-colors hover:bg-subtle"
       >
         Log in
       </Link>
       <Link
         href={ROUTES.register}
         onClick={onNavigate}
-        className="inline-flex h-9 items-center justify-center rounded-full bg-accent-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-650"
+        className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-accent-600 px-5 text-sm font-semibold text-white shadow-md shadow-accent-600/25 transition-colors hover:bg-accent-650"
       >
+        <Icon name="bell" className="size-4" />
         Get started
       </Link>
     </div>
@@ -93,6 +104,8 @@ function AccountActions({ onNavigate }: { onNavigate?: () => void }) {
 /** Signed-in students also get their daily dashboard first. */
 function useNavLinks() {
   const { status, user } = useSession();
+  const pathname = usePathname();
+  const NAV_LINKS = pathname === ROUTES.home ? HOME_LINKS : APP_LINKS;
   const student =
     status === 'authenticated' &&
     user !== null &&
@@ -133,19 +146,24 @@ export function Navbar() {
           : 'border-transparent bg-surface/60'
       }`}
     >
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-[4.5rem] w-full max-w-6xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
         <Link href={ROUTES.home} className="flex shrink-0 items-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- static brand asset. */}
-          <img src="/logo.png" alt={BRAND.name} width={135} height={36} className="h-9 w-auto" />
+          <img src="/logo.png" alt={BRAND.name} width={165} height={44} className="h-11 w-auto" />
         </Link>
 
-        <nav aria-label="Main" className="hidden items-center gap-6 lg:flex">
+        <nav aria-label="Main" className="hidden items-center gap-7 lg:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              aria-current={pathname === link.href ? 'page' : undefined}
-              className="relative py-1 text-sm font-medium text-body transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-accent-600 after:transition-transform after:duration-300 hover:text-primary-800 hover:after:scale-x-100 aria-[current=page]:font-semibold aria-[current=page]:text-primary-800 aria-[current=page]:after:scale-x-100"
+              aria-current={
+                pathname === link.href ||
+                (link.href !== ROUTES.home && pathname.startsWith(`${link.href}/`))
+                  ? 'page'
+                  : undefined
+              }
+              className="relative py-1 text-sm font-medium text-body transition-colors after:absolute after:inset-x-0 after:-bottom-[1.45rem] after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-accent-600 after:transition-transform after:duration-300 hover:text-primary-800 hover:after:scale-x-100 aria-[current=page]:font-semibold aria-[current=page]:text-primary-800 aria-[current=page]:after:scale-x-100"
             >
               {link.label}
             </Link>

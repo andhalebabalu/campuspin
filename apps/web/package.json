@@ -5,6 +5,7 @@
   "description": "Next.js web app. Talks to the NestJS API over HTTP only (never to the database).",
   "scripts": {
     "dev": "next dev --port 3000",
+    "prebuild": "npm run build:packages --prefix ../..",
     "build": "next build",
     "start": "next start --port 3000",
     "typecheck": "next typegen && tsc --noEmit",

@@ -126,6 +126,8 @@ const card = (overrides: Partial<PlaceCard>): PlaceCard => ({
   priceMin: null,
   priceMax: null,
   priceUnit: null,
+  latitude: 19.09,
+  longitude: 74.74,
   distanceMeters: null,
   ...overrides,
 });

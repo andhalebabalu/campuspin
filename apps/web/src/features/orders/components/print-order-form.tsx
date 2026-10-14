@@ -169,7 +169,7 @@ export function PrintOrderForm({ placeSlug }: { placeSlug: string }) {
     <div className="flex flex-col gap-6">
       <div>
         <p className="text-sm font-medium text-accent-700">Print, xerox, binding</p>
-        <h1 className="text-2xl font-bold text-ink sm:text-3xl">{data.name}</h1>
+        <h1 className="text-2xl font-extrabold text-primary-800 sm:text-3xl">{data.name}</h1>
         {!config.acceptingOrders && (
           <p className="mt-2 text-sm text-amber-600">Not taking print orders right now.</p>
         )}

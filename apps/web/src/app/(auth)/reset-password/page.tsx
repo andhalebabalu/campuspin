@@ -13,7 +13,7 @@ export default async function ResetPasswordPage({
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-8 px-4 py-16 sm:px-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-ink">Choose a new password</h1>
+        <h1 className="text-3xl font-extrabold text-primary-800">Choose a new password</h1>
       </div>
 
       <ResetPasswordForm token={token ?? null} />

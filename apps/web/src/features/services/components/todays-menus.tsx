@@ -53,7 +53,9 @@ export function TodaysMenus() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-accent-700">{dayLabel(indiaDate())}</p>
-          <h1 className="text-2xl font-bold text-ink sm:text-3xl">Today&apos;s mess menus</h1>
+          <h1 className="text-2xl font-extrabold text-primary-800 sm:text-3xl">
+            Today&apos;s mess menus
+          </h1>
         </div>
         <div className="flex flex-wrap gap-2">
           {status === 'authenticated' && (

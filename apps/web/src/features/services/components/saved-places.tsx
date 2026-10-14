@@ -64,7 +64,7 @@ export function SavedPlaces() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {places.map((place) => (
-        <PlaceCard key={place.id} place={place} />
+        <PlaceCard key={place.id} place={place} saved />
       ))}
     </div>
   );

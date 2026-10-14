@@ -68,6 +68,8 @@ export interface CardRow {
   priceMin: number | null;
   priceMax: number | null;
   priceUnit: PriceUnit | null;
+  latitude: number;
+  longitude: number;
   categories: CategoryRow[];
   images: ImageRow[];
 }
@@ -174,6 +176,8 @@ export function toPlaceCard(row: CardRow, distanceMeters: number | null): PlaceC
     priceMin: row.priceMin,
     priceMax: row.priceMax,
     priceUnit: row.priceUnit,
+    latitude: row.latitude,
+    longitude: row.longitude,
     distanceMeters,
   };
 }

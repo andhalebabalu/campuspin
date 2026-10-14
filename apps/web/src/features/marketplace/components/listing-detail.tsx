@@ -153,7 +153,7 @@ export function ListingDetail({ listingId }: { listingId: string }) {
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <p className="text-3xl font-bold text-ink">{formatPrice(listing.price)}</p>
+            <p className="text-3xl font-extrabold text-primary-800">{formatPrice(listing.price)}</p>
             {listing.negotiable && listing.price > 0 && (
               <p className="text-sm text-muted">Price negotiable</p>
             )}

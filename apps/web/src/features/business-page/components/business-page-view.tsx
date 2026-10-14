@@ -8,6 +8,7 @@ import { ROUTES } from '@/constants/routes';
 import { EnquiryForm } from '@/features/places/components/enquiry-form';
 import { PlaceReviews } from '@/features/reviews/components/place-reviews';
 import { PlaceServicesSection } from '@/features/services/components/place-services-section';
+import { categoryImage } from '@/utils/category-image';
 import { SavePlaceButton } from '@/features/services/components/save-place-button';
 import { UNIT_LABELS, formatPrice } from '@/utils/format-price';
 import { HoursList, NearbyColleges } from './info-parts';
@@ -144,6 +145,8 @@ export function BusinessPageView({
   const website = business?.website ?? place.website;
   const description = business?.description ?? place.description;
   const cover = business?.coverUrl ?? place.coverImageUrl ?? place.images[0]?.imageUrl ?? null;
+  // No photo of its own: a stock photo of the kind of place, labelled as such.
+  const stockCover = cover ? null : categoryImage(place.primaryCategory?.slug, place.id);
   const category = business?.category?.name ?? place.primaryCategory?.name ?? null;
   const ratingAverage = business ? business.ratingAverage : place.ratingAverage;
   const ratingCount = business ? business.ratingCount : place.ratingCount;
@@ -212,9 +215,19 @@ export function BusinessPageView({
       <div className="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
         {/* Cover */}
         <div className="relative h-48 overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 sm:h-64 lg:h-80">
-          {cover && (
+          {(cover ?? stockCover) && (
             // eslint-disable-next-line @next/next/no-img-element -- uploaded images live on the API host.
-            <img src={cover} alt="" className="size-full object-cover" fetchPriority="high" />
+            <img
+              src={(cover ?? stockCover) as string}
+              alt=""
+              className="size-full object-cover"
+              fetchPriority="high"
+            />
+          )}
+          {stockCover && (
+            <span className="absolute top-14 left-4 rounded-full bg-ink/55 px-2.5 py-1 text-[11px] font-medium text-white">
+              Illustrative photo
+            </span>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/10 to-transparent" />
           <div className="absolute top-4 right-4 flex gap-2">

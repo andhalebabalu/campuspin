@@ -1,5 +1,6 @@
 'use client';
 
+import { useSavedPlaceIds } from '@/features/services/components/save-place-button';
 import { ApiClientError } from '@platform/api-client';
 import type { PlaceCard as PlaceCardData, ServiceType } from '@platform/contracts';
 import Link from 'next/link';
@@ -17,6 +18,7 @@ import { serviceIcon } from '../lib/service-meta';
 
 /** Places offering one service (a quick action), nearest first when the location is known. */
 export function ServicePlaces({ serviceKey }: { serviceKey: string }) {
+  const savedIds = useSavedPlaceIds();
   const { point, status: locationStatus, request } = useLocation();
   const [type, setType] = useState<ServiceType | null | undefined>(undefined);
   const [result, setResult] = useState<{ key: string; places: PlaceCardData[] } | null>(null);
@@ -145,7 +147,7 @@ export function ServicePlaces({ serviceKey }: { serviceKey: string }) {
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {places.map((place) => (
-              <PlaceCard key={place.id} place={place} />
+              <PlaceCard key={place.id} place={place} saved={savedIds.has(place.id)} />
             ))}
           </div>
           {hasMore && (

@@ -35,9 +35,14 @@ export function hasFilters(
   );
 }
 
-/** `relevance` only ever reaches the API alongside a query; otherwise it falls back to `name`. */
-export function effectiveSort(applied: Pick<Applied, 'q' | 'sort'>): Applied['sort'] {
-  return applied.q ? applied.sort : applied.sort === 'relevance' ? 'name' : applied.sort;
+/**
+ * The sort the API is asked for. `relevance` ("Best match") needs a query: without one it means
+ * nearest first around the chosen college, or top rated. `nearest` needs a college.
+ */
+export function effectiveSort(applied: Pick<Applied, 'q' | 'sort' | 'college'>): Applied['sort'] {
+  if (applied.sort === 'nearest' && !applied.college) return 'rating';
+  if (applied.sort === 'relevance' && !applied.q) return applied.college ? 'nearest' : 'rating';
+  return applied.sort;
 }
 
 /** The `GET /places` params for a set of applied filters (the server page and the client share it). */

@@ -84,7 +84,7 @@ export function StudentFeed() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
-        <h1 className="text-2xl font-bold text-ink sm:text-3xl">
+        <h1 className="text-2xl font-extrabold text-primary-800 sm:text-3xl">
           Hi, {user?.name.split(' ')[0] ?? 'there'}
         </h1>
         {user && <StudentBadgeChip badge={user.student} size="md" />}

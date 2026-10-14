@@ -100,7 +100,7 @@ export function CommunityFeed({ authorId }: { authorId?: string }) {
       {standalone && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-ink sm:text-3xl">
+            <h1 className="text-2xl font-extrabold text-primary-800 sm:text-3xl">
               {verified && user?.student.college
                 ? `${user.student.college.name} community`
                 : 'Student community'}

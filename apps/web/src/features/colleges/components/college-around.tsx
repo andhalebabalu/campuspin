@@ -149,7 +149,9 @@ export function CollegeAround({
                         className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
-                      <span className={`flex size-full items-center justify-center ${amenity.tone}`}>
+                      <span
+                        className={`flex size-full items-center justify-center ${amenity.tone}`}
+                      >
                         <Icon name={amenity.icon} className="size-10" />
                       </span>
                     )}

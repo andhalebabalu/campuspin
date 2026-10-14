@@ -89,7 +89,9 @@ export function MarketplaceBrowse() {
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-ink sm:text-3xl">Student marketplace</h1>
+          <h1 className="text-2xl font-extrabold text-primary-800 sm:text-3xl">
+            Student marketplace
+          </h1>
           <p className="text-sm text-body">
             Buy and sell with verified students
             {user?.student.college ? ` of ${user.student.college.name} and nearby` : ''}. Chat in

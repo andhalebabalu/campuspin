@@ -46,7 +46,9 @@ export function NearbyOffers() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-accent-700">For CampusPin students</p>
-          <h1 className="text-2xl font-bold text-ink sm:text-3xl">Student offers near you</h1>
+          <h1 className="text-2xl font-extrabold text-primary-800 sm:text-3xl">
+            Student offers near you
+          </h1>
         </div>
         {!point && locationStatus !== 'unavailable' && (
           <Button

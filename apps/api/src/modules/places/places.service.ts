@@ -40,7 +40,7 @@ export class PlacesService {
 
   async list(query: ListPlacesQuery): Promise<Paginated<PlaceCard>> {
     const college = query.collegeSlug ? await this.activeCollege(query.collegeSlug) : null;
-    const categoryId = query.categorySlug ? await this.categoryId(query.categorySlug) : undefined;
+    const categoryIds = query.categorySlug ? await this.categoryIds(query.categorySlug) : undefined;
 
     const where: Prisma.PlaceWhereInput = {
       status: 'ACTIVE',
@@ -48,7 +48,7 @@ export class PlacesService {
       ...priceFilter(query),
       ...verifiedFilter(query.verified),
       ...ratingFilter(query.minRating),
-      ...(categoryId ? { categories: { some: { categoryId } } } : {}),
+      ...(categoryIds ? { categories: { some: { categoryId: { in: categoryIds } } } } : {}),
       ...(college
         ? { colleges: { some: { collegeId: college.id, mode: { not: 'EXCLUDED' } } } }
         : {}),
@@ -138,12 +138,16 @@ export class PlacesService {
     return college;
   }
 
-  private async categoryId(slug: string): Promise<string> {
+  /**
+   * The category to filter by. A group (e.g. `services`) stands for all its active children, since
+   * places only link to leaf categories.
+   */
+  private async categoryIds(slug: string): Promise<string[]> {
     const category = await this.prisma.category.findFirst({
       where: { status: 'ACTIVE', slug: slug.trim().toLowerCase() },
-      select: { id: true },
+      select: { id: true, children: { where: { status: 'ACTIVE' }, select: { id: true } } },
     });
     if (!category) throw AppException.notFound('Category not found');
-    return category.id;
+    return [category.id, ...category.children.map((child) => child.id)];
   }
 }

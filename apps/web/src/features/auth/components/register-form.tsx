@@ -52,11 +52,18 @@ export const SELECT_CLASS =
  * Sign-up for one account type. A student names their college (optional); a business gives what
  * students need to find it (category, phone, city). Both confirm their email before signing in.
  */
-export function RegisterForm({ accountType }: { accountType: AccountType }) {
+export function RegisterForm({
+  accountType,
+  initialEmail = '',
+}: {
+  accountType: AccountType;
+  /** Pre-filled email, e.g. from the landing page's "Get started" email box. */
+  initialEmail?: string;
+}) {
   const router = useRouter();
   const { register } = useSession();
   const isBusiness = accountType === 'BUSINESS';
-  const [values, setValues] = useState(INITIAL);
+  const [values, setValues] = useState({ ...INITIAL, email: initialEmail });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<{ message: string; requestId?: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -191,9 +198,7 @@ export function RegisterForm({ accountType }: { accountType: AccountType }) {
                   </optgroup>
                 ))}
               </select>
-              {errors.categoryId && (
-                <p className="text-sm text-danger-700">{errors.categoryId}</p>
-              )}
+              {errors.categoryId && <p className="text-sm text-danger-700">{errors.categoryId}</p>}
             </div>
             <Input
               label="City"
@@ -242,9 +247,7 @@ export function RegisterForm({ accountType }: { accountType: AccountType }) {
               onChange={(event) => set('description')(event.target.value)}
               className="rounded-md border border-control bg-surface px-3.5 py-2.5 text-base text-ink placeholder:text-muted"
             />
-            {errors.description && (
-              <p className="text-sm text-danger-700">{errors.description}</p>
-            )}
+            {errors.description && <p className="text-sm text-danger-700">{errors.description}</p>}
           </div>
           {passwordFields}
           <p className="text-sm text-muted">

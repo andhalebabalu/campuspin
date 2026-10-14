@@ -13,7 +13,7 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import { EmptyState } from '@/components/shared/empty-state';
+import { FeatureGate } from '@/components/shared/feature-gate';
 import { ErrorState } from '@/components/shared/error-state';
 import { ReportDialog } from '@/components/shared/report-dialog';
 import { Skeleton } from '@/components/shared/skeleton';
@@ -119,21 +119,34 @@ export function CommunityChat() {
   if (status === 'loading') return <Skeleton className="h-[70dvh] w-full" />;
   if (!verified) {
     return (
-      <div className="mx-auto w-full max-w-xl py-8">
-        <EmptyState
+      <div className="py-4">
+        <FeatureGate
+          eyebrow="Student community"
           title="Your college's group chats"
-          description="Questions, notes, events, jobs, lost & found — one chat per topic, only for verified students of your college. Verify your college to join."
-          action={
-            <Link
-              href={
-                status === 'authenticated'
-                  ? ROUTES.meVerification
-                  : `${ROUTES.login}?next=${encodeURIComponent(ROUTES.community)}`
-              }
-              className="inline-flex h-10 items-center rounded-md bg-action px-4 text-sm font-medium text-white hover:bg-action-hover"
-            >
-              {status === 'authenticated' ? 'Verify my college' : 'Sign in'}
-            </Link>
+          description="Questions, notes, events, jobs, lost & found: one chat per topic, only for verified students of your college."
+          points={[
+            { icon: 'chats', title: 'Discussions', body: 'Ask your campus anything.' },
+            { icon: 'book', title: 'Study & notes', body: 'Share notes and clear doubts.' },
+            { icon: 'calendar', title: 'Events', body: 'Fests, clubs and meet-ups.' },
+            {
+              icon: 'target',
+              title: 'Jobs & lost-found',
+              body: 'Openings nearby, lost things found.',
+            },
+          ]}
+          image="/images/amenities/libraries.jpg"
+          primary={
+            status === 'authenticated'
+              ? { href: ROUTES.meVerification, label: 'Verify my college', icon: 'graduation' }
+              : {
+                  href: `${ROUTES.login}?next=${encodeURIComponent(ROUTES.community)}`,
+                  label: 'Sign in',
+                }
+          }
+          secondary={
+            status === 'authenticated'
+              ? undefined
+              : { href: ROUTES.registerStudent, label: 'Create a free account' }
           }
         />
       </div>

@@ -51,6 +51,8 @@ export const CARD_SELECT = {
   priceMin: true,
   priceMax: true,
   priceUnit: true,
+  latitude: true,
+  longitude: true,
   categories: CATEGORIES_SELECT,
   images: IMAGES_SELECT,
 } satisfies Prisma.PlaceSelect;

@@ -233,6 +233,9 @@ export const placeCardSchema = z.object({
   priceMin: z.number().int().nullable(),
   priceMax: z.number().int().nullable(),
   priceUnit: priceUnitSchema.nullable(),
+  /** Where the place is, for map views of a list. */
+  latitude: z.number(),
+  longitude: z.number(),
   /** Straight-line metres from the given `lat`/`lng`; null when none was given. */
   distanceMeters: z.number().int().min(0).nullable(),
 });

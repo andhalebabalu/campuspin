@@ -10,17 +10,51 @@ import { ROUTES } from '@/constants/routes';
 import { useSession } from '@/lib/auth/session-context';
 import { savedPlacesService } from '@/services/saved-places.service';
 
+/**
+ * The signed-in student's saved place ids, read once: a grid of cards passes each card its state
+ * instead of every card asking. Empty for guests (their heart is a sign-in link) and until loaded.
+ */
+const NONE: ReadonlySet<string> = new Set();
+export function useSavedPlaceIds(): ReadonlySet<string> {
+  const { status } = useSession();
+  const [ids, setIds] = useState<ReadonlySet<string> | undefined>(undefined);
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    const controller = new AbortController();
+    savedPlacesService
+      .ids(controller.signal)
+      .then((result) => setIds(new Set(result.data)))
+      .catch(() => setIds(new Set()));
+    return () => controller.abort();
+  }, [status]);
+  return (status === 'authenticated' && ids) || NONE;
+}
+
+const LOOKS = {
+  default:
+    'inline-flex h-11 w-fit items-center justify-center gap-2 rounded-md border border-control px-5 text-sm font-medium text-ink transition-colors hover:bg-subtle disabled:opacity-60',
+  compact:
+    'inline-flex size-10 items-center justify-center rounded-full border border-line bg-surface text-ink transition-colors hover:bg-subtle disabled:opacity-60',
+  /** A white heart button over a card photo. */
+  overlay:
+    'inline-flex size-9 items-center justify-center rounded-full bg-surface/95 text-ink shadow-md backdrop-blur transition-transform hover:scale-110 disabled:opacity-60',
+} as const;
+
 /** Bookmark a place ("Save mess"). Guests get a sign-in link that brings them back. */
 export function SavePlaceButton({
   placeId,
   initialSaved,
   compact = false,
+  look = compact ? 'compact' : 'default',
 }: {
   placeId: string;
   /** When the caller already knows; otherwise it is read from `/me/saved-places/ids`. */
   initialSaved?: boolean;
   compact?: boolean;
+  look?: keyof typeof LOOKS;
 }) {
+  const iconOnly = look !== 'default';
+  const icon = look === 'overlay' ? 'heart' : 'bookmark';
   const { status } = useSession();
   const pathname = usePathname();
   const toast = useToast();
@@ -37,15 +71,13 @@ export function SavePlaceButton({
     return () => controller.abort();
   }, [status, placeId, initialSaved]);
 
-  const classes = compact
-    ? 'inline-flex size-10 items-center justify-center rounded-full border border-line bg-surface text-ink transition-colors hover:bg-subtle disabled:opacity-60'
-    : 'inline-flex h-11 w-fit items-center justify-center gap-2 rounded-md border border-control px-5 text-sm font-medium text-ink transition-colors hover:bg-subtle disabled:opacity-60';
+  const classes = LOOKS[look];
 
   if (status === 'unauthenticated') {
     return (
       <Link href={`${ROUTES.login}?next=${encodeURIComponent(pathname)}`} className={classes}>
-        <Icon name="bookmark" className="size-4" />
-        {!compact && 'Sign in to save'}
+        <Icon name={icon} className="size-4" label={iconOnly ? 'Sign in to save' : undefined} />
+        {!iconOnly && 'Sign in to save'}
       </Link>
     );
   }
@@ -74,11 +106,11 @@ export function SavePlaceButton({
       className={classes}
     >
       <Icon
-        name="bookmark"
-        className={`size-4 ${saved ? 'fill-accent-600 text-accent-600' : ''}`}
-        label={compact ? (saved ? 'Saved' : 'Save') : undefined}
+        name={icon}
+        className={`size-4 ${saved ? (look === 'overlay' ? 'fill-rose-600 text-rose-600' : 'fill-accent-600 text-accent-600') : ''}`}
+        label={iconOnly ? (saved ? 'Saved' : 'Save') : undefined}
       />
-      {!compact && (saved ? 'Saved' : 'Save')}
+      {!iconOnly && (saved ? 'Saved' : 'Save')}
     </button>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { PageHero } from '@/components/shared/page-hero';
 import { SuggestPlaceGate } from '@/features/submissions/components/suggest-place-gate';
 import { BRAND } from '@/constants/brand';
 
@@ -10,16 +11,20 @@ export const metadata: Metadata = {
 
 export default function SuggestPlacePage() {
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-ink">Suggest a place</h1>
-        <p className="text-body">
-          Know a mess, PG, library or shop near your college that isn&apos;t listed yet? Tell us
-          about it and we&apos;ll review it.
-        </p>
+    <main className="flex-1 pb-16">
+      <PageHero
+        eyebrow="Help your campus"
+        eyebrowIcon="plus"
+        title={
+          <>
+            Suggest a <span className="text-accent-600">place</span>
+          </>
+        }
+        lead="Know a mess, PG, library or shop near your college that isn’t listed yet? Tell us about it and we’ll review it."
+      />
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <SuggestPlaceGate />
       </div>
-
-      <SuggestPlaceGate />
     </main>
   );
 }

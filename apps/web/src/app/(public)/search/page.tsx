@@ -1,19 +1,27 @@
 import { ApiClientError } from '@platform/api-client';
 import type { Metadata } from 'next';
 import { SearchPageClient } from '@/features/search/components/search-page-client';
-import { hasFilters, toPlaceListParams, type Applied } from '@/features/search/lib/search-filters';
+import { SearchHero } from '@/features/search/components/search-hero';
+import { toPlaceListParams, type Applied } from '@/features/search/lib/search-filters';
 import { BRAND } from '@/constants/brand';
 import { categoriesService } from '@/services/categories.service';
 import { collegesService } from '@/services/colleges.service';
 import { placesService } from '@/services/places.service';
 
 export const metadata: Metadata = {
-  title: 'Search',
-  description: `Search places across ${BRAND.name}.`,
+  title: 'Discover places',
+  description: `Find rooms, PGs, messes, libraries, gyms, cafes and services around your college on ${BRAND.name}.`,
   robots: { index: false, follow: true },
 };
 
-const SORTS: ReadonlyArray<Applied['sort']> = ['relevance', 'rating', 'cheapest', 'newest', 'name'];
+const SORTS: ReadonlyArray<Applied['sort']> = [
+  'relevance',
+  'nearest',
+  'rating',
+  'cheapest',
+  'newest',
+  'name',
+];
 const MIN_RATINGS = ['1', '2', '3', '4', '5'];
 
 interface RawSearchParams {
@@ -71,7 +79,8 @@ export default async function SearchPage({
   let initialMeta = empty;
   let initialError: string | null = null;
 
-  if (hasFilters(applied)) {
+  // Always a first page: with no filters it is simply the top places.
+  {
     try {
       const result = await placesService.list(toPlaceListParams(applied));
       initialPlaces = result.data;
@@ -85,21 +94,21 @@ export default async function SearchPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-ink">Search</h1>
-        <p className="text-body">Find rooms, PGs, messes, libraries and more.</p>
-      </div>
-
-      <SearchPageClient
-        initialApplied={applied}
-        initialPlaces={initialPlaces}
-        initialMeta={initialMeta}
-        initialError={initialError}
-        categoryGroups={categoryGroups}
-        colleges={colleges}
-        selectedCollege={selectedCollege}
+    <main className="flex-1 pb-16">
+      <SearchHero
+        area={selectedCollege ? { name: selectedCollege.name, city: selectedCollege.city } : null}
       />
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <SearchPageClient
+          initialApplied={applied}
+          initialPlaces={initialPlaces}
+          initialMeta={initialMeta}
+          initialError={initialError}
+          categoryGroups={categoryGroups}
+          colleges={colleges}
+          selectedCollege={selectedCollege}
+        />
+      </div>
     </main>
   );
 }

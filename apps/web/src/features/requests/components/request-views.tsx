@@ -271,7 +271,7 @@ export function RequestTracking({ requestId }: { requestId: string }) {
       {request.estimateAmount !== null && (
         <Card className="flex flex-col gap-2 border-accent-600 p-6">
           <p className="text-sm font-semibold text-accent-700">Estimate</p>
-          <p className="text-3xl font-bold text-ink">₹{request.estimateAmount}</p>
+          <p className="text-3xl font-extrabold text-primary-800">₹{request.estimateAmount}</p>
           {request.estimateNote && <p className="text-sm text-body">{request.estimateNote}</p>}
           {request.canApprove && (
             <div className="flex flex-wrap gap-2 pt-2">
